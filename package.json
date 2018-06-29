@@ -4,10 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "lint": "eslint ./",
+    "pretest": "npm run lint",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "bin": {
-    "ant": "./bin/ant"
+    "ant": "./bin/ant.js"
   },
   "repository": {
     "type": "git",
@@ -18,5 +20,8 @@
   "bugs": {
     "url": "https://github.com/back4app/antfn/issues"
   },
-  "homepage": "https://github.com/back4app/antfn#readme"
+  "homepage": "https://github.com/back4app/antfn#readme",
+  "devDependencies": {
+    "eslint": "^5.0.1"
+  }
 }
