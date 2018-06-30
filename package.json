@@ -6,7 +6,7 @@
   "scripts": {
     "lint": "eslint ./",
     "pretest": "npm run lint",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jasmine"
   },
   "bin": {
     "ant": "./bin/ant.js"
@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/back4app/antfn#readme",
   "devDependencies": {
-    "eslint": "^5.0.1"
+    "eslint": "^5.0.1",
+    "jasmine": "^3.1.0"
   }
 }
