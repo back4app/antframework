@@ -1,9 +1,11 @@
 /* eslint-disable no-console */
 
+/**
+ * @fileoverview Tests for lib/cli/ant.js file.
+ */
+
 describe('lib/cli/ant.js', () => {
-  it('should print welcome message', () => {
-    spyOn(console, 'log');
+  it('should init with no error', () => {
     require('../../../lib/cli/ant.js');
-    expect(console.log).toHaveBeenCalledWith('Hello World!');
   });
 });

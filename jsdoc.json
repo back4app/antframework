@@ -3,7 +3,8 @@
     "include":  [
       "./README.md",
       "bin/",
-      "lib/"
+      "lib/",
+      "spec/"
     ]
   },
   "plugins": ["plugins/markdown"],
