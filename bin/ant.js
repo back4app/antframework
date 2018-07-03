@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 
 /**
- * @fileoverview Ant Fn CLI executable bin file.
+ * @fileoverview This is the executable bin file for the Ant Fn CLI.
  */
 
-require('../lib/cli/ant.js').argv;
+const antYargs = require('../lib/cli/antYargs.js');
+
+antYargs.argv;
