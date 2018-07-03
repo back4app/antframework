@@ -6,12 +6,13 @@ const { exec } = require('child_process');
  */
 
 describe('bin/ant.js', () => {
-  it('should print welcome message', (done) => {
+  it('should print usage instructions', (done) => {
     exec(
-      path.resolve(`${__dirname}/../../bin/ant.js`) + ' --help',
+      path.resolve(`${__dirname}/../../bin/ant.js`),
       (error, stdout, stderr) => {
         expect(error).toBeNull();
-        expect(stdout.split('\n')[0]).toEqual('ant <cmd> [args]');
+        expect(stdout.split('\n')[0])
+          .toEqual('Usage: ant.js [--help] [--version] <command> [<args>]');
         expect(stderr).toEqual('');
         done();
       }
