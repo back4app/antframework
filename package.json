@@ -1,7 +1,7 @@
 {
-  "name": "@back4app/antfn",
+  "name": "@back4app/antframework",
   "version": "1.0.0",
-  "description": "",
+  "description": "Ant Framework",
   "main": "index.js",
   "scripts": {
     "lint": "eslint ./",
@@ -15,14 +15,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/back4app/antfn.git"
+    "url": "git+https://github.com/back4app/antframework.git"
   },
-  "author": "",
+  "author": "Back4App Inc.",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/back4app/antfn/issues"
+    "url": "https://github.com/back4app/antframework/issues"
   },
-  "homepage": "https://github.com/back4app/antfn#readme",
+  "homepage": "https://github.com/back4app/antframework#readme",
   "devDependencies": {
     "eslint": "^5.0.1",
     "jasmine": "^3.1.0",
@@ -30,6 +30,7 @@
     "minami": "^1.2.3"
   },
   "dependencies": {
+    "js-yaml": "^3.12.0",
     "yargs": "^12.0.1"
   }
 }

@@ -31,7 +31,7 @@ function _expectUsageInstructions(args, done) {
         '--version, -v  Show version number                                   [boolean]'
       );
       expect(stdout).toContain(
-        'For more information, visit https://github.com/back4app/antfn'
+        'For more information, visit https://github.com/back4app/antframework'
       );
       expect(stderr).toEqual('');
       done();
@@ -91,7 +91,7 @@ describe('bin/ant.js', () => {
   );
 
   it(
-    'should print error when calling when an inexistent command',
+    'should print error when calling with an inexistent command',
     done => _expectErrorMessage('foo', 'Fatal => Unknown argument: foo', done)
   );
 
