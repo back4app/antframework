@@ -1,9 +1,10 @@
-const path = require('path');
-const { exec } = require('child_process');
-
 /**
  * @fileoverview Tests for bin/ant.js file.
  */
+
+const path = require('path');
+const util = require('util');
+const exec = util.promisify(require('child_process').exec);
 
 const binPath = path.resolve(`${__dirname}/../../bin/ant.js`);
 
@@ -11,32 +12,27 @@ const binPath = path.resolve(`${__dirname}/../../bin/ant.js`);
  * Helper function to run the CLI command with args and check the expected
  * usage instructions as an output.
  * @param {string} args The args to be sent to the CLI command.
- * @param {Function} done The callback function to be called when the checks are
- * completed.
+ * @async
  * @private
  */
-function _expectUsageInstructions(args, done) {
-  exec(
-    `${binPath}${args ? ` ${args}` : ''}`,
-    (error, stdout, stderr) => {
-      expect(error).toBeNull();
-      expect(stdout).not.toBeNull();
-      expect(stdout.split('\n')[0]).toEqual(
-        'Usage: ant.js [--help] [--version] <command> [<args>]'
-      );
-      expect(stdout).toContain(
-        '--help, -h     Show help                                             [boolean]'
-      );
-      expect(stdout).toContain(
-        '--version, -v  Show version number                                   [boolean]'
-      );
-      expect(stdout).toContain(
-        'For more information, visit https://github.com/back4app/antframework'
-      );
-      expect(stderr).toEqual('');
-      done();
-    }
+async function _expectUsageInstructions(args) {
+  const { stdout, stderr } = await exec(
+    `${binPath}${args ? ` ${args}` : ''}`
   );
+  expect(stdout).not.toBeNull();
+  expect(stdout.split('\n')[0]).toEqual(
+    'Usage: ant.js [--help] [--version] <command> [<args>]'
+  );
+  expect(stdout).toContain(
+    '--help, -h     Show help                                             [boolean]'
+  );
+  expect(stdout).toContain(
+    '--version, -v  Show version number                                   [boolean]'
+  );
+  expect(stdout).toContain(
+    'For more information, visit https://github.com/back4app/antframework'
+  );
+  expect(stderr).toEqual('');
 }
 
 /**
@@ -44,86 +40,74 @@ function _expectUsageInstructions(args, done) {
  * message as an output.
  * @param {string} args The args to be sent to the CLI command.
  * @param {string} errorMessage The expected error message.
- * @param {Function} done The callback function to be called when the checks are
- * completed.
+ * @async
  * @private
  */
-function _expectErrorMessage(args, errorMessage, done) {
-  exec(
-    `${binPath}${args ? ` ${args}` : ''}`,
-    (error, stdout, stderr) => {
-      expect(error).not.toBeNull();
-      expect(error.code).toEqual(1);
-      expect(stdout).toEqual('');
-      expect(stderr).toEqual(`${errorMessage}\n`);
-      done();
-    }
-  );
+async function _expectErrorMessage(args, errorMessage) {
+  try {
+    await exec(
+      `${binPath}${args ? ` ${args}` : ''}`
+    );
+    throw new Error('Expected an exception to be thrown');
+  } catch (e) {
+    const { code, stdout, stderr } = e;
+    expect(code).toEqual(1);
+    expect(stdout).toEqual('');
+    expect(stderr).toEqual(`${errorMessage}\n`);
+  }
 }
 
 /**
  * Helper function to run the CLI command with args and check the expected CLI
  * version.
  * @param {string} args The args to be sent to the CLI command.
- * @param {Function} done The callback function to be called when the checks are
- * completed.
+ * @async
  * @private
  */
-function _expectPackageVersion(args, done) {
-  exec(
-    `${binPath}${args ? ` ${args}` : ''}`,
-    (error, stdout, stderr) => {
-      expect(error).toBeNull();
-      const packageVersion = require(
-        path.resolve(`${__dirname}/../../package.json`)
-      ).version;
-      expect(stdout).toEqual(`${packageVersion}\n`);
-      expect(stderr).toEqual('');
-      done();
-    }
-  );
+async function _expectPackageVersion(args) {
+  const { stdout, stderr } = await exec(`${binPath}${args ? ` ${args}` : ''}`);
+  const packageVersion = require(
+    path.resolve(`${__dirname}/../../package.json`)
+  ).version;
+  expect(stdout).toEqual(`${packageVersion}\n`);
+  expect(stderr).toEqual('');
 }
 
 describe('bin/ant.js', () => {
   it(
     'should print usage instructions when called with no commands nor options',
-    done => _expectUsageInstructions(null, done)
+    () => _expectUsageInstructions(null)
   );
 
   it(
     'should print error when calling with an inexistent command',
-    done => _expectErrorMessage('foo', 'Fatal => Unknown argument: foo', done)
+    () => _expectErrorMessage('foo', 'Fatal => Unknown argument: foo')
   );
 
   it(
     'should print error when calling with more than one command',
-    done => _expectErrorMessage(
+    () => _expectErrorMessage(
       'cmd1 cmd2',
-      'Fatal => You can run only one command per call',
-      done
+      'Fatal => You can run only one command per call'
     )
   );
 
   it(
     'should recommend commands',
-    done => _expectErrorMessage(
+    () => _expectErrorMessage(
       'somecomman',
-      'Fatal => Did you mean somecommand?',
-      done
+      'Fatal => Did you mean somecommand?'
     )
   );
 
-  it(
-    'should have --help option',
-    done => _expectUsageInstructions('--help', done)
-  );
+  it('should have --help option', () => _expectUsageInstructions('--help'));
 
-  it('should have -h alias', done => _expectUsageInstructions('-h', done));
+  it('should have -h alias', () => _expectUsageInstructions('-h'));
 
   it(
     'should print package.json version when calling --version option',
-    done => _expectPackageVersion('--version', done)
+    () => _expectPackageVersion('--version')
   );
 
-  it('should have -v alias', done => _expectPackageVersion('-v', done));
+  it('should have -v alias', () => _expectPackageVersion('-v'));
 });
