@@ -6,7 +6,7 @@ const path = require('path');
 const util = require('util');
 const exec = util.promisify(require('child_process').exec);
 
-const binPath = path.resolve(`${__dirname}/../../bin/ant.js`);
+const binPath = path.resolve(__dirname, '../../bin/ant.js');
 
 /**
  * Helper function to run the CLI command with args and check the expected
@@ -67,7 +67,7 @@ async function _expectErrorMessage(args, errorMessage) {
 async function _expectPackageVersion(args) {
   const { stdout, stderr } = await exec(`${binPath}${args ? ` ${args}` : ''}`);
   const packageVersion = require(
-    path.resolve(`${__dirname}/../../package.json`)
+    path.resolve(__dirname, '../../package.json')
   ).version;
   expect(stdout).toEqual(`${packageVersion}\n`);
   expect(stderr).toEqual('');
