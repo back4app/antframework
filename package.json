@@ -6,7 +6,7 @@
   "scripts": {
     "lint": "eslint ./",
     "pretest": "npm run lint",
-    "test": "jasmine",
+    "test": "jest",
     "apidocs": "jsdoc -c ./jsdoc.json",
     "docs": "npm run apidocs"
   },
@@ -25,7 +25,7 @@
   "homepage": "https://github.com/back4app/antframework#readme",
   "devDependencies": {
     "eslint": "^5.0.1",
-    "jasmine": "^3.1.0",
+    "jest": "^23.3.0",
     "jsdoc": "^3.5.5",
     "minami": "^1.2.3"
   },

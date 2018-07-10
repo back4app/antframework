@@ -44,11 +44,11 @@ async function _expectUsageInstructions(args) {
  * @private
  */
 async function _expectErrorMessage(args, errorMessage) {
+  expect.hasAssertions();
   try {
     await exec(
       `${binPath}${args ? ` ${args}` : ''}`
     );
-    throw new Error('Expected an exception to be thrown');
   } catch (e) {
     const { code, stdout, stderr } = e;
     expect(code).toEqual(1);
@@ -74,17 +74,17 @@ async function _expectPackageVersion(args) {
 }
 
 describe('bin/ant.js', () => {
-  it(
+  test(
     'should print usage instructions when called with no commands nor options',
     () => _expectUsageInstructions(null)
   );
 
-  it(
+  test(
     'should print error when calling with an inexistent command',
     () => _expectErrorMessage('foo', 'Fatal => Unknown argument: foo')
   );
 
-  it(
+  test(
     'should print error when calling with more than one command',
     () => _expectErrorMessage(
       'cmd1 cmd2',
@@ -92,7 +92,7 @@ describe('bin/ant.js', () => {
     )
   );
 
-  it(
+  test(
     'should recommend commands',
     () => _expectErrorMessage(
       'somecomman',
@@ -100,14 +100,14 @@ describe('bin/ant.js', () => {
     )
   );
 
-  it('should have --help option', () => _expectUsageInstructions('--help'));
+  test('should have --help option', () => _expectUsageInstructions('--help'));
 
-  it('should have -h alias', () => _expectUsageInstructions('-h'));
+  test('should have -h alias', () => _expectUsageInstructions('-h'));
 
-  it(
+  test(
     'should print package.json version when calling --version option',
     () => _expectPackageVersion('--version')
   );
 
-  it('should have -v alias', () => _expectPackageVersion('-v'));
+  test('should have -v alias', () => _expectPackageVersion('-v'));
 });
