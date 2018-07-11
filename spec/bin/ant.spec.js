@@ -23,12 +23,16 @@ async function _expectUsageInstructions(args) {
   expect(stdout.split('\n')[0]).toEqual(
     'Usage: ant.js [--help] [--version] <command> [<args>]'
   );
+  expect(stdout).toContain(`Commands:
+  ant.js somecommand`);
   expect(stdout).toContain(
     '--help, -h     Show help                                             [boolean]'
   );
   expect(stdout).toContain(
     '--version, -v  Show version number                                   [boolean]'
   );
+  expect(stdout).toContain(`Plugins:
+  Core`);
   expect(stdout).toContain(
     'For more information, visit https://github.com/back4app/antframework'
   );
@@ -78,6 +82,30 @@ describe('bin/ant.js', () => {
     'should print usage instructions when called with no commands nor options',
     () => _expectUsageInstructions(null)
   );
+
+  test('should load local config', async () => {
+    const { stdout, stderr } = await exec(
+      binPath,
+      { cwd: path.resolve(__dirname, 'notAPluginConfig')}
+    );
+    expect(stdout).not.toBeNull();
+    expect(stdout).toContain('Plugins:');
+    expect(stdout).not.toContain('Core');
+    expect(stderr).toEqual('');
+  });
+
+  test('should print plugin load error', async () => {
+    const { stdout, stderr } = await exec(
+      binPath,
+      { cwd: path.resolve(__dirname, 'notAPluginConfig')}
+    );
+    expect(stdout).not.toBeNull();
+    expect(stdout).toContain(
+      'There were some errors when loading the plugins:'
+    );
+    expect(stdout).toContain('Could not load plugin module');
+    expect(stderr).toEqual('');
+  });
 
   test(
     'should print error when calling with an inexistent command',
