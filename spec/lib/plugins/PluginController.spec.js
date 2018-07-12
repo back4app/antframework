@@ -2,6 +2,7 @@
  * @fileoverview Tests for lib/plugins/PluginController.js file.
  */
 
+const yargs = require('yargs');
 const Plugin = require('../../../lib/plugins/Plugin');
 const PluginController = require('../../../lib/plugins/PluginController');
 const Core = require('../../../lib/plugins/core');
@@ -11,7 +12,7 @@ const plugin = new Plugin();
 
 /**
  * Represents a {@link Plugin} that overrides the "name" member and throws an
- * Error for testing purposes
+ * Error for testing purposes.
  * @private
  */
 class NameErrorPlugin extends Plugin {
@@ -21,6 +22,19 @@ class NameErrorPlugin extends Plugin {
 }
 
 const nameErrorPlugin = new NameErrorPlugin();
+
+/**
+ * Represents a {@link Plugin} that overrides the "loadYargsSettings" method and
+ * throws an Error for testing purposes.
+ * @private
+ */
+class YargsErrorPlugin extends NameErrorPlugin {
+  loadYargsSettings() {
+    throw new Error('Some yargs error');
+  }
+}
+
+const yargsErrorPlugin = new YargsErrorPlugin();
 
 describe('lib/plugins/PluginController.js', () => {
   test('should export "PluginController" class', () => {
@@ -186,6 +200,35 @@ describe('lib/plugins/PluginController.js', () => {
       expect(() => pluginController.getPluginName({})).toThrowError(
         'Could not get plugin name: param "plugin" should be Plugin'
       );
+    });
+  });
+
+  describe('PluginController.loadPluginYargsSettings', () => {
+    test('should load plugin\'s yargs settings', () => {
+      const plugin = new Plugin();
+      plugin.loadYargsSettings = jest.fn();
+      (new PluginController()).loadPluginYargsSettings(plugin, yargs);
+      expect(plugin.loadYargsSettings).toHaveBeenCalledWith(yargs);
+    });
+
+    test('should store loading error in the case of error', () => {
+      const pluginController = new PluginController();
+      pluginController.loadPluginYargsSettings(yargsErrorPlugin, yargs);
+      expect(pluginController.loadingErrors).toEqual(expect.any(Array));
+      expect(pluginController.loadingErrors).toHaveLength(2);
+      expect(pluginController.loadingErrors[0]).toBeInstanceOf(Error);
+      expect(pluginController.loadingErrors[0].message)
+        .toEqual(expect.stringContaining('Some name error'));
+      expect(pluginController.loadingErrors[1]).toBeInstanceOf(Error);
+      expect(pluginController.loadingErrors[1].message)
+        .toEqual(expect.stringContaining('Some yargs error'));
+    });
+
+    test('should fail if the "plugin" param is not a Plugin instance', () => {
+      const pluginController = new PluginController();
+      expect(() => pluginController.loadPluginYargsSettings({}, yargs))
+        .toThrowError('Could not load plugin\'s Yargs settings: param "plugin" \
+should be Plugin');
     });
   });
 });

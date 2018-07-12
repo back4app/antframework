@@ -51,4 +51,12 @@ describe('lib/plugins/Plugin.js', () => {
       expect(plugin.name).toEqual('Plugin');
     });
   });
+
+  describe('Plugin.loadYargsSettings', () => {
+    test('should do nothing if not overriden', () => {
+      const yargs = {};
+      (new Plugin()).loadYargsSettings(yargs);
+      expect(yargs).toEqual({});
+    });
+  });
 });

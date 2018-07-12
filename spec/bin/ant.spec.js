@@ -24,7 +24,7 @@ async function _expectUsageInstructions(args) {
     'Usage: ant.js [--help] [--version] <command> [<args>]'
   );
   expect(stdout).toContain(`Commands:
-  ant.js somecommand`);
+  ant.js create  Create a new service`);
   expect(stdout).toContain(
     '--help, -h     Show help                                             [boolean]'
   );
@@ -123,8 +123,8 @@ describe('bin/ant.js', () => {
   test(
     'should recommend commands',
     () => _expectErrorMessage(
-      'somecomman',
-      'Fatal => Did you mean somecommand?'
+      'creat',
+      'Fatal => Did you mean create?'
     )
   );
 

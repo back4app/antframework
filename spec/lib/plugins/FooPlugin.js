@@ -21,19 +21,19 @@ class FooPlugin extends Plugin {
     super();
 
     /**
-     * A foo member called a.
+     * Contains a foo member called a.
      * @type {}
      */
     this.a = null;
 
     /**
-     * A foo member called b.
+     * Contains a foo member called b.
      * @type {}
      */
     this.b = null;
 
     /**
-     * A foo member called c.
+     * Contains a foo member called c.
      * @type {}
      */
     this.c = null;
