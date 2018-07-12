@@ -60,4 +60,49 @@ describe('lib/Ant.js', () => {
       expect(ant.pluginController.plugins[0]).toBeInstanceOf(Core);
     });
   });
+
+  describe('Ant.createService', () => {
+    test('should be async and call Core plugin method', async () => {
+      const core = new Core();
+      core.createService = jest.fn();
+      const ant = new Ant({ plugins: [ core ]});
+      const createServiceReturn = ant.createService(
+        'FooService',
+        'FooTemplate'
+      );
+      expect(createServiceReturn).toBeInstanceOf(Promise);
+      await createServiceReturn;
+      expect(core.createService).toHaveBeenCalledWith(
+        'FooService',
+        'FooTemplate'
+      );
+    });
+
+    test('should fail if Core plugin not loaded', () => {
+      const ant = new Ant({ plugins: [] });
+      expect(ant.createService('FooService', 'FooTemplate'))
+        .rejects.toThrowError(
+          'Service could not be created because the Core plugin is not loaded.'
+        );
+    });
+
+    test(
+      'should fail if Core plugin does not have createService method',
+      () => {
+        /**
+         * Represents a fake {@link Core} plugin with no createService method
+         * for testing purposes.
+         * @private
+         */
+        class FakeCore extends Plugin {
+          get name() {
+            return 'Core';
+          }
+        }
+        const fakeCore = new FakeCore();
+        const ant = new Ant({ plugins: [fakeCore] });
+        expect(ant.createService('FooService', 'FooTemplate'))
+          .rejects.toThrowError('Service could not be created:');
+      });
+  });
 });

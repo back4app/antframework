@@ -177,6 +177,14 @@ describe('lib/plugins/PluginController.js', () => {
     });
   });
 
+  describe('PluginController.getPlugin', () => {
+    test('should return the plugin by its name', () => {
+      const plugin = new Plugin();
+      const pluginController = new PluginController([plugin]);
+      expect(pluginController.getPlugin('Plugin')).toEqual(plugin);
+    });
+  });
+
   describe('PluginController.getPluginName', () => {
     test('should return the plugin name', () => {
       const pluginController = new PluginController([plugin]);
