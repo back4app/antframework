@@ -22,7 +22,7 @@ describe('lib/plugins/core/lib/Core.js', () => {
       const originalCwd = process.cwd();
       process.chdir(path.resolve(__dirname, '../'));
       try {
-        (new AntCli())._yargs.parse('create');
+        (new AntCli())._yargs.parse('create MyService');
         expect(process.exit).toHaveBeenCalledWith(0);
       } catch (e) {
         throw e;

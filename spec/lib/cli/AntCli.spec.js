@@ -95,7 +95,29 @@ describe('lib/cli/AntCli.js', () => {
         (new AntCli())._yargs.parse('foo');
         expect(process.exit).toHaveBeenCalledWith(1);
         expect(console.error.mock.calls[0][0]).toContain(
-          'Fatal => Unknown argument: foo'
+          'Fatal => Unknown command: foo'
+        );
+      } catch (e) {
+        throw e;
+      } finally {
+        process.exit = originalExit;
+        console.error = originalError;
+      }
+    }
+  );
+
+  test(
+    'should suggest commands',
+    () => {
+      const originalExit = process.exit;
+      process.exit = jest.fn();
+      const originalError = console.error;
+      console.error = jest.fn();
+      try {
+        (new AntCli())._yargs.parse('creat');
+        expect(process.exit).toHaveBeenCalledWith(1);
+        expect(console.error.mock.calls[0][0]).toContain(
+          'Fatal => Did you mean create?'
         );
       } catch (e) {
         throw e;
@@ -115,6 +137,33 @@ describe('lib/cli/AntCli.js', () => {
         () => {},
         () => { throw new YError('Something went wrong'); }
       ).parse('foo')).toThrowError('Something went wrong');
+    }
+  );
+
+  test(
+    'should throw friendly error when not passing required arg to option',
+    () => {
+      const originalExit = process.exit;
+      process.exit = jest.fn();
+      const originalError = console.error;
+      console.error = jest.fn();
+      try {
+        (new AntCli())._yargs.command(
+          'foo',
+          'foo description',
+          { option: { requiresArg: true }},
+          () => { throw new YError('Not enough arguments following: '); }
+        ).parse('foo');
+        expect(process.exit).toHaveBeenCalledWith(1);
+        expect(console.error.mock.calls[0][0]).toContain(
+          'Not enough arguments following: '
+        );
+      } catch (e) {
+        throw e;
+      } finally {
+        process.exit = originalExit;
+        console.error = originalError;
+      }
     }
   );
 });
