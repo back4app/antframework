@@ -78,17 +78,19 @@ describe('lib/Ant.js', () => {
       );
     });
 
-    test('should fail if Core plugin not loaded', () => {
+    test('should fail if Core plugin not loaded', async () => {
+      expect.hasAssertions();
       const ant = new Ant({ plugins: [] });
-      expect(ant.createService('FooService', 'FooTemplate'))
-        .rejects.toThrowError(
+      await expect(ant.createService('FooService', 'FooTemplate'))
+        .rejects.toThrow(
           'Service could not be created because the Core plugin is not loaded.'
         );
     });
 
     test(
       'should fail if Core plugin does not have createService method',
-      () => {
+      async () => {
+        expect.hasAssertions();
         /**
          * Represents a fake {@link Core} plugin with no createService method
          * for testing purposes.
@@ -101,8 +103,8 @@ describe('lib/Ant.js', () => {
         }
         const fakeCore = new FakeCore();
         const ant = new Ant({ plugins: [fakeCore] });
-        expect(ant.createService('FooService', 'FooTemplate'))
-          .rejects.toThrowError('Service could not be created:');
+        await expect(ant.createService('FooService', 'FooTemplate'))
+          .rejects.toThrow('Service could not be created:');
       });
   });
 });

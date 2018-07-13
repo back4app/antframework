@@ -36,5 +36,22 @@ describe('lib/plugins/core/lib/Core.js', () => {
       const createServiceReturn = core.createService();
       expect(createServiceReturn).toBeInstanceOf(Promise);
     });
+
+    test('should fail if name and template params are not String', async () => {
+      expect.hasAssertions();
+      const core = new Core();
+      await expect(core.createService()).rejects.toThrow(
+        'Could not create service: param "name" is required'
+      );
+      await expect(core.createService('')).rejects.toThrow(
+        'Could not create service: param "name" is required'
+      );
+      await expect(core.createService({})).rejects.toThrow(
+        'Could not create service: param "name" should be String'
+      );
+      await expect(core.createService('MyService', {})).rejects.toThrow(
+        'Could not create service: param "template" should be String'
+      );
+    });
   });
 });

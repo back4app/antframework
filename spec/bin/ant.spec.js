@@ -5,6 +5,7 @@
 const path = require('path');
 const util = require('util');
 const exec = util.promisify(require('child_process').exec);
+const AntCli = require('../../lib/cli/AntCli');
 
 const binPath = path.resolve(__dirname, '../../bin/ant.js');
 
@@ -202,7 +203,8 @@ Create a new service
 Options:
   --help, -h      Show help                                            [boolean]
   --version, -v   Show version number                                  [boolean]
-  --template, -t  Specify the template to be used for the new service   [string]
+  --template, -t  Specify the template to be used for the new service
+                                                   [string] [default: "Default"]
 `
         )
       );
@@ -223,6 +225,30 @@ ant.js --help [command]`)
 
 For getting help:
 ant.js --help [command]`)
+      );
+
+      test(
+        'should use "Default" template name without --template option',
+        (done) => {
+          const originalExit = process.exit;
+          process.exit = jest.fn();
+          process.exit = jest.fn(() => {
+            process.exit = originalExit;
+            expect.hasAssertions();
+            done();
+          });
+
+          const antCli = new AntCli();
+          antCli
+            ._ant
+            .pluginController
+            .getPlugin('Core')
+            .createService = jest.fn(async (name, template) => {
+              expect(name).toEqual('MyService');
+              expect(template).toEqual('Default');
+            });
+          antCli._yargs.parse('create MyService');
+        }
       );
     });
   });
