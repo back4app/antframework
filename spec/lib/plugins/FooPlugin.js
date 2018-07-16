@@ -8,6 +8,7 @@ const Plugin = require('../../../lib/plugins/Plugin');
 /**
  * Represents a foo {@link Plugin} implementation for testing purposes.
  * @extends Plugin
+ * @param {!Ant} ant The {@link Ant} instance that is loading the plugin.
  * @private
  */
 class FooPlugin extends Plugin {
@@ -17,8 +18,8 @@ class FooPlugin extends Plugin {
   * @param {} config.b A foo config setting called b.
   * @param {} config.c A foo config setting called c.
   */
-  constructor(config) {
-    super();
+  constructor(ant, config) {
+    super(ant);
 
     /**
      * Contains a foo member called a.

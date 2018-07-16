@@ -15,12 +15,11 @@ describe('lib/Ant.js', () => {
   });
 
   test('should load custom config', () => {
-    const plugin = new Plugin();
-    const ant = new Ant({ plugins: [plugin] });
+    const ant = new Ant({ plugins: [Plugin] });
     expect(ant.pluginController).toBeInstanceOf(PluginController);
     expect(ant.pluginController.plugins).toEqual(expect.any(Array));
     expect(ant.pluginController.plugins).toHaveLength(1);
-    expect(ant.pluginController.plugins[0]).toEqual(plugin);
+    expect(ant.pluginController.plugins[0]).toEqual(expect.any(Plugin));
   });
 
   test('should load default config', () => {
@@ -63,16 +62,16 @@ describe('lib/Ant.js', () => {
 
   describe('Ant.createService', () => {
     test('should be async and call Core plugin method', async () => {
-      const core = new Core();
-      core.createService = jest.fn();
-      const ant = new Ant({ plugins: [ core ]});
+      const ant = new Ant();
+      const createService = jest.fn();
+      ant.pluginController.getPlugin('Core').createService = createService;
       const createServiceReturn = ant.createService(
         'FooService',
         'FooTemplate'
       );
       expect(createServiceReturn).toBeInstanceOf(Promise);
       await createServiceReturn;
-      expect(core.createService).toHaveBeenCalledWith(
+      expect(createService).toHaveBeenCalledWith(
         'FooService',
         'FooTemplate'
       );
@@ -101,8 +100,7 @@ describe('lib/Ant.js', () => {
             return 'Core';
           }
         }
-        const fakeCore = new FakeCore();
-        const ant = new Ant({ plugins: [fakeCore] });
+        const ant = new Ant({ plugins: [FakeCore] });
         await expect(ant.createService('FooService', 'FooTemplate'))
           .rejects.toThrow('Service could not be created:');
       });

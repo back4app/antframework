@@ -2,9 +2,11 @@
  * @fileoverview Tests for lib/plugins/Plugin.js file.
  */
 
+const Ant = require('../../../lib/Ant');
 const Plugin = require('../../../lib/plugins/Plugin');
 
-const plugin = new Plugin();
+const ant = new Ant();
+const plugin = new Plugin(ant);
 
 /**
  * Represents a foo {@link Plugin} that overrides the "name" member for testing
@@ -17,11 +19,23 @@ class Foo extends Plugin {
   }
 }
 
-const foo = new Foo();
+const foo = new Foo(ant);
 
 describe('lib/plugins/Plugin.js', () => {
   test('should export "Plugin" class', () => {
     expect(plugin.constructor.name).toEqual('Plugin');
+  });
+
+  test('should fail if the ant instance is not passed', () => {
+    expect(() => new Plugin()).toThrowError(
+      'Could not initialize plugin: param "ant" is required'
+    );
+  });
+
+  test('should fail if the ant param is not an Ant', () => {
+    expect(() => new Plugin({})).toThrowError(
+      'Could not initialize plugin: param "ant" should be Ant'
+    );
   });
 
   describe('Plugin.GetPluginDefaultName', () => {
@@ -55,7 +69,7 @@ describe('lib/plugins/Plugin.js', () => {
   describe('Plugin.loadYargsSettings', () => {
     test('should do nothing if not overriden', () => {
       const yargs = {};
-      (new Plugin()).loadYargsSettings(yargs);
+      (new Plugin(ant)).loadYargsSettings(yargs);
       expect(yargs).toEqual({});
     });
   });
