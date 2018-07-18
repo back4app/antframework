@@ -19,6 +19,7 @@ describe('lib/templates/TemplateController.js', () => {
     const template1 = new Template('Category1', 'Template1', 'Path1');
     const template11 = new Template('Category1', 'Template11', 'Path11');
     const template2 = new Template('Category2', 'Template2', 'Path2');
+    const template2v2 = new Template('Category2', 'Template2', 'Path2v2');
 
     /**
      * Represents a {@link Plugin} with templates for testing purposes.
@@ -27,7 +28,7 @@ describe('lib/templates/TemplateController.js', () => {
      */
     class PluginWithTemplates extends Plugin {
       get templates() {
-        return [template1, template11, template2];
+        return [template1, template11, template2, template2v2];
       }
     }
 
@@ -52,7 +53,7 @@ describe('lib/templates/TemplateController.js', () => {
       antWithTemplates.templateController._templates
         .get('Category2')
         .get('Template2')
-    ).toEqual(template2);
+    ).toEqual(template2v2);
   });
 
   test('should fail if "ant" param is not passed', () => {
