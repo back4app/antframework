@@ -6,6 +6,7 @@ const yargs = require('yargs');
 const Ant = require('../../../lib/Ant');
 const Plugin = require('../../../lib/plugins/Plugin');
 const PluginController = require('../../../lib/plugins/PluginController');
+const Template = require('../../../lib/templates/Template');
 const Core = require('../../../lib/plugins/core');
 const FooPlugin = require('./FooPlugin');
 const NotAPlugin = require('./NotAPlugin');
@@ -65,6 +66,42 @@ class YargsErrorPlugin extends NameErrorPlugin {
 }
 
 const yargsErrorPlugin = new YargsErrorPlugin(ant);
+
+const template1 = new Template('Category1', 'Template1', 'Path1');
+const template2 = new Template('Category2', 'Template2', 'Path2');
+
+/**
+ * Represents a {@link Plugin} with templates for testing purposes.
+ * @extends Plugin
+ * @private
+ */
+class PluginWithTemplates extends Plugin {
+  get templates() {
+    return [template1, template2];
+  }
+}
+
+/**
+ * Represents a {@link Plugin} that overrides the "templates" member and
+ * throws an Error for testing purposes.
+ * @private
+ */
+class TemplatesErrorPlugin extends NameErrorPlugin {
+  get templates() {
+    throw new Error('Some templates error');
+  }
+}
+
+/**
+ * Represents a {@link Plugin} with a not valid template for testing purposes.
+ * @extends Plugin
+ * @private
+ */
+class PluginWithNotValidTemplate extends Plugin {
+  get templates() {
+    return [template1, {}, template2];
+  }
+}
 
 describe('lib/plugins/PluginController.js', () => {
   test('should export "PluginController" class', () => {
@@ -292,6 +329,79 @@ different to this controller\'s'
       const pluginController = new PluginController(ant);
       expect(() => pluginController.getPluginName({})).toThrowError(
         'Could not get plugin name: param "plugin" should be Plugin'
+      );
+    });
+  });
+
+  describe('PluginController.getPluginTemplates', () => {
+    test('should return the plugin\'s templates', () => {
+      const pluginController = new PluginController(ant, [PluginWithTemplates]);
+      expect(pluginController.plugins).toEqual(expect.any(Array));
+      expect(pluginController.plugins).toHaveLength(1);
+      const pluginTemplates = pluginController.getPluginTemplates(
+        pluginController.plugins[0]
+      );
+      expect(pluginTemplates).toEqual(expect.any(Array));
+      expect(pluginTemplates).toHaveLength(2);
+      expect(pluginTemplates[0]).toEqual(template1);
+      expect(pluginTemplates[1]).toEqual(template2);
+      expect(pluginController.loadingErrors).toEqual(expect.any(Array));
+      expect(pluginController.loadingErrors).toHaveLength(0);
+    });
+
+    test('should store loading error in the case of error', () => {
+      const pluginController = new PluginController(
+        ant, [PluginWithTemplates, TemplatesErrorPlugin]
+      );
+      expect(pluginController.plugins).toEqual(expect.any(Array));
+      expect(pluginController.plugins).toHaveLength(2);
+      expect(pluginController.plugins[0])
+        .toEqual(expect.any(PluginWithTemplates));
+      expect(pluginController.plugins[1])
+        .toEqual(expect.any(TemplatesErrorPlugin));
+      expect(pluginController.getPluginTemplates(pluginController.plugins[1]))
+        .toEqual([]);
+      expect(pluginController.loadingErrors).toEqual(expect.any(Array));
+      expect(pluginController.loadingErrors).toHaveLength(3);
+      expect(pluginController.loadingErrors[0]).toBeInstanceOf(Error);
+      expect(pluginController.loadingErrors[0].message)
+        .toEqual(expect.stringContaining('Some name error'));
+      expect(pluginController.loadingErrors[1]).toBeInstanceOf(Error);
+      expect(pluginController.loadingErrors[1].message)
+        .toEqual(expect.stringContaining('Some name error'));
+      expect(pluginController.loadingErrors[2]).toBeInstanceOf(Error);
+      expect(pluginController.loadingErrors[2].message)
+        .toEqual(expect.stringContaining('Some templates error'));
+    });
+
+    test('should store loading error if contains a not valid Template', () => {
+      const pluginController = new PluginController(
+        ant, [PluginWithTemplates, PluginWithNotValidTemplate]
+      );
+      expect(pluginController.plugins).toEqual(expect.any(Array));
+      expect(pluginController.plugins).toHaveLength(2);
+      expect(pluginController.plugins[0])
+        .toEqual(expect.any(PluginWithTemplates));
+      expect(pluginController.plugins[1])
+        .toEqual(expect.any(PluginWithNotValidTemplate));
+      const pluginTemplates = pluginController.getPluginTemplates(
+        pluginController.plugins[1]
+      );
+      expect(pluginTemplates).toEqual(expect.any(Array));
+      expect(pluginTemplates).toHaveLength(2);
+      expect(pluginTemplates[0]).toEqual(template1);
+      expect(pluginTemplates[1]).toEqual(template2);
+      expect(pluginController.loadingErrors).toEqual(expect.any(Array));
+      expect(pluginController.loadingErrors).toHaveLength(1);
+      expect(pluginController.loadingErrors[0]).toBeInstanceOf(Error);
+      expect(pluginController.loadingErrors[0].message)
+        .toEqual(expect.stringContaining('it is not a Template'));
+    });
+
+    test('should fail if the "plugin" param is not a Plugin instance', () => {
+      const pluginController = new PluginController(ant);
+      expect(() => pluginController.getPluginTemplates({})).toThrowError(
+        'Could not get plugin templates: param "plugin" should be Plugin'
       );
     });
   });

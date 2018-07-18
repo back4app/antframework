@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+
 /**
  * @fileoverview Tests for lib/plugins/core/lib/Core.js file.
  */
@@ -44,13 +46,37 @@ describe('lib/plugins/core/lib/Core.js', () => {
 
   describe('Core.loadYargsSettings', () => {
     test('should load "create" command', (done) => {
+      const originalLog = console.log;
+      console.log = jest.fn();
       const originalExit = process.exit;
       process.exit = jest.fn((code) => {
+        expect(console.log).toHaveBeenCalledWith(
+          expect.stringContaining('Service "MyService" successfully created')
+        );
         expect(code).toEqual(0);
+        console.log = originalLog;
         process.exit = originalExit;
         done();
       });
       (new AntCli())._yargs.parse('create MyService');
+    });
+
+    test('should show friendly errors', (done) => {
+      const originalError = console.error;
+      console.error = jest.fn();
+      const originalExit = process.exit;
+      process.exit = jest.fn((code) => {
+        expect(console.error).toHaveBeenCalledWith(
+          expect.stringContaining(
+            'Could not create service: template "NotExistent" was not found'
+          )
+        );
+        expect(code).toEqual(1);
+        console.error = originalError;
+        process.exit = originalExit;
+        done();
+      });
+      (new AntCli())._yargs.parse('create MyService --template NotExistent');
     });
   });
 
