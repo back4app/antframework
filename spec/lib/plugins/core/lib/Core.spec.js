@@ -9,6 +9,7 @@ const fs = require('fs-extra');
 const AntCli = require('../../../../../lib/cli/AntCli');
 const Ant = require('../../../../../lib/Ant');
 const Plugin = require('../../../../../lib/plugins/Plugin');
+const Template = require('../../../../../lib/templates/Template');
 const Core = require('../../../../../lib/plugins/core/lib/Core');
 
 const ant = new Ant();
@@ -44,6 +45,23 @@ describe('lib/plugins/core/lib/Core.js', () => {
     expect(core.name).toEqual('Core');
   });
 
+  describe('Core.templates', () => {
+    test('should be readonly and return the Default template', () => {
+      const core = new Core(ant);
+      expect(core.templates).toEqual(expect.any(Array));
+      expect(core.templates).toHaveLength(1);
+      expect(core.templates[0]).toEqual(expect.any(Template));
+      expect(core.templates[0].category).toEqual('Service');
+      expect(core.templates[0].name).toEqual('Default');
+      core.templates = [];
+      expect(core.templates).toEqual(expect.any(Array));
+      expect(core.templates).toHaveLength(1);
+      expect(core.templates[0]).toEqual(expect.any(Template));
+      expect(core.templates[0].category).toEqual('Service');
+      expect(core.templates[0].name).toEqual('Default');
+    });
+  });
+
   describe('Core.loadYargsSettings', () => {
     test('should load "create" command', (done) => {
       const originalLog = console.log;
@@ -59,6 +77,38 @@ describe('lib/plugins/core/lib/Core.js', () => {
         done();
       });
       (new AntCli())._yargs.parse('create MyService');
+    });
+
+    test('should have "template" option', (done) => {
+      const originalLog = console.log;
+      console.log = jest.fn();
+      const originalExit = process.exit;
+      process.exit = jest.fn((code) => {
+        expect(console.log).toHaveBeenCalledWith(
+          expect.stringContaining('Service "MyService" successfully created')
+        );
+        expect(code).toEqual(0);
+        console.log = originalLog;
+        process.exit = originalExit;
+        done();
+      });
+      (new AntCli())._yargs.parse('create MyService --template Default');
+    });
+
+    test('should have "t" option alias', (done) => {
+      const originalLog = console.log;
+      console.log = jest.fn();
+      const originalExit = process.exit;
+      process.exit = jest.fn((code) => {
+        expect(console.log).toHaveBeenCalledWith(
+          expect.stringContaining('Service "MyService" successfully created')
+        );
+        expect(code).toEqual(0);
+        console.log = originalLog;
+        process.exit = originalExit;
+        done();
+      });
+      (new AntCli())._yargs.parse('create MyService -t Default');
     });
 
     test('should show friendly errors', (done) => {
@@ -99,11 +149,22 @@ describe('lib/plugins/core/lib/Core.js', () => {
   });
 
   describe('Core.createService', () => {
-    test('should be async', async () => {
-      const core = new Core(ant);
-      const createServiceReturn = core.createService();
-      expect(createServiceReturn).toBeInstanceOf(Promise);
-    });
+    test(
+      'should be async and render template with sanitized path',
+      async () => {
+        const core = new Core(ant);
+        const originalRender = core.templates[0].render;
+        core.templates[0].render = jest.fn();
+        const createServiceReturn = core.createService('a-b!c$d');
+        expect(createServiceReturn).toBeInstanceOf(Promise);
+        await createServiceReturn;
+        expect(core.templates[0].render).toHaveBeenCalledWith(
+          expect.stringContaining('a-b-c-d'),
+          {service: 'a-b!c$d'}
+        );
+        core.templates[0].render = originalRender;
+      }
+    );
 
     test('should fail if name and template params are not String', async () => {
       expect.hasAssertions();
