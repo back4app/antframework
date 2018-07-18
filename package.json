@@ -1,7 +1,25 @@
 {
   "name": "@back4app/antframework",
   "version": "1.0.0",
-  "description": "Ant Framework",
+  "engines": {
+    "node": ">=10.6"
+  },
+  "preferGlobal": true,
+  "description": "Ant Framework - Serverless microservices made easy",
+  "keywords": [
+    "microservices",
+    "serverless",
+    "api",
+    "graphql"
+  ],
+  "files": [
+    "bin",
+    "lib",
+    "index.js",
+    "LICENSE",
+    "package-lock.json",
+    "package.json"
+  ],
   "main": "index.js",
   "scripts": {
     "lint": "eslint ./",
@@ -18,7 +36,7 @@
     "url": "git+https://github.com/back4app/antframework.git"
   },
   "author": "Back4App Inc.",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/back4app/antframework/issues"
   },
