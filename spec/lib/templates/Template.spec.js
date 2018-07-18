@@ -88,5 +88,14 @@ describe('lib/templates/Template.js', () => {
         'Could not render template: param "outPath" should be String'
       );
     });
+
+    test('should fail if outPath already exists', () => {
+      const outPath = path.resolve(__dirname, '../../support/out');
+      fs.mkdirSync(outPath);
+      expect(template.render(outPath)).rejects.toThrowError(
+        `Could not render template: path "${outPath}" already exists`
+      );
+      fs.removeSync(outPath);
+    });
   });
 });
