@@ -8,8 +8,8 @@ const Plugin = require('../../../lib/plugins/Plugin');
 const PluginController = require('../../../lib/plugins/PluginController');
 const Template = require('../../../lib/templates/Template');
 const Core = require('../../../lib/plugins/core');
-const FooPlugin = require('./FooPlugin');
-const NotAPlugin = require('./NotAPlugin');
+const FooPlugin = require('../../support/plugins/FooPlugin');
+const NotAPlugin = require('../../support/plugins/NotAPlugin');
 
 const ant = new Ant();
 const plugin = new Plugin(ant);
@@ -134,7 +134,7 @@ describe('lib/plugins/PluginController.js', () => {
   test('should initialize with plugin array and without errors', () => {
     const pluginController = new PluginController(ant, [
       './core',
-      ['../../spec/lib/plugins/FooPlugin', { a: 1, b: 2, c: 3}],
+      ['../../spec/support/plugins/FooPlugin', { a: 1, b: 2, c: 3}],
       MyPlugin,
       [MyOtherPlugin, { a: 4, b: 5, c: 6}],
       plugin
@@ -166,10 +166,10 @@ describe('lib/plugins/PluginController.js', () => {
   test('should not load plugin if it does not resolve', () => {
     const pluginController = new PluginController(ant, [
       './core',
-      ['../../spec/lib/plugins/FooPlugin', { a: 1, b: 2, c: 3}],
+      ['../../spec/support/plugins/FooPlugin', { a: 1, b: 2, c: 3}],
       plugin,
       'InexistentFooPlugin',
-      '../../spec/lib/plugins/NotAPlugin',
+      '../../spec/support/plugins/NotAPlugin',
       {}
     ]);
 
@@ -215,7 +215,7 @@ describe('lib/plugins/PluginController.js', () => {
   test('should use second load if plugin is loaded twice', () => {
     const fooPlugin = new FooPlugin(ant);
     const pluginController = new PluginController(ant, [
-      '../../spec/lib/plugins/FooPlugin',
+      '../../spec/support/plugins/FooPlugin',
       fooPlugin
     ]);
     expect(pluginController.plugins).toEqual(expect.any(Array));
@@ -262,7 +262,7 @@ different to this controller\'s'
   describe('PluginController.plugins', () => {
     test('should be readonly', () => {
       const pluginController = new PluginController(ant, [
-        '../../spec/lib/plugins/FooPlugin',
+        '../../spec/support/plugins/FooPlugin',
         new FooPlugin(ant)
       ]);
       expect(pluginController.plugins).toEqual(expect.any(Array));
@@ -278,7 +278,7 @@ different to this controller\'s'
   describe('PluginController.loadingErrors', () => {
     test('should be readonly', () => {
       const pluginController = new PluginController(ant, [
-        '../../spec/lib/plugins/FooPlugin',
+        '../../spec/support/plugins/FooPlugin',
         new NotAPlugin()
       ]);
       expect(pluginController.loadingErrors).toEqual(expect.any(Array));
