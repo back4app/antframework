@@ -259,6 +259,15 @@ different to this controller\'s'
       ));
   });
 
+  describe('PluginController.ant', () => {
+    test('should be readonly', () => {
+      const pluginController = new PluginController(ant);
+      expect(pluginController.ant).toEqual(ant);
+      pluginController.ant = new Ant();
+      expect(pluginController.ant).toEqual(ant);
+    });
+  });
+
   describe('PluginController.plugins', () => {
     test('should be readonly', () => {
       const pluginController = new PluginController(ant, [
