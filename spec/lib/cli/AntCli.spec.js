@@ -7,6 +7,7 @@
 const path = require('path');
 const YError = require('yargs/lib/yerror');
 const AntCli = require('../../../lib/cli/AntCli');
+const logger = require('../../../lib/util/logger');
 
 describe('lib/cli/AntCli.js', () => {
   test('should export "AntCli" class with "execute" method', () => {
@@ -158,6 +159,29 @@ describe('lib/cli/AntCli.js', () => {
         expect(console.error.mock.calls[0][0]).toContain(
           'Not enough arguments following: '
         );
+      } catch (e) {
+        throw e;
+      } finally {
+        process.exit = originalExit;
+        console.error = originalError;
+      }
+    }
+  );
+
+  test(
+    'should attach console.log to logger handlers when using --verbose option',
+    () => {
+      expect.hasAssertions();
+      const originalExit = process.exit;
+      process.exit = jest.fn();
+      const originalError = console.error;
+      console.error = jest.fn();
+      try {
+        (new AntCli())._yargs.parse('foo --verbose');
+        expect(process.exit).toHaveBeenCalledWith(1);
+        expect(logger._handlers).toEqual(expect.any(Set));
+        expect(logger._handlers.size).toEqual(1);
+        expect(Array.from(logger._handlers.values())[0]).toEqual(console.log);
       } catch (e) {
         throw e;
       } finally {

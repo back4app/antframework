@@ -5,6 +5,9 @@
 const index = require('../');
 const Ant = require('../lib/Ant');
 const Plugin = require('../lib/plugins/Plugin');
+const Template = require('../lib/templates/Template');
+const Core = require('../lib/plugins/core/lib/Core');
+const util = require('../lib/util');
 
 describe('index.js', () => {
   test('should export "Ant" class', () => {
@@ -16,6 +19,24 @@ describe('index.js', () => {
   test('should export "Plugin" class', () => {
     expect(index.Plugin).toEqual(
       Plugin
+    );
+  });
+
+  test('should export "Template" class', () => {
+    expect(index.Template).toEqual(
+      Template
+    );
+  });
+
+  test('should export "Core" class', () => {
+    expect(index.Core).toEqual(
+      Core
+    );
+  });
+
+  test('should export "util" module', () => {
+    expect(index.util).toEqual(
+      util
     );
   });
 });
