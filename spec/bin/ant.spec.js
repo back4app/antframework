@@ -24,7 +24,7 @@ async function _expectUsageInstructions(args) {
   );
   expect(stdout).not.toBeNull();
   expect(stdout.split('\n')[0]).toEqual(
-    'Usage: ant.js [--help] [--version] <command> [<args>] [<options>]'
+    'Usage: ant.js [--help] [--version] [--verbose] <command> [<args>] [<options>]'
   );
   expect(stdout).toContain(`Commands:
   ant.js create <service> [--template       Create a new service
@@ -33,7 +33,10 @@ async function _expectUsageInstructions(args) {
     '--help, -h     Show help                                             [boolean]'
   );
   expect(stdout).toContain(
-    '--version, -v  Show version number                                   [boolean]'
+    '--version      Show version number                                   [boolean]'
+  );
+  expect(stdout).toContain(
+    '--verbose, -v  Show execution logs and error stacks [boolean] [default: false]'
   );
   expect(stdout).toContain(`Plugins:
   Core`);
@@ -195,12 +198,14 @@ ant.js --help [command]`
     () => _expectPackageVersion('--version')
   );
 
-  test('should have -v alias', () => _expectPackageVersion('-v'));
-
   test(
     'should print version with any command',
-    () => _expectPackageVersion('-v foo')
+    () => _expectPackageVersion('--version foo')
   );
+
+  test('should have --verbose option', () => _expectUsageInstructions('--verbose'));
+
+  test('should have -v alias', () => _expectUsageInstructions('-v'));
 
   describe('Core plugin', () => {
     describe('create command', () => {
@@ -227,8 +232,9 @@ Create a new service
 
 Options:
   --help, -h      Show help                                            [boolean]
-  --version, -v   Show version number                                  [boolean]
-  --template, -t  Specify the template to be used for the new service
+  --version       Show version number                                  [boolean]
+  --verbose, -v   Show execution logs and error stacks[boolean] [default: false]
+  --template, -t  Specify the template for the new service
                                                    [string] [default: "Default"]
 `
         )

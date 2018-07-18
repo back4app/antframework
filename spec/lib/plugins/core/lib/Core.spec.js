@@ -78,6 +78,24 @@ describe('lib/plugins/core/lib/Core.js', () => {
       });
       (new AntCli())._yargs.parse('create MyService --template NotExistent');
     });
+
+    test('should show error stack in verbose mode', (done) => {
+      const originalError = console.error;
+      console.error = jest.fn();
+      const originalExit = process.exit;
+      process.exit = jest.fn((code) => {
+        expect(console.error).toHaveBeenCalledWith(
+          expect.stringContaining(
+            'Error stack:'
+          )
+        );
+        expect(code).toEqual(1);
+        console.error = originalError;
+        process.exit = originalExit;
+        done();
+      });
+      (new AntCli())._yargs.parse('create -v MyService --template NotExistent');
+    });
   });
 
   describe('Core.createService', () => {
