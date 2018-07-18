@@ -55,20 +55,21 @@ describe('lib/templates/Template.js', () => {
 
   describe('Template.render', () => {
     test('should render a template', async () => {
-      const outPath = path.resolve(__dirname, 'out');
+      const outPath = path.resolve(__dirname, '../../support/out');
       try {
         fs.removeSync(outPath);
       } finally {
         const template = new Template(
           'FooCategory',
           'FooTemplate',
-          path.resolve(__dirname, 'fooTemplate')
+          path.resolve(__dirname, '../../support/fooTemplate')
         );
         await template.render(
           outPath,
           { fooData: 'fooValue' }
         );
-        expect(fs.readdirSync(__dirname)).toContain('out');
+        expect(fs.readdirSync(path.resolve(__dirname, '../../support')))
+          .toContain('out');
         const outDir = fs.readdirSync(outPath);
         expect(outDir).toContain('mustacheFile.txt');
         expect(outDir).toContain('notAMustacheFile.txt');
