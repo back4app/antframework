@@ -62,7 +62,7 @@ describe('lib/templates/Template.js', () => {
         const template = new Template(
           'FooCategory',
           'FooTemplate',
-          path.resolve(__dirname, '../../support/fooTemplate')
+          path.resolve(__dirname, '../../support/templates/fooTemplate')
         );
         await template.render(
           outPath,
