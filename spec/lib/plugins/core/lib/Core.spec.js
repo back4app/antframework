@@ -6,6 +6,8 @@
 
 const path = require('path');
 const fs = require('fs-extra');
+const yaml = require('js-yaml');
+const { makeExecutableSchema } = require('graphql-tools');
 const AntCli = require('../../../../../lib/cli/AntCli');
 const Ant = require('../../../../../lib/Ant');
 const Plugin = require('../../../../../lib/plugins/Plugin');
@@ -59,6 +61,29 @@ describe('lib/plugins/core/lib/Core.js', () => {
       expect(core.templates[0]).toEqual(expect.any(Template));
       expect(core.templates[0].category).toEqual('Service');
       expect(core.templates[0].name).toEqual('Default');
+    });
+
+    describe('Service templates', () => {
+      describe('Default template', () => {
+        test('Should be rendered by createService', async () => {
+          const outPath = await (new Core(new Ant())).createService(
+            'MyService',
+            'Default'
+          );
+          expect(fs.readdirSync(outPath)).toEqual(['ant.yml', 'model.graphql']);
+          expect(
+            yaml.safeLoad(
+              fs.readFileSync(path.resolve(outPath, 'ant.yml'), 'utf8')
+            ).service
+          ).toEqual('MyService');
+          makeExecutableSchema({
+            typeDefs: fs.readFileSync(
+              path.resolve(outPath, 'model.graphql'),
+              'utf8'
+            )
+          });
+        });
+      });
     });
   });
 

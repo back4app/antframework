@@ -1,18 +1,21 @@
 # The main schema
 schema {
   query: Query
-  mutation: Mutation
-  subscription: Subscription
+  # Uncomment the line below to start designing mutations
+  # mutation: Mutation
+  # Uncomment the line below to start designing subscriptions
+  # subscription: Subscription
 }
 
 # Design your queries in the Query type below
 type Query {
+  hello: String
 }
 
 # Design your mutations in the Mutation type below
-type Mutation {
-}
+# type Mutation {
+# }
 
 # Design your subscriptions in the Subscription type below
-type Subscription {
-}
+# type Subscription {
+# }
