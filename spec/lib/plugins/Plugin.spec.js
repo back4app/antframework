@@ -4,6 +4,7 @@
 
 const Ant = require('../../../lib/Ant');
 const Plugin = require('../../../lib/plugins/Plugin');
+const Template = require('../../../lib/templates/Template');
 
 const ant = new Ant();
 const plugin = new Plugin(ant);
@@ -50,6 +51,14 @@ describe('lib/plugins/Plugin.js', () => {
     });
   });
 
+  describe('Plugin.ant', () => {
+    test('should be readonly', () => {
+      expect(plugin.ant).toEqual(ant);
+      plugin.ant = new Ant();
+      expect(plugin.ant).toEqual(ant);
+    });
+  });
+
   describe('Plugin.name', () => {
     test('should return the default name if not overriden', () => {
       expect(plugin.name).toEqual(Plugin.GetPluginDefaultName(plugin));
@@ -63,6 +72,18 @@ describe('lib/plugins/Plugin.js', () => {
       expect(plugin.name).toEqual('Plugin');
       plugin.name = 'Foo';
       expect(plugin.name).toEqual('Plugin');
+    });
+  });
+
+  describe('Plugin.templates', () => {
+    test('should be readonly', () => {
+      expect(plugin.templates).toEqual([]);
+      plugin.templates = [new Template(
+        'FooCategory',
+        'FooTemplate',
+        'FooPath'
+      )];
+      expect(plugin.templates).toEqual([]);
     });
   });
 
