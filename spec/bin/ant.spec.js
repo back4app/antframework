@@ -1,8 +1,10 @@
 /**
  * @fileoverview Tests for bin/ant.js file.
+ * TODO: Improve error messages of createService command.
  */
 
 const path = require('path');
+const fs = require('fs-extra');
 const util = require('util');
 const exec = util.promisify(require('child_process').exec);
 const AntCli = require('../../lib/cli/AntCli');
@@ -59,7 +61,7 @@ async function _expectErrorMessage(args, errorMessage) {
     const { code, stdout, stderr } = e;
     expect(code).toEqual(1);
     expect(stdout).toEqual('');
-    expect(stderr).toEqual(`${errorMessage}\n`);
+    expect(stderr).toContain(`${errorMessage}\n`);
   }
 }
 
@@ -73,7 +75,7 @@ async function _expectErrorMessage(args, errorMessage) {
  */
 async function _expectSuccessMessage(args, successMessage) {
   const { stdout, stderr } = await exec(`${binPath}${args ? ` ${args}` : ''}`);
-  expect(stdout).toEqual(successMessage);
+  expect(stdout).toContain(successMessage);
   expect(stderr).toEqual('');
 }
 
@@ -92,6 +94,29 @@ async function _expectPackageVersion(args) {
 }
 
 describe('bin/ant.js', () => {
+  const originalCwd = process.cwd();
+  const outPath = path.resolve(__dirname, 'out');
+
+  beforeEach(() => {
+    try {
+      fs.removeSync(outPath);
+    } finally {
+      try {
+        fs.mkdirSync(outPath);
+      } finally {
+        process.chdir(outPath);
+      }
+    }
+  });
+
+  afterEach(() => {
+    try {
+      fs.removeSync(outPath);
+    } finally {
+      process.chdir(originalCwd);
+    }
+  });
+
   test(
     'should print usage instructions when called with no commands nor options',
     () => _expectUsageInstructions(null)
@@ -187,8 +212,8 @@ ant.js --help [command]`
       test(
         'should work with "service" arg and "--template" option',
         () => _expectSuccessMessage(
-          'create MyService --template MyTemplate',
-          ''
+          'create MyService --template Default',
+          'Service "MyService" successfully created'
         )
       );
 

@@ -3,7 +3,7 @@
  */
 
 const path = require('path');
-const fs = require('fs');
+const fs = require('fs-extra');
 const AntCli = require('../../../../../lib/cli/AntCli');
 const Ant = require('../../../../../lib/Ant');
 const Plugin = require('../../../../../lib/plugins/Plugin');
@@ -12,6 +12,29 @@ const Core = require('../../../../../lib/plugins/core/lib/Core');
 const ant = new Ant();
 
 describe('lib/plugins/core/lib/Core.js', () => {
+  const originalCwd = process.cwd();
+  const outPath = path.resolve(__dirname, 'out');
+
+  beforeEach(() => {
+    try {
+      fs.removeSync(outPath);
+    } finally {
+      try {
+        fs.mkdirSync(outPath);
+      } finally {
+        process.chdir(outPath);
+      }
+    }
+  });
+
+  afterEach(() => {
+    try {
+      fs.removeSync(outPath);
+    } finally {
+      process.chdir(originalCwd);
+    }
+  });
+
   test('should export "Core" class extending "Plugin" class', () => {
     const core = new Core(ant);
     expect(core.constructor.name).toEqual('Core');
@@ -21,12 +44,9 @@ describe('lib/plugins/core/lib/Core.js', () => {
 
   describe('Core.loadYargsSettings', () => {
     test('should load "create" command', (done) => {
-      const originalCwd = process.cwd();
-      process.chdir(path.resolve(__dirname, '../'));
       const originalExit = process.exit;
       process.exit = jest.fn((code) => {
         expect(code).toEqual(0);
-        process.chdir(originalCwd);
         process.exit = originalExit;
         done();
       });
@@ -63,7 +83,7 @@ describe('lib/plugins/core/lib/Core.js', () => {
       const core = new Core(ant);
       fs.mkdirSync('MyService');
       expect(core.createService('MyService')).rejects.toThrow(
-        'Could not create service: path'
+        'Could not render template: path'
       );
       fs.rmdirSync('MyService');
     });

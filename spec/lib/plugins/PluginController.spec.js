@@ -175,19 +175,17 @@ describe('lib/plugins/PluginController.js', () => {
     }
   );
 
-  test('should not load plugin twice', () => {
+  test('should use second load if plugin is loaded twice', () => {
+    const fooPlugin = new FooPlugin(ant);
     const pluginController = new PluginController(ant, [
       '../../spec/lib/plugins/FooPlugin',
-      new FooPlugin(ant)
+      fooPlugin
     ]);
     expect(pluginController.plugins).toEqual(expect.any(Array));
     expect(pluginController.plugins).toHaveLength(1);
-    expect(pluginController.plugins[0]).toBeInstanceOf(FooPlugin);
+    expect(pluginController.plugins[0]).toEqual(fooPlugin);
     expect(pluginController.loadingErrors).toEqual(expect.any(Array));
-    expect(pluginController.loadingErrors).toHaveLength(1);
-    expect(pluginController.loadingErrors[0]).toBeInstanceOf(Error);
-    expect(pluginController.loadingErrors[0].message)
-      .toEqual(expect.stringContaining('Plugin FooPlugin is already loaded'));
+    expect(pluginController.loadingErrors).toHaveLength(0);
   });
 
   test('should not load plugin with initialization error', () => {
@@ -244,19 +242,23 @@ different to this controller\'s'
     test('should be readonly', () => {
       const pluginController = new PluginController(ant, [
         '../../spec/lib/plugins/FooPlugin',
-        new FooPlugin(ant)
+        new NotAPlugin()
       ]);
       expect(pluginController.loadingErrors).toEqual(expect.any(Array));
       expect(pluginController.loadingErrors).toHaveLength(1);
       expect(pluginController.loadingErrors[0]).toBeInstanceOf(Error);
       expect(pluginController.loadingErrors[0].message)
-        .toEqual(expect.stringContaining('Plugin FooPlugin is already loaded'));
+        .toEqual(expect.stringContaining(
+          'Could not load plugin: param "plugin" should be String or Plugin'
+        ));
       pluginController.loadingErrors = [];
       expect(pluginController.loadingErrors).toEqual(expect.any(Array));
       expect(pluginController.loadingErrors).toHaveLength(1);
       expect(pluginController.loadingErrors[0]).toBeInstanceOf(Error);
       expect(pluginController.loadingErrors[0].message)
-        .toEqual(expect.stringContaining('Plugin FooPlugin is already loaded'));
+        .toEqual(expect.stringContaining(
+          'Could not load plugin: param "plugin" should be String or Plugin'
+        ));
     });
   });
 

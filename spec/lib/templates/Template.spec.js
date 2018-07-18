@@ -4,7 +4,7 @@
 
 const Template = require('../../../lib/templates/Template');
 
-const template = new Template('FooCategory', 'FooTemplate');
+const template = new Template('FooCategory', 'FooTemplate', __dirname);
 
 describe('lib/templates/Template.js', () => {
   test('should export "Template" class', () => {
