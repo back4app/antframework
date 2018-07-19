@@ -18,14 +18,18 @@ const ant = new Ant();
 
 describe('lib/plugins/core/lib/Core.js', () => {
   const originalCwd = process.cwd();
-  const outPath = path.resolve(__dirname, 'out');
+  const outPath = path.resolve(
+    __dirname,
+    '../../../../support/out/lib/plugins/core/lib/Core.js',
+    'out' + Math.floor(Math.random() * 1000)
+  );
 
   beforeEach(() => {
     try {
       fs.removeSync(outPath);
     } finally {
       try {
-        fs.mkdirSync(outPath);
+        fs.ensureDirSync(outPath);
       } finally {
         process.chdir(outPath);
       }

@@ -55,7 +55,12 @@ describe('lib/templates/Template.js', () => {
 
   describe('Template.render', () => {
     test('should render a template', async () => {
-      const outPath = path.resolve(__dirname, '../../support/out');
+      const outPath = path.resolve(
+        __dirname,
+        '../../support/out/lib/templates/Template.js',
+        'out' + Math.floor(Math.random() * 1000)
+      );
+      fs.ensureDirSync('../../support/out/lib/templates/Template.js');
       try {
         fs.removeSync(outPath);
       } finally {
@@ -90,8 +95,12 @@ describe('lib/templates/Template.js', () => {
     });
 
     test('should fail if outPath already exists', () => {
-      const outPath = path.resolve(__dirname, '../../support/out');
-      fs.mkdirSync(outPath);
+      const outPath = path.resolve(
+        __dirname,
+        '../../support/out/lib/templates/Template.js',
+        'out' + Math.floor(Math.random() * 1000)
+      );
+      fs.ensureDirSync(outPath);
       expect(template.render(outPath)).rejects.toThrowError(
         `Could not render template: path "${outPath}" already exists`
       );

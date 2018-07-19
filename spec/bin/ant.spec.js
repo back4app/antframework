@@ -98,14 +98,18 @@ async function _expectPackageVersion(args) {
 
 describe('bin/ant.js', () => {
   const originalCwd = process.cwd();
-  const outPath = path.resolve(__dirname, 'out');
+  const outPath = path.resolve(
+    __dirname,
+    '../support/out/bin/ant.js',
+    'out' + Math.floor(Math.random() * 1000)
+  );
 
   beforeEach(() => {
     try {
       fs.removeSync(outPath);
     } finally {
       try {
-        fs.mkdirSync(outPath);
+        fs.ensureDirSync(outPath);
       } finally {
         process.chdir(outPath);
       }
@@ -133,7 +137,7 @@ describe('bin/ant.js', () => {
   test('should load local config', async () => {
     const { stdout, stderr } = await exec(
       binPath,
-      { cwd: path.resolve(__dirname, 'notAPluginConfig')}
+      { cwd: path.resolve(__dirname, '../support/configs/notAPluginConfig')}
     );
     expect(stdout).not.toBeNull();
     expect(stdout).toContain('Plugins:');
@@ -144,7 +148,7 @@ describe('bin/ant.js', () => {
   test('should print plugin load error', async () => {
     const { stdout, stderr } = await exec(
       binPath,
-      { cwd: path.resolve(__dirname, 'notAPluginConfig')}
+      { cwd: path.resolve(__dirname, '../support/configs/notAPluginConfig')}
     );
     expect(stdout).not.toBeNull();
     expect(stdout).toContain(

@@ -39,7 +39,10 @@ describe('lib/cli/AntCli.js', () => {
     const originalLog = console.log;
     console.log = jest.fn();
     const originalCwd = process.cwd();
-    process.chdir(path.resolve(__dirname, '../../bin/notAPluginConfig'));
+    process.chdir(path.resolve(
+      __dirname,
+      '../../support/configs/notAPluginConfig'
+    ));
     try {
       (new AntCli()).execute();
       expect(process.exit).toHaveBeenCalledWith(0);
@@ -59,7 +62,10 @@ describe('lib/cli/AntCli.js', () => {
     const originalLog = console.log;
     console.log = jest.fn();
     const originalCwd = process.cwd();
-    process.chdir(path.resolve(__dirname, '../../bin/noPluginsConfig'));
+    process.chdir(path.resolve(
+      __dirname,
+      '../../support/configs/noPluginsConfig'
+    ));
     try {
       (new AntCli()).execute();
       expect(process.exit).toHaveBeenCalledWith(0);
@@ -75,7 +81,10 @@ describe('lib/cli/AntCli.js', () => {
 
   test('should not load invalid config', () => {
     const originalCwd = process.cwd();
-    process.chdir(path.resolve(__dirname, '../../bin/invalidConfig'));
+    process.chdir(path.resolve(
+      __dirname,
+      '../../support/configs/invalidConfig'
+    ));
     try {
       expect(() => new AntCli()).toThrowError('Could not load config');
     } catch (e) {
