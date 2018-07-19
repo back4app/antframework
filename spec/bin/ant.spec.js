@@ -1,7 +1,6 @@
 /**
  * @fileoverview Tests for bin/ant.js file.
- * TODO: Improve error messages of createService command (add note about
- * --verbose option)
+ * TODO: Improve error messages of createService command
  */
 
 const path = require('path');
