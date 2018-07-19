@@ -5,6 +5,7 @@
 const Ant = require('../../lib/Ant');
 const Plugin = require('../../lib/plugins/Plugin');
 const PluginController = require('../../lib/plugins/PluginController');
+const TemplateController = require('../../lib/templates/TemplateController');
 const Core = require('../../lib/plugins/core');
 
 describe('lib/Ant.js', () => {
@@ -57,6 +58,19 @@ describe('lib/Ant.js', () => {
       expect(ant.pluginController.plugins).toEqual(expect.any(Array));
       expect(ant.pluginController.plugins).toHaveLength(1);
       expect(ant.pluginController.plugins[0]).toBeInstanceOf(Core);
+    });
+  });
+
+  describe('Ant.templateController', () => {
+    test('should be readonly', () => {
+      const ant = new Ant();
+      expect(ant.templateController).toBeInstanceOf(TemplateController);
+      expect(ant.templateController.getTemplate('Service', 'Default').name)
+        .toEqual('Default');
+      ant.pluginController = null;
+      expect(ant.templateController).toBeInstanceOf(TemplateController);
+      expect(ant.templateController.getTemplate('Service', 'Default').name)
+        .toEqual('Default');
     });
   });
 
