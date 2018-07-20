@@ -9,3 +9,9 @@ coverage
 
 # tests output
 spec/support/out
+
+# webstorm files
+.idea/*
+
+# visual studio code files
+.vscode/*
