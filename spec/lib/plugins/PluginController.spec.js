@@ -208,7 +208,7 @@ describe('lib/plugins/PluginController.js', () => {
       expect(pluginController.loadingErrors).toHaveLength(1);
       expect(pluginController.loadingErrors[0]).toBeInstanceOf(Error);
       expect(pluginController.loadingErrors[0].message)
-        .toEqual(expect.stringContaining('Some name error'));
+        .toEqual(expect.stringContaining('Could not get plugin name'));
     }
   );
 
@@ -331,7 +331,7 @@ different to this controller\'s'
       expect(pluginController.loadingErrors).toHaveLength(1);
       expect(pluginController.loadingErrors[0]).toBeInstanceOf(Error);
       expect(pluginController.loadingErrors[0].message)
-        .toEqual(expect.stringContaining('Some name error'));
+        .toEqual(expect.stringContaining('Could not get plugin name'));
     });
 
     test('should fail if the "plugin" param is not a Plugin instance', () => {
@@ -374,13 +374,14 @@ different to this controller\'s'
       expect(pluginController.loadingErrors).toHaveLength(3);
       expect(pluginController.loadingErrors[0]).toBeInstanceOf(Error);
       expect(pluginController.loadingErrors[0].message)
-        .toEqual(expect.stringContaining('Some name error'));
+        .toEqual(expect.stringContaining('Could not get plugin name'));
       expect(pluginController.loadingErrors[1]).toBeInstanceOf(Error);
       expect(pluginController.loadingErrors[1].message)
-        .toEqual(expect.stringContaining('Some name error'));
+        .toEqual(expect.stringContaining('ould not get plugin name'));
       expect(pluginController.loadingErrors[2]).toBeInstanceOf(Error);
       expect(pluginController.loadingErrors[2].message)
-        .toEqual(expect.stringContaining('Some templates error'));
+        .toEqual(expect.stringContaining('Could not get "TemplatesErrorPlugin" \
+plugin templates'));
     });
 
     test('should store loading error if contains a not valid Template', () => {
@@ -430,10 +431,11 @@ different to this controller\'s'
       expect(pluginController.loadingErrors).toHaveLength(2);
       expect(pluginController.loadingErrors[0]).toBeInstanceOf(Error);
       expect(pluginController.loadingErrors[0].message)
-        .toEqual(expect.stringContaining('Some name error'));
+        .toEqual(expect.stringContaining('ould not get plugin name'));
       expect(pluginController.loadingErrors[1]).toBeInstanceOf(Error);
       expect(pluginController.loadingErrors[1].message)
-        .toEqual(expect.stringContaining('Some yargs error'));
+        .toEqual(expect.stringContaining('Could not load "YargsErrorPlugin" \
+plugin\'s Yargs settings'));
     });
 
     test('should fail if the "plugin" param is not a Plugin instance', () => {
