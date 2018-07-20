@@ -2,6 +2,7 @@
  * @fileoverview Tests for lib/plugins/PluginController.js file.
  */
 
+const { AssertionError } = require('assert');
 const yargs = require('yargs');
 const Ant = require('../../../lib/Ant');
 const Plugin = require('../../../lib/plugins/Plugin');
@@ -186,10 +187,10 @@ describe('lib/plugins/PluginController.js', () => {
     expect(pluginController.loadingErrors[0]).toBeInstanceOf(Error);
     expect(pluginController.loadingErrors[0].message)
       .toEqual(expect.stringContaining('InexistentFooPlugin'));
-    expect(pluginController.loadingErrors[1]).toBeInstanceOf(Error);
+    expect(pluginController.loadingErrors[1]).toBeInstanceOf(AssertionError);
     expect(pluginController.loadingErrors[1].message)
       .toEqual(expect.stringContaining('NotAPlugin'));
-    expect(pluginController.loadingErrors[2]).toBeInstanceOf(Error);
+    expect(pluginController.loadingErrors[2]).toBeInstanceOf(AssertionError);
     expect(pluginController.loadingErrors[2].message)
       .toEqual(expect.stringContaining(
         'Could not load plugin: param "plugin" should be String or Plugin'
@@ -237,7 +238,7 @@ describe('lib/plugins/PluginController.js', () => {
     expect(pluginController.loadingErrors[0]).toBeInstanceOf(Error);
     expect(pluginController.loadingErrors[0].message)
       .toEqual(expect.stringContaining('Some initialization error'));
-    expect(pluginController.loadingErrors[1]).toBeInstanceOf(Error);
+    expect(pluginController.loadingErrors[1]).toBeInstanceOf(AssertionError);
     expect(pluginController.loadingErrors[1].message)
       .toEqual(expect.stringContaining('it should be Plugin'));
   });
@@ -251,7 +252,7 @@ describe('lib/plugins/PluginController.js', () => {
     expect(pluginController.plugins).toHaveLength(0);
     expect(pluginController.loadingErrors).toEqual(expect.any(Array));
     expect(pluginController.loadingErrors).toHaveLength(1);
-    expect(pluginController.loadingErrors[0]).toBeInstanceOf(Error);
+    expect(pluginController.loadingErrors[0]).toBeInstanceOf(AssertionError);
     expect(pluginController.loadingErrors[0].message)
       .toEqual(expect.stringContaining(
         'Could not load plugin: the framework used to initilize the plugin is \
@@ -292,7 +293,7 @@ different to this controller\'s'
       ]);
       expect(pluginController.loadingErrors).toEqual(expect.any(Array));
       expect(pluginController.loadingErrors).toHaveLength(1);
-      expect(pluginController.loadingErrors[0]).toBeInstanceOf(Error);
+      expect(pluginController.loadingErrors[0]).toBeInstanceOf(AssertionError);
       expect(pluginController.loadingErrors[0].message)
         .toEqual(expect.stringContaining(
           'Could not load plugin: param "plugin" should be String or Plugin'
@@ -300,7 +301,7 @@ different to this controller\'s'
       pluginController.loadingErrors = [];
       expect(pluginController.loadingErrors).toEqual(expect.any(Array));
       expect(pluginController.loadingErrors).toHaveLength(1);
-      expect(pluginController.loadingErrors[0]).toBeInstanceOf(Error);
+      expect(pluginController.loadingErrors[0]).toBeInstanceOf(AssertionError);
       expect(pluginController.loadingErrors[0].message)
         .toEqual(expect.stringContaining(
           'Could not load plugin: param "plugin" should be String or Plugin'

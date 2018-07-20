@@ -101,7 +101,7 @@ describe('lib/Ant.js', () => {
     });
 
     test(
-      'should fail if Core plugin does not have createService method',
+      'should fail if Core plugin createService method fails',
       async () => {
         expect.hasAssertions();
         /**
@@ -109,9 +109,13 @@ describe('lib/Ant.js', () => {
          * for testing purposes.
          * @private
          */
-        class FakeCore extends Plugin {
+        class FakeCore extends Core {
           get name() {
             return 'Core';
+          }
+
+          createService() {
+            throw new Error('Some create service error');
           }
         }
         const ant = new Ant({ plugins: [FakeCore] });

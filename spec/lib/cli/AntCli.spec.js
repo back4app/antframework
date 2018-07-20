@@ -94,6 +94,34 @@ describe('lib/cli/AntCli.js', () => {
     }
   });
 
+  test('should show stack when using --verbose option', () => {
+    const originalArgv = process.argv;
+    process.argv.push('--verbose');
+    const originalExit = process.exit;
+    process.exit = jest.fn();
+    const originalLog = console.log;
+    console.log = jest.fn();
+    const originalCwd = process.cwd();
+    process.chdir(path.resolve(
+      __dirname,
+      '../../support/configs/notAPluginConfig'
+    ));
+    try {
+      (new AntCli())._yargs.parse('--verbose');
+      expect(process.exit).toHaveBeenCalledWith(0);
+      expect(console.log.mock.calls[0][0]).toContain(
+        'at PluginController._loadPlugin'
+      );
+    } catch (e) {
+      throw e;
+    } finally {
+      process.argv = originalArgv;
+      process.exit = originalExit;
+      console.log = originalLog;
+      process.chdir(originalCwd);
+    }
+  });
+
   test(
     'should print error when calling with an inexistent command',
     () => {
