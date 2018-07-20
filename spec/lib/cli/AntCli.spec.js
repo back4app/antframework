@@ -16,7 +16,7 @@ describe('lib/cli/AntCli.js', () => {
     expect(antCli.execute).toEqual(expect.any(Function));
   });
 
-  test('should load default config', () => {
+  test('should load global config', () => {
     const originalExit = process.exit;
     process.exit = jest.fn();
     const originalLog = console.log;

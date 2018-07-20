@@ -23,7 +23,7 @@ describe('lib/Ant.js', () => {
     expect(ant.pluginController.plugins[0]).toEqual(expect.any(Plugin));
   });
 
-  test('should load default config', () => {
+  test('should load global config', () => {
     const ant = new Ant();
     expect(ant.pluginController).toBeInstanceOf(PluginController);
     expect(ant.pluginController.plugins).toEqual(expect.any(Array));
@@ -31,13 +31,13 @@ describe('lib/Ant.js', () => {
     expect(ant.pluginController.plugins[0]).toBeInstanceOf(Core);
   });
 
-  test('should fail if default config cannot be read', () => {
+  test('should fail if global config cannot be read', () => {
     const yaml = require('js-yaml');
     const safeLoad = yaml.safeLoad;
     yaml.safeLoad = () => { throw new Error(); };
     try {
       expect(() => new Ant()).toThrowError(
-        'Could not load default config'
+        'Could not load global config'
       );
     } catch (e) {
       throw e;
