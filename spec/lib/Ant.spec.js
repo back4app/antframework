@@ -19,8 +19,9 @@ describe('lib/Ant.js', () => {
     const ant = new Ant({ plugins: [Plugin] });
     expect(ant.pluginController).toBeInstanceOf(PluginController);
     expect(ant.pluginController.plugins).toEqual(expect.any(Array));
-    expect(ant.pluginController.plugins).toHaveLength(1);
-    expect(ant.pluginController.plugins[0]).toEqual(expect.any(Plugin));
+    expect(ant.pluginController.plugins).toHaveLength(2);
+    expect(ant.pluginController.plugins[0]).toEqual(expect.any(Core));
+    expect(ant.pluginController.plugins[1]).toEqual(expect.any(Plugin));
   });
 
   test('should load global config', () => {
@@ -29,6 +30,24 @@ describe('lib/Ant.js', () => {
     expect(ant.pluginController.plugins).toEqual(expect.any(Array));
     expect(ant.pluginController.plugins).toHaveLength(1);
     expect(ant.pluginController.plugins[0]).toBeInstanceOf(Core);
+  });
+
+  test('should load empty global config', () => {
+    /**
+     * Represents an extension of {@link Ant} class that returns null global
+     * config for testing purposes.
+     * @private
+     */
+    class Ant2 extends Ant {
+      _getGlobalConfig() {
+        return null;
+      }
+    }
+
+    const ant = new Ant2();
+    expect(ant.pluginController).toBeInstanceOf(PluginController);
+    expect(ant.pluginController.plugins).toEqual(expect.any(Array));
+    expect(ant.pluginController.plugins).toHaveLength(0);
   });
 
   test('should fail if global config cannot be read', () => {
@@ -94,6 +113,7 @@ describe('lib/Ant.js', () => {
     test('should fail if Core plugin not loaded', async () => {
       expect.hasAssertions();
       const ant = new Ant({ plugins: [] });
+      ant.pluginController._plugins = new Map();
       await expect(ant.createService('FooService', 'FooTemplate'))
         .rejects.toThrow(
           'Service could not be created because the Core plugin is not loaded'

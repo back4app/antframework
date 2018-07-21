@@ -5,6 +5,7 @@
  */
 
 const path = require('path');
+const yaml = require('js-yaml');
 const YError = require('yargs/lib/yerror');
 const AntCli = require('../../../lib/cli/AntCli');
 const logger = require('../../../lib/util/logger');
@@ -56,6 +57,28 @@ describe('lib/cli/AntCli.js', () => {
     }
   });
 
+  test('should work no plugins', () => {
+    const originalSafeLoad = yaml.safeLoad;
+    yaml.safeLoad = () => null;
+    const originalExit = process.exit;
+    process.exit = jest.fn();
+    const originalLog = console.log;
+    console.log = jest.fn();
+    const originalCwd = process.cwd();
+    try {
+      (new AntCli()).execute();
+      expect(process.exit).toHaveBeenCalledWith(0);
+      expect(console.log.mock.calls[0][0]).not.toContain('Plugins:');
+    } catch (e) {
+      throw e;
+    } finally {
+      yaml.safeLoad = originalSafeLoad;
+      process.exit = originalExit;
+      console.log = originalLog;
+      process.chdir(originalCwd);
+    }
+  });
+
   test('should load config with no plugins', () => {
     const originalExit = process.exit;
     process.exit = jest.fn();
@@ -69,7 +92,9 @@ describe('lib/cli/AntCli.js', () => {
     try {
       (new AntCli()).execute();
       expect(process.exit).toHaveBeenCalledWith(0);
-      expect(console.log.mock.calls[0][0]).not.toContain('Plugins:');
+      expect(console.log.mock.calls[0][0]).toContain(`Plugins:
+  Core
+`);
     } catch (e) {
       throw e;
     } finally {
