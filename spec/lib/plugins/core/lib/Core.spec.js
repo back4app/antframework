@@ -251,6 +251,34 @@ describe('lib/plugins/core/lib/Core.js', () => {
       );
     });
 
+    test('should not change the error message for other cases', () => {
+      const originalArgv = process.argv;
+      process.argv.push('create');
+      const originalError = console.error;
+      console.error = jest.fn();
+      const originalExit = process.exit;
+      process.exit = jest.fn();
+
+      const core = new Core(ant);
+      core._yargsFailed(
+        'Foo message',
+        {
+          parsed: {
+            argv: {
+              '$0': 'ant'
+            }
+          }
+        }
+      );
+
+      expect(console.error).not.toHaveBeenCalled();
+      expect(process.exit).not.toHaveBeenCalled();
+
+      console.argv = originalArgv;
+      console.error = originalError;
+      process.exit = originalExit;
+    });
+
     test('should show error stack in verbose mode', (done) => {
       const originalError = console.error;
       console.error = jest.fn();

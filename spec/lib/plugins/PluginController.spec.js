@@ -243,7 +243,7 @@ describe('lib/plugins/PluginController.js', () => {
       .toEqual(expect.stringContaining('it should be Plugin'));
   });
 
-  test('should not load plugin initilized with another ant instance', () => {
+  test('should not load plugin initialized with another ant instance', () => {
     const pluginController = new PluginController(
       ant,
       [new Plugin(new Ant())]
@@ -255,7 +255,7 @@ describe('lib/plugins/PluginController.js', () => {
     expect(pluginController.loadingErrors[0]).toBeInstanceOf(AssertionError);
     expect(pluginController.loadingErrors[0].message)
       .toEqual(expect.stringContaining(
-        'Could not load plugin: the framework used to initilize the plugin is \
+        'Could not load plugin: the framework used to initialize the plugin is \
 different to this controller\'s'
       ));
   });
