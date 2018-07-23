@@ -72,6 +72,50 @@ describe('lib/Ant.js', () => {
       expect(ant.templateController.getTemplate('Service', 'Default').name)
         .toEqual('Default');
     });
+
+    test('should load templates from config', () => {
+      const customTemplatePath = '/path/to/my/custom';
+      const fooPath = '/path/to/foo';
+      const barPath = '/path/to/bar';
+      const templatesConfig = {
+        CustomCategory: {
+          CustomTemplate: customTemplatePath,
+          Foo: fooPath
+        },
+        Custom_2: {
+          Bar: barPath
+        }
+      };
+      const antWithTemplates = new Ant({ templates: templatesConfig});
+      expect(antWithTemplates.templateController.getTemplate(
+        'CustomCategory','CustomTemplate').path).toEqual(customTemplatePath);
+      expect(antWithTemplates.templateController.getTemplate(
+        'CustomCategory', 'Foo').path).toEqual(fooPath);
+      expect(antWithTemplates.templateController.getTemplate(
+        'CustomCategory', 'Bar')).toEqual(null);
+      expect(antWithTemplates.templateController.getTemplate(
+        'Custom_2', 'Bar').path).toEqual(barPath);
+      expect(antWithTemplates.templateController.getTemplate(
+        'Custom_3', 'Bar')).toEqual(null);
+    });
+
+    test('should throw error with invalid templates config', () => {
+      expect(() => new Ant({ templates: 'this should\'ve been an object!'}))
+        .toThrowError(
+          'Error while loading templates from Ant\'s config file. \
+The "template" configuration should be an object!'
+        );
+    });
+
+    test('should throw error with invalid template category value', () => {
+      const templatesConfig = {
+        CustomCategory: 'this should\'ve been an object!'
+      };
+      expect(() => new Ant({ templates: templatesConfig })).toThrowError(
+        'Error while loading templates from Ant\'s config file: \
+Template category value is not an object!'
+      );
+    });
   });
 
   describe('Ant.createService', () => {
