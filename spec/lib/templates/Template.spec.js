@@ -75,15 +75,41 @@ describe('lib/templates/Template.js', () => {
         );
         expect(fs.readdirSync(path.resolve(__dirname, '../../support')))
           .toContain('out');
+
+        // Checks template directory files
         const outDir = fs.readdirSync(outPath);
         expect(outDir).toContain('mustacheFile.txt');
         expect(outDir).toContain('notAMustacheFile.txt');
+        expect(outDir).toContain('templates.mustache.gz');
         expect(
           fs.readFileSync(path.resolve(outPath, 'mustacheFile.txt'), 'utf8')
         ).toEqual('fooValue\n');
         expect(
           fs.readFileSync(path.resolve(outPath, 'notAMustacheFile.txt'), 'utf8')
         ).toEqual('{{ fooData }}\n');
+        expect(
+          fs.readFileSync(path.resolve(outPath, 'templates.mustache.gz'), 'utf8')
+        ).toEqual('Should NOT consider this as mustache template');
+
+        // Checks template first level subdirectory file
+        const outBarPath = path.resolve(outPath, 'bar');
+        const outBarDir = fs.readdirSync(outBarPath);
+        expect(outBarDir).toContain('bar.txt');
+        expect(
+          fs.readFileSync(path.resolve(outBarPath, 'bar.txt'), 'utf8')
+        ).toEqual('{{bar}}');
+
+        // Checks template second level subdirectory files
+        const outCfgPath = path.resolve(outBarPath, 'cfg');
+        const outCfgDir = fs.readdirSync(outCfgPath);
+        expect(outCfgDir).toContain('hooks.cfg');
+        expect(
+          fs.readFileSync(path.resolve(outCfgPath, 'hooks.cfg'), 'utf8')
+        ).toEqual('hooks.cfg content');
+        expect(
+          fs.readFileSync(path.resolve(outCfgPath, 'vars.cfg'), 'utf8')
+        ).toEqual('vars.cfg content');
+
         fs.removeSync(outPath);
       }
     });
