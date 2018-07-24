@@ -2,6 +2,7 @@
  * @fileoverview Tests for lib/Ant.js file.
  */
 
+const fs = require('fs');
 const Ant = require('../../lib/Ant');
 const Plugin = require('../../lib/plugins/Plugin');
 const PluginController = require('../../lib/plugins/PluginController');
@@ -33,21 +34,13 @@ describe('lib/Ant.js', () => {
   });
 
   test('should load empty global config', () => {
-    /**
-     * Represents an extension of {@link Ant} class that returns null global
-     * config for testing purposes.
-     * @private
-     */
-    class Ant2 extends Ant {
-      _getGlobalConfig() {
-        return null;
-      }
-    }
-
-    const ant = new Ant2();
+    const originalReadFileSync = fs.readFileSync;
+    fs.readFileSync = jest.fn(() => '');
+    const ant = new Ant();
     expect(ant.pluginController).toBeInstanceOf(PluginController);
     expect(ant.pluginController.plugins).toEqual(expect.any(Array));
     expect(ant.pluginController.plugins).toHaveLength(0);
+    fs.readFileSync = originalReadFileSync;
   });
 
   test('should fail if global config cannot be read', () => {
@@ -63,6 +56,14 @@ describe('lib/Ant.js', () => {
     } finally {
       yaml.safeLoad = safeLoad;
     }
+  });
+
+  test('should load global config base path', () => {
+    const originalReadFileSync = fs.readFileSync;
+    fs.readFileSync = jest.fn(() => 'basePath: /foo/path');
+    const ant = new Ant();
+    expect(ant._globalConfig.basePath).toEqual('/foo/path');
+    fs.readFileSync = originalReadFileSync;
   });
 
   describe('Ant.pluginController', () => {

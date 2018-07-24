@@ -431,4 +431,14 @@ describe('lib/cli/AntCli.js', () => {
       }
     }
   );
+
+  test('should load base path', () => {
+    const originalCwd = process.cwd();
+    process.chdir(
+      path.resolve(__dirname, '../../support/configs/basePathConfig')
+    );
+    const antCli = new AntCli();
+    expect(antCli._ant._config.basePath).toEqual('../../');
+    process.chdir(originalCwd);
+  });
 });
