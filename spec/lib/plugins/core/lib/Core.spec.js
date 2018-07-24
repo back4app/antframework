@@ -158,6 +158,127 @@ describe('lib/plugins/core/lib/Core.js', () => {
       (new AntCli())._yargs.parse('create MyService --template NotExistent');
     });
 
+    test('should show friendly error when service name not passed', (done) => {
+      const originalArgv = process.argv;
+      process.argv.push('create');
+      const originalError = console.error;
+      console.error = jest.fn();
+      const originalExit = process.exit;
+      process.exit = jest.fn((code) => {
+        expect(console.error).toHaveBeenCalledWith(
+          expect.stringContaining(
+            'Create command requires service argument'
+          )
+        );
+        expect(code).toEqual(1);
+        console.argv = originalArgv;
+        console.error = originalError;
+        process.exit = originalExit;
+        done();
+      });
+      const core = new Core(ant);
+      core._yargsFailed(
+        'Not enough non-option arguments',
+        {
+          parsed: {
+            argv: {
+              '$0': 'ant'
+            }
+          }
+        }
+      );
+    });
+
+    test('should show friendly error when more passed arguments', (done) => {
+      const originalArgv = process.argv;
+      process.argv.push('create');
+      const originalError = console.error;
+      console.error = jest.fn();
+      const originalExit = process.exit;
+      process.exit = jest.fn((code) => {
+        expect(console.error).toHaveBeenCalledWith(
+          expect.stringContaining(
+            'Create command only accepts 1 argument'
+          )
+        );
+        expect(code).toEqual(1);
+        console.argv = originalArgv;
+        console.error = originalError;
+        process.exit = originalExit;
+        done();
+      });
+      const core = new Core(ant);
+      core._yargsFailed(
+        'Unknown argument: templatename',
+        {
+          parsed: {
+            argv: {
+              '$0': 'ant'
+            }
+          }
+        }
+      );
+    });
+
+    test('should show friendly error when template name not passed', (done) => {
+      const originalArgv = process.argv;
+      process.argv.push('create');
+      const originalError = console.error;
+      console.error = jest.fn();
+      const originalExit = process.exit;
+      process.exit = jest.fn((code) => {
+        expect(console.error).toHaveBeenCalledWith(
+          expect.stringContaining(
+            'Template option requires name argument'
+          )
+        );
+        expect(code).toEqual(1);
+        console.argv = originalArgv;
+        console.error = originalError;
+        process.exit = originalExit;
+        done();
+      });
+      const core = new Core(ant);
+      core._yargsFailed(
+        'Not enough arguments following: template',
+        {
+          parsed: {
+            argv: {
+              '$0': 'ant'
+            }
+          }
+        }
+      );
+    });
+
+    test('should not change the error message for other cases', () => {
+      const originalArgv = process.argv;
+      process.argv.push('create');
+      const originalError = console.error;
+      console.error = jest.fn();
+      const originalExit = process.exit;
+      process.exit = jest.fn();
+
+      const core = new Core(ant);
+      core._yargsFailed(
+        'Foo message',
+        {
+          parsed: {
+            argv: {
+              '$0': 'ant'
+            }
+          }
+        }
+      );
+
+      expect(console.error).not.toHaveBeenCalled();
+      expect(process.exit).not.toHaveBeenCalled();
+
+      console.argv = originalArgv;
+      console.error = originalError;
+      process.exit = originalExit;
+    });
+
     test('should show error stack in verbose mode', (done) => {
       const originalError = console.error;
       console.error = jest.fn();

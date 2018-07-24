@@ -1,7 +1,5 @@
 /**
  * @fileoverview Tests for bin/ant.js file.
- * TODO: Improve error messages of createService command (add note about
- * --verbose option)
  */
 
 const path = require('path');
@@ -247,20 +245,31 @@ Options:
 
       test(
         'should fail without "service" arg',
-        () => _expectErrorMessage('create', `Fatal => Not enough non-option arguments: got 0, need at least 1
+        () => _expectErrorMessage('create', `Fatal => Create command requires service argument
 
 For getting help:
-ant.js --help [command]`)
+ant.js --help create`)
+      );
+
+      test(
+        'should fail with too many args',
+        () => _expectErrorMessage(
+          'create MyService foo',
+          `Fatal => Create command only accepts 1 argument
+
+For getting help:
+ant.js --help create`
+        )
       );
 
       test(
         'should fail without template name',
         () => _expectErrorMessage(
           'create MyService --template',
-          `Fatal => Not enough arguments following: template
+          `Fatal => Template option requires name argument
 
 For getting help:
-ant.js --help [command]`)
+ant.js --help create`)
       );
 
       test(
