@@ -439,6 +439,15 @@ describe('lib/cli/AntCli.js', () => {
     );
     const antCli = new AntCli();
     expect(antCli._ant._config.basePath).toEqual('../../');
+    expect(antCli._ant._config.plugins).toEqual(expect.any(Array));
+    expect(antCli._ant._config.plugins).toHaveLength(1);
+    expect(antCli._ant._config.plugins[0]).toEqual(
+      './spec/support/plugins/FooPlugin'
+    );
+    expect(antCli._ant.pluginController.plugins).toEqual(expect.any(Array));
+    expect(antCli._ant.pluginController.plugins).toHaveLength(2);
+    expect(antCli._ant.pluginController.plugins[0].name).toEqual('Core');
+    expect(antCli._ant.pluginController.plugins[1].name).toEqual('FooPlugin');
     process.chdir(originalCwd);
   });
 });
