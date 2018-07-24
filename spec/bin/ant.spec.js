@@ -35,6 +35,9 @@ async function _expectUsageInstructions(args) {
     '--version      Show version number                                   [boolean]'
   );
   expect(stdout).toContain(
+    '--config, -c   Path to YAML config file'
+  );
+  expect(stdout).toContain(
     '--verbose, -v  Show execution logs and error stacks [boolean] [default: false]'
   );
   expect(stdout).toContain(`Plugins:
@@ -236,6 +239,7 @@ Create a new service
 Options:
   --help, -h      Show help                                            [boolean]
   --version       Show version number                                  [boolean]
+  --config, -c    Path to YAML config file
   --verbose, -v   Show execution logs and error stacks[boolean] [default: false]
   --template, -t  Specify the template for the new service
                                                    [string] [default: "Default"]

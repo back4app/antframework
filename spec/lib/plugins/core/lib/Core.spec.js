@@ -180,11 +180,8 @@ describe('lib/plugins/core/lib/Core.js', () => {
       core._yargsFailed(
         'Not enough non-option arguments',
         {
-          parsed: {
-            argv: {
-              '$0': 'ant'
-            }
-          }
+          handleErrorMessage: (msg, err, command) =>
+            (new AntCli())._handleErrorMessage(msg, err, command)
         }
       );
     });
@@ -211,11 +208,8 @@ describe('lib/plugins/core/lib/Core.js', () => {
       core._yargsFailed(
         'Unknown argument: templatename',
         {
-          parsed: {
-            argv: {
-              '$0': 'ant'
-            }
-          }
+          handleErrorMessage: (msg, err, command) =>
+            (new AntCli())._handleErrorMessage(msg, err, command)
         }
       );
     });
@@ -242,16 +236,15 @@ describe('lib/plugins/core/lib/Core.js', () => {
       core._yargsFailed(
         'Not enough arguments following: template',
         {
-          parsed: {
-            argv: {
-              '$0': 'ant'
-            }
-          }
+          handleErrorMessage: (msg, err, command) =>
+            (new AntCli())._handleErrorMessage(msg, err, command)
         }
       );
     });
 
     test('should show error stack in verbose mode', (done) => {
+      const originalArgv = process.argv;
+      process.argv.push('-v');
       const originalError = console.error;
       console.error = jest.fn();
       const originalExit = process.exit;
@@ -264,6 +257,7 @@ describe('lib/plugins/core/lib/Core.js', () => {
         expect(code).toEqual(1);
         console.error = originalError;
         process.exit = originalExit;
+        process.argv = originalArgv;
         done();
       });
       (new AntCli())._yargs.parse('create -v MyService --template NotExistent');

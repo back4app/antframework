@@ -105,16 +105,29 @@ describe('lib/cli/AntCli.js', () => {
   });
 
   test('should not load invalid config', () => {
+    const originalExit = process.exit;
+    process.exit = jest.fn();
+    const originalLog = console.log;
+    console.log = jest.fn();
+    const originalError = console.error;
+    console.error = jest.fn();
     const originalCwd = process.cwd();
     process.chdir(path.resolve(
       __dirname,
       '../../support/configs/invalidConfig'
     ));
     try {
-      expect(() => new AntCli()).toThrowError('Could not load config');
+      (new AntCli()).execute();
+      expect(process.exit).toHaveBeenCalledWith(1);
+      expect(console.error.mock.calls[0][0]).toContain(
+        'Could not load config'
+      );
     } catch (e) {
       throw e;
     } finally {
+      process.exit = originalExit;
+      console.log = originalLog;
+      console.error = originalError;
       process.chdir(originalCwd);
     }
   });
