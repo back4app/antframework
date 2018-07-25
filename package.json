@@ -25,6 +25,7 @@
     "lint": "eslint ./",
     "pretest": "npm run lint",
     "test": "jest",
+    "posttest": "rm -r ./spec/support/out",
     "apidocs": "jsdoc -c ./jsdoc.json",
     "docs": "npm run apidocs"
   },
