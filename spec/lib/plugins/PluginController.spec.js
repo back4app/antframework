@@ -134,8 +134,8 @@ describe('lib/plugins/PluginController.js', () => {
 
   test('should initialize with plugin array and without errors', () => {
     const pluginController = new PluginController(ant, [
-      './core',
-      ['../../spec/support/plugins/FooPlugin', { a: 1, b: 2, c: 3}],
+      './lib/plugins/core',
+      ['./spec/support/plugins/FooPlugin', { a: 1, b: 2, c: 3}],
       MyPlugin,
       [MyOtherPlugin, { a: 4, b: 5, c: 6}],
       plugin
@@ -166,11 +166,11 @@ describe('lib/plugins/PluginController.js', () => {
 
   test('should not load plugin if it does not resolve', () => {
     const pluginController = new PluginController(ant, [
-      './core',
-      ['../../spec/support/plugins/FooPlugin', { a: 1, b: 2, c: 3}],
+      './lib/plugins/core',
+      ['./spec/support/plugins/FooPlugin', { a: 1, b: 2, c: 3}],
       plugin,
       'InexistentFooPlugin',
-      '../../spec/support/plugins/NotAPlugin',
+      './spec/support/plugins/NotAPlugin',
       {}
     ]);
 
@@ -216,7 +216,7 @@ describe('lib/plugins/PluginController.js', () => {
   test('should use second load if plugin is loaded twice', () => {
     const fooPlugin = new FooPlugin(ant);
     const pluginController = new PluginController(ant, [
-      '../../spec/support/plugins/FooPlugin',
+      './spec/support/plugins/FooPlugin',
       fooPlugin
     ]);
     expect(pluginController.plugins).toEqual(expect.any(Array));
@@ -272,7 +272,7 @@ different to this controller\'s'
   describe('PluginController.plugins', () => {
     test('should be readonly', () => {
       const pluginController = new PluginController(ant, [
-        '../../spec/support/plugins/FooPlugin',
+        './spec/support/plugins/FooPlugin',
         new FooPlugin(ant)
       ]);
       expect(pluginController.plugins).toEqual(expect.any(Array));
@@ -288,7 +288,7 @@ different to this controller\'s'
   describe('PluginController.loadingErrors', () => {
     test('should be readonly', () => {
       const pluginController = new PluginController(ant, [
-        '../../spec/support/plugins/FooPlugin',
+        './spec/support/plugins/FooPlugin',
         new NotAPlugin()
       ]);
       expect(pluginController.loadingErrors).toEqual(expect.any(Array));

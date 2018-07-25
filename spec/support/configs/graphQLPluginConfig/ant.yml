@@ -1,2 +1,2 @@
 plugins:
-  - ./graphQL
+  - ./lib/plugins/graphQL
