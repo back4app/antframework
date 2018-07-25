@@ -143,7 +143,7 @@ describe('bin/ant.js', () => {
   test('should load local config', async () => {
     const { stdout, stderr } = await exec(
       binPath,
-      { cwd: path.resolve(__dirname, '../support/configs/FooPluginConfig')}
+      { cwd: path.resolve(__dirname, '../support/configs/fooPluginConfig')}
     );
     expect(stdout).not.toBeNull();
     expect(stdout).toContain('Plugins:');
