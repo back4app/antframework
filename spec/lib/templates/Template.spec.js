@@ -60,7 +60,7 @@ describe('lib/templates/Template.js', () => {
         '../../support/out/lib/templates/Template.js',
         'out' + Math.floor(Math.random() * 1000)
       );
-      fs.ensureDirSync('../../support/out/lib/templates/Template.js');
+      fs.ensureDirSync(outPath);
       try {
         fs.removeSync(outPath);
       } finally {
