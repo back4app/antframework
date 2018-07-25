@@ -147,7 +147,7 @@ describe('lib/Ant.js', () => {
       });
   });
 
-  describe('Ant.run', () => {
+  describe('Ant.start', () => {
     test('should GraphQL plugin method', async () => {
       const originalCwd = process.cwd();
       process.chdir(path.resolve(
@@ -156,10 +156,10 @@ describe('lib/Ant.js', () => {
       ));
       const antCli = new AntCli();
       const ant = antCli._ant;
-      const runService = jest.fn();
-      ant.pluginController.getPlugin('GraphQL').runService = runService;
-      ant.runService();
-      expect(runService).toHaveBeenCalled();
+      const startService = jest.fn();
+      ant.pluginController.getPlugin('GraphQL').startService = startService;
+      ant.startService();
+      expect(startService).toHaveBeenCalled();
       process.chdir(originalCwd);
     });
   });

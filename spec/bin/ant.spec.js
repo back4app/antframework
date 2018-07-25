@@ -307,7 +307,7 @@ ant.js --help create`)
   });
 
   describe('GraphQL plugin', () => {
-    describe('run command', () => {
+    describe('start command', () => {
       const originalCwd = process.cwd();
 
       beforeEach(() => {
@@ -323,16 +323,16 @@ ant.js --help create`)
 
       test(
         'should work with no args',
-        () => _expectSuccessMessage('run', 'Service running...')
+        () => _expectSuccessMessage('start', 'Service started...')
       );
 
       test(
         'should print command help',
         () => _expectSuccessMessage(
-          '--help run',
-          `ant.js run [--config <path>]
+          '--help start',
+          `ant.js start [--config <path>]
 
-Run a service in localhost
+Start a service in localhost
 
 Options:
   --help, -h     Show help                                             [boolean]
@@ -346,11 +346,11 @@ Options:
       test(
         'should fail with too many args',
         () => _expectErrorMessage(
-          'run foo',
-          `Fatal => Run command accepts no arguments
+          'start foo',
+          `Fatal => Start command accepts no arguments
 
 For getting help:
-ant.js --help run`
+ant.js --help start`
         )
       );
     });

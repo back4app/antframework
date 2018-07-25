@@ -49,7 +49,7 @@ describe('lib/plugins/graphQL/lib/GraphQL.js', () => {
   });
 
   describe('GraphQL.loadYargsSettings', () => {
-    test('should load "run" command', (done) => {
+    test('should load "start" command', (done) => {
       const originalCwd = process.cwd();
       process.chdir(path.resolve(
         __dirname,
@@ -60,7 +60,7 @@ describe('lib/plugins/graphQL/lib/GraphQL.js', () => {
       const originalExit = process.exit;
       process.exit = jest.fn((code) => {
         expect(console.log).toHaveBeenCalledWith(
-          expect.stringContaining('Service running...')
+          expect.stringContaining('Service started...')
         );
         expect(code).toEqual(0);
         console.log = originalLog;
@@ -68,7 +68,7 @@ describe('lib/plugins/graphQL/lib/GraphQL.js', () => {
         process.chdir(originalCwd);
         done();
       });
-      (new AntCli())._yargs.parse('run');
+      (new AntCli())._yargs.parse('start');
     });
 
     test('should show friendly errors', (done) => {
@@ -83,7 +83,7 @@ describe('lib/plugins/graphQL/lib/GraphQL.js', () => {
       process.exit = jest.fn((code) => {
         expect(console.error).toHaveBeenCalledWith(
           expect.stringContaining(
-            'Some run error'
+            'Some start error'
           )
         );
         expect(code).toEqual(1);
@@ -93,13 +93,13 @@ describe('lib/plugins/graphQL/lib/GraphQL.js', () => {
         done();
       });
       const antCli = (new AntCli());
-      antCli._ant.pluginController.getPlugin('GraphQL').run = () => {
-        throw new Error('Some run error');
+      antCli._ant.pluginController.getPlugin('GraphQL').start = () => {
+        throw new Error('Some start error');
       };
-      antCli._yargs.parse('run');
+      antCli._yargs.parse('start');
     });
 
-    test('should not change the error if not the run command in argv', () => {
+    test('should not change the error if not the start command in argv', () => {
       const originalArgv = process.argv;
       process.argv = [];
       const originalExit = process.exit;
@@ -114,7 +114,7 @@ describe('lib/plugins/graphQL/lib/GraphQL.js', () => {
         '../../../../support/configs/graphQLPluginConfig'
       ));
       try {
-        (new AntCli())._yargs.parse('run foo');
+        (new AntCli())._yargs.parse('start foo');
         expect(process.exit).toHaveBeenCalledWith(1);
         expect(console.error.mock.calls[0][0]).toContain(
           'Fatal => Unknown command: configpath'
@@ -132,14 +132,14 @@ describe('lib/plugins/graphQL/lib/GraphQL.js', () => {
 
     test('should show friendly error when more passed arguments', (done) => {
       const originalArgv = process.argv;
-      process.argv.push('run');
+      process.argv.push('start');
       const originalError = console.error;
       console.error = jest.fn();
       const originalExit = process.exit;
       process.exit = jest.fn((code) => {
         expect(console.error).toHaveBeenCalledWith(
           expect.stringContaining(
-            'Run command accepts no arguments'
+            'Start command accepts no arguments'
           )
         );
         expect(code).toEqual(1);
@@ -160,7 +160,7 @@ describe('lib/plugins/graphQL/lib/GraphQL.js', () => {
 
     test('should not change the error message for other cases', () => {
       const originalArgv = process.argv;
-      process.argv.push('run');
+      process.argv.push('start');
       const originalError = console.error;
       console.error = jest.fn();
       const originalExit = process.exit;
