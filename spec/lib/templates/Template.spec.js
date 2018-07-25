@@ -132,5 +132,83 @@ describe('lib/templates/Template.js', () => {
       );
       fs.removeSync(outPath);
     });
+
+    test('should render template with relative path', async () => {
+      const outPath = path.resolve(
+        __dirname,
+        '../../support/out/lib/templates/Template.js',
+        'out' + Math.floor(Math.random() * 1000)
+      );
+      fs.ensureDirSync('../../support/out/lib/templates/Template.js');
+      try {
+        fs.removeSync(outPath);
+      } finally {
+        const template = new Template(
+          'FooCategory',
+          'FooTemplate',
+          './spec/support/templates/fooTemplate'
+        );
+        await template.render(
+          outPath,
+          { fooData: 'fooValue' }
+        );
+        expect(fs.readdirSync(path.resolve(__dirname, '../../support')))
+          .toContain('out');
+
+        // Checks template directory files
+        const outDir = fs.readdirSync(outPath);
+        expect(outDir).toContain('mustacheFile.txt');
+        expect(outDir).toContain('notAMustacheFile.txt');
+        expect(outDir).toContain('templates.mustache.gz');
+
+        // If first level is ok, deeper levels are covered by other test.
+        // No need to check them here.
+        fs.removeSync(outPath);
+      }
+    });
+
+    test('should not render when template was not found', async () => {
+      const outPath = path.resolve(
+        __dirname,
+        '../../support/out/lib/templates/Template.js',
+        'out' + Math.floor(Math.random() * 1000)
+      );
+      fs.ensureDirSync('../../support/out/lib/templates/Template.js');
+      try {
+        fs.removeSync(outPath);
+      } finally {
+        const template = new Template(
+          'FooCategory',
+          'FooTemplate',
+          '/foo/bar/imaginaryDirectory'
+        );
+        try {
+          await expect(template.render(
+            outPath,
+            { fooData: 'fooValue' }
+          )).rejects.toThrowError(
+            'Failed to render template FooTemplate \
+of category FooCategory. No valid path found to read template files'
+          );
+        } finally {
+          fs.removeSync(outPath);
+        }
+      }
+    });
+
+    test('should find alternative source directories for template path', () => {
+      const originalCwd = process.cwd();
+      process.chdir(path.resolve(__dirname, '..'));
+
+      const templatePath = './spec/support/templates/fooTemplate';
+      const template = new Template(
+        'FooCategory',
+        'FooTemplate',
+        templatePath
+      );
+      const templatePathResolved = template._getExistantTemplatePath();
+      process.chdir(originalCwd);
+      expect(fs.existsSync(templatePathResolved)).toBeTruthy();
+    });
   });
 });
