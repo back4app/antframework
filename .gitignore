@@ -9,3 +9,6 @@ coverage
 
 # tests output
 spec/support/out
+
+# logs
+*.log
