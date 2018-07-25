@@ -23,7 +23,11 @@ async function _expectUsageInstructions(args) {
   );
   expect(stdout).not.toBeNull();
   expect(stdout.split('\n')[0]).toEqual(
-    'Usage: ant.js [--help] [--version] [--verbose] <command> [<args>] [<options>]'
+    'Usage: ant.js [--help] [--version] [--config <path>] [--verbose] <command>'
+  );
+  expect(stdout).toContain(
+    `Usage: ant.js [--help] [--version] [--config <path>] [--verbose] <command>
+[<args>] [<options>]`
   );
   expect(stdout).toContain(`Commands:
   ant.js create <service> [--template       Create a new service
@@ -33,6 +37,9 @@ async function _expectUsageInstructions(args) {
   );
   expect(stdout).toContain(
     '--version      Show version number                                   [boolean]'
+  );
+  expect(stdout).toContain(
+    '--config, -c   Path to YAML config file'
   );
   expect(stdout).toContain(
     '--verbose, -v  Show execution logs and error stacks [boolean] [default: false]'
@@ -136,11 +143,11 @@ describe('bin/ant.js', () => {
   test('should load local config', async () => {
     const { stdout, stderr } = await exec(
       binPath,
-      { cwd: path.resolve(__dirname, '../support/configs/notAPluginConfig')}
+      { cwd: path.resolve(__dirname, '../support/configs/fooPluginConfig')}
     );
     expect(stdout).not.toBeNull();
     expect(stdout).toContain('Plugins:');
-    expect(stdout).not.toContain('Core');
+    expect(stdout).toContain('FooPlugin');
     expect(stderr).toEqual('');
   });
 
@@ -236,6 +243,7 @@ Create a new service
 Options:
   --help, -h      Show help                                            [boolean]
   --version       Show version number                                  [boolean]
+  --config, -c    Path to YAML config file
   --verbose, -v   Show execution logs and error stacks[boolean] [default: false]
   --template, -t  Specify the template for the new service
                                                    [string] [default: "Default"]

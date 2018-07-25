@@ -5,6 +5,7 @@
  */
 
 const path = require('path');
+const yaml = require('js-yaml');
 const YError = require('yargs/lib/yerror');
 const AntCli = require('../../../lib/cli/AntCli');
 const logger = require('../../../lib/util/logger');
@@ -16,7 +17,7 @@ describe('lib/cli/AntCli.js', () => {
     expect(antCli.execute).toEqual(expect.any(Function));
   });
 
-  test('should load default config', () => {
+  test('should load global config', () => {
     const originalExit = process.exit;
     process.exit = jest.fn();
     const originalLog = console.log;
@@ -56,6 +57,110 @@ describe('lib/cli/AntCli.js', () => {
     }
   });
 
+  test('should load custom config with --config option', () => {
+    const originalArgv = process.argv;
+    process.argv = [];
+    process.argv.push('--config');
+    process.argv.push(path.resolve(
+      __dirname,
+      '../../support/configs/notAPluginConfig/ant.yml'
+    ));
+    const originalExit = process.exit;
+    process.exit = jest.fn();
+    const originalLog = console.log;
+    console.log = jest.fn();
+    const originalCwd = process.cwd();
+    process.chdir(__dirname);
+    try {
+      (new AntCli()).execute();
+      expect(process.exit).toHaveBeenCalledWith(0);
+      expect(console.log.mock.calls[0][0]).toContain('NotAPlugin');
+    } catch (e) {
+      throw e;
+    } finally {
+      process.argv = originalArgv;
+      process.exit = originalExit;
+      process.chdir(originalCwd);
+      console.log = originalLog;
+    }
+  });
+
+  test('should run with --config option', (done) => {
+    expect.hasAssertions();
+    const originalArgv = process.argv;
+    process.argv = [];
+    process.argv.push('--version');
+    process.argv.push('--config');
+    const configPath = path.resolve(
+      __dirname,
+      '../../support/configs/fooPluginConfig/ant.yml'
+    );
+    process.argv.push(configPath);
+    const originalExit = process.exit;
+    const originalLog = console.log;
+    console.log = jest.fn();
+    const originalCwd = process.cwd();
+    process.chdir(__dirname);
+    process.exit = jest.fn(code => {
+      expect(code).toEqual(0);
+      process.argv = originalArgv;
+      process.exit = originalExit;
+      process.chdir(originalCwd);
+      console.log = originalLog;
+      done();
+    });
+    (new AntCli())._yargs.parse(`--version --config ${configPath}`);
+  });
+
+  test('should fail with --config and no args', () => {
+    const originalArgv = process.argv;
+    process.argv = [];
+    process.argv.push('--config');
+    const originalExit = process.exit;
+    process.exit = jest.fn();
+    const originalLog = console.log;
+    console.log = jest.fn();
+    const originalError = console.error;
+    console.error = jest.fn();
+    const originalCwd = process.cwd();
+    process.chdir(__dirname);
+    try {
+      (new AntCli()).execute();
+      expect(process.exit).toHaveBeenCalledWith(1);
+      expect(console.error.mock.calls[0][0]).toContain(
+        'Config option requires path argument'
+      );
+    } catch (e) {
+      throw e;
+    } finally {
+      process.argv = originalArgv;
+      process.exit = originalExit;
+      process.chdir(originalCwd);
+      console.log = originalLog;
+      console.error = originalError;
+    }
+  });
+
+  test('should work with no plugins', () => {
+    const originalSafeLoad = yaml.safeLoad;
+    yaml.safeLoad = () => null;
+    const originalExit = process.exit;
+    process.exit = jest.fn();
+    const originalLog = console.log;
+    console.log = jest.fn();
+    try {
+      (new AntCli()).execute();
+      expect(process.exit).toHaveBeenCalledWith(0);
+      expect(console.log.mock.calls[0][0]).not.toContain('Plugins:');
+    } catch (e) {
+      throw e;
+    } finally {
+      yaml.safeLoad = originalSafeLoad;
+      process.exit = originalExit;
+      console.log = originalLog;
+    }
+  });
+
   test('should load config with no plugins', () => {
     const originalExit = process.exit;
     process.exit = jest.fn();
@@ -69,7 +174,9 @@ describe('lib/cli/AntCli.js', () => {
     try {
       (new AntCli()).execute();
       expect(process.exit).toHaveBeenCalledWith(0);
-      expect(console.log.mock.calls[0][0]).not.toContain('Plugins:');
+      expect(console.log.mock.calls[0][0]).toContain(`Plugins:
+  Core
+`);
     } catch (e) {
       throw e;
     } finally {
@@ -80,16 +187,85 @@ describe('lib/cli/AntCli.js', () => {
   });
 
   test('should not load invalid config', () => {
+    const originalExit = process.exit;
+    process.exit = jest.fn();
+    const originalLog = console.log;
+    console.log = jest.fn();
+    const originalError = console.error;
+    console.error = jest.fn();
     const originalCwd = process.cwd();
     process.chdir(path.resolve(
       __dirname,
       '../../support/configs/invalidConfig'
     ));
     try {
-      expect(() => new AntCli()).toThrowError('Could not load config');
+      (new AntCli()).execute();
+      expect(process.exit).toHaveBeenCalledWith(1);
+      expect(console.error.mock.calls[0][0]).toContain(
+        'Could not load config'
+      );
     } catch (e) {
       throw e;
     } finally {
+      process.exit = originalExit;
+      console.log = originalLog;
+      console.error = originalError;
+      process.chdir(originalCwd);
+    }
+  });
+
+  test('should show stack when using --verbose option', () => {
+    const originalArgv = process.argv;
+    process.argv.push('--verbose');
+    const originalExit = process.exit;
+    process.exit = jest.fn();
+    const originalLog = console.log;
+    console.log = jest.fn();
+    const originalCwd = process.cwd();
+    process.chdir(path.resolve(
+      __dirname,
+      '../../support/configs/notAPluginConfig'
+    ));
+    try {
+      (new AntCli())._yargs.parse('--verbose');
+      expect(process.exit).toHaveBeenCalledWith(0);
+      expect(console.log.mock.calls[0][0]).toContain(
+        'at PluginController._loadPlugin'
+      );
+    } catch (e) {
+      throw e;
+    } finally {
+      process.argv = originalArgv;
+      process.exit = originalExit;
+      console.log = originalLog;
+      process.chdir(originalCwd);
+    }
+  });
+
+  test('should show stack when using -v option', () => {
+    const originalArgv = process.argv;
+    process.argv.push('-v');
+    const originalExit = process.exit;
+    process.exit = jest.fn();
+    const originalLog = console.log;
+    console.log = jest.fn();
+    const originalCwd = process.cwd();
+    process.chdir(path.resolve(
+      __dirname,
+      '../../support/configs/notAPluginConfig'
+    ));
+    try {
+      (new AntCli())._yargs.parse('-v');
+      expect(process.exit).toHaveBeenCalledWith(0);
+      expect(console.log.mock.calls[0][0]).toContain(
+        'at PluginController._loadPlugin'
+      );
+    } catch (e) {
+      throw e;
+    } finally {
+      process.argv = originalArgv;
+      process.exit = originalExit;
+      console.log = originalLog;
       process.chdir(originalCwd);
     }
   });
@@ -255,4 +431,23 @@ describe('lib/cli/AntCli.js', () => {
       }
     }
   );
+
+  test('should load base path', () => {
+    const originalCwd = process.cwd();
+    process.chdir(
+      path.resolve(__dirname, '../../support/configs/basePathConfig')
+    );
+    const antCli = new AntCli();
+    expect(antCli._ant._config.basePath).toEqual('../../');
+    expect(antCli._ant._config.plugins).toEqual(expect.any(Array));
+    expect(antCli._ant._config.plugins).toHaveLength(1);
+    expect(antCli._ant._config.plugins[0]).toEqual(
+      './spec/support/plugins/FooPlugin'
+    );
+    expect(antCli._ant.pluginController.plugins).toEqual(expect.any(Array));
+    expect(antCli._ant.pluginController.plugins).toHaveLength(2);
+    expect(antCli._ant.pluginController.plugins[0].name).toEqual('Core');
+    expect(antCli._ant.pluginController.plugins[1].name).toEqual('FooPlugin');
+    process.chdir(originalCwd);
+  });
 });
