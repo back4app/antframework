@@ -23,7 +23,11 @@ async function _expectUsageInstructions(args) {
   );
   expect(stdout).not.toBeNull();
   expect(stdout.split('\n')[0]).toEqual(
-    'Usage: ant.js [--help] [--version] [--verbose] <command> [<args>] [<options>]'
+    'Usage: ant.js [--help] [--version] [--config <path>] [--verbose] <command>'
+  );
+  expect(stdout).toContain(
+    `Usage: ant.js [--help] [--version] [--config <path>] [--verbose] <command>
+[<args>] [<options>]`
   );
   expect(stdout).toContain(`Commands:
   ant.js create <service> [--template       Create a new service
