@@ -1,0 +1,7 @@
+{
+  "description": "GraphQL API server for Ant Framework projects",
+  "main": "index.js",
+  "scripts": {
+    "start": "./bin/server.js"
+  }
+}
