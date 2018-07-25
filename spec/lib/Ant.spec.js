@@ -2,8 +2,10 @@
  * @fileoverview Tests for lib/Ant.js file.
  */
 
+const path = require('path');
 const fs = require('fs');
 const Ant = require('../../lib/Ant');
+const AntCli = require('../../lib/cli/AntCli');
 const Plugin = require('../../lib/plugins/Plugin');
 const PluginController = require('../../lib/plugins/PluginController');
 const TemplateController = require('../../lib/templates/TemplateController');
@@ -143,5 +145,22 @@ describe('lib/Ant.js', () => {
         await expect(ant.createService('FooService', 'FooTemplate'))
           .rejects.toThrow('Service could not be created');
       });
+  });
+
+  describe('Ant.run', () => {
+    test('should GraphQL plugin method', async () => {
+      const originalCwd = process.cwd();
+      process.chdir(path.resolve(
+        __dirname,
+        '../support/configs/graphQLPluginConfig'
+      ));
+      const antCli = new AntCli();
+      const ant = antCli._ant;
+      const runService = jest.fn();
+      ant.pluginController.getPlugin('GraphQL').runService = runService;
+      ant.runService();
+      expect(runService).toHaveBeenCalled();
+      process.chdir(originalCwd);
+    });
   });
 });

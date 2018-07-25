@@ -305,4 +305,54 @@ ant.js --help create`)
       );
     });
   });
+
+  describe('GraphQL plugin', () => {
+    describe('run command', () => {
+      const originalCwd = process.cwd();
+
+      beforeEach(() => {
+        process.chdir(path.resolve(
+          __dirname,
+          '../support/configs/graphQLPluginConfig'
+        ));
+      });
+
+      afterEach(() => {
+        process.chdir(originalCwd);
+      });
+
+      test(
+        'should work with no args',
+        () => _expectSuccessMessage('run', 'Service running...')
+      );
+
+      test(
+        'should print command help',
+        () => _expectSuccessMessage(
+          '--help run',
+          `ant.js run [--config <path>]
+
+Run a service in localhost
+
+Options:
+  --help, -h     Show help                                             [boolean]
+  --version      Show version number                                   [boolean]
+  --config, -c   Path to YAML config file
+  --verbose, -v  Show execution logs and error stacks [boolean] [default: false]
+`
+        )
+      );
+
+      test(
+        'should fail with too many args',
+        () => _expectErrorMessage(
+          'run foo',
+          `Fatal => Run command accepts no arguments
+
+For getting help:
+ant.js --help run`
+        )
+      );
+    });
+  });
 });
