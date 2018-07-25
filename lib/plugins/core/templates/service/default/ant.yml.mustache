@@ -1,5 +1,11 @@
 # The service name
 service: {{service}}
 
-# The GraphQL model path
-# model: ./model.graphql
+# The installed plugins
+plugins:
+
+  # This plugin enables the Ant Framework for building and running GraphQL APIs
+  - ./graphQL:
+
+      # The GraphQL model path
+      # model: ./model.graphql
