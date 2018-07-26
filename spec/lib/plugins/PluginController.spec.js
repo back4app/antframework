@@ -261,13 +261,17 @@ different to this controller\'s'
   });
 
   describe('PluginController.loadPlugins', () => {
-    test('should not override plugin pre defined base path', () => {
-      const pluginController = new PluginController(ant, [
+    test('should pass base path to plugin', () => {
+      const pluginController = new PluginController(
+        ant,
         [
-          './spec/support/plugins/FooPlugin',
-          { a: 1, b: 2, c: 3, basePath: '/foo/path'}
-        ]
-      ]);
+          [
+            './spec/support/plugins/FooPlugin',
+            { a: 1, b: 2, c: 3 }
+          ]
+        ],
+        '/controller/foo/path'
+      );
 
       expect(pluginController.plugins).toEqual(expect.any(Array));
       expect(pluginController.plugins).toHaveLength(1);
@@ -275,6 +279,32 @@ different to this controller\'s'
       expect(pluginController.plugins[0].a).toEqual(1);
       expect(pluginController.plugins[0].b).toEqual(2);
       expect(pluginController.plugins[0].c).toEqual(3);
+      expect(pluginController.plugins[0]._config.basePath).toEqual('/controller/foo/path');
+      expect(pluginController.loadingErrors).toEqual(expect.any(Array));
+      expect(pluginController.loadingErrors).toHaveLength(0);
+    });
+
+    test('should not override plugin pre defined base path', () => {
+      const pluginController = new PluginController(
+        ant,
+        [
+          [
+            './spec/support/plugins/FooPlugin',
+            { a: 1, b: 2, c: 3, basePath: '/plugin/foo/path' }
+          ]
+        ],
+        '/controller/foo/path'
+      );
+
+      expect(pluginController.plugins).toEqual(expect.any(Array));
+      expect(pluginController.plugins).toHaveLength(1);
+      expect(pluginController.plugins[0]).toBeInstanceOf(FooPlugin);
+      expect(pluginController.plugins[0].a).toEqual(1);
+      expect(pluginController.plugins[0].b).toEqual(2);
+      expect(pluginController.plugins[0].c).toEqual(3);
+      expect(pluginController.plugins[0]._config.basePath).toEqual(
+        '/plugin/foo/path'
+      );
       expect(pluginController.loadingErrors).toEqual(expect.any(Array));
       expect(pluginController.loadingErrors).toHaveLength(0);
     });
