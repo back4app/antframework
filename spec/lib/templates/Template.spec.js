@@ -168,32 +168,18 @@ describe('lib/templates/Template.js', () => {
     });
 
     test('should not render when template was not found', async () => {
-      const outPath = path.resolve(
-        __dirname,
-        '../../support/out/lib/templates/Template.js',
-        'out' + Math.floor(Math.random() * 1000)
+      const template = new Template(
+        'FooCategory',
+        'FooTemplate',
+        '/foo/bar/imaginaryDirectory'
       );
-      fs.ensureDirSync('../../support/out/lib/templates/Template.js');
-      try {
-        fs.removeSync(outPath);
-      } finally {
-        const template = new Template(
-          'FooCategory',
-          'FooTemplate',
-          '/foo/bar/imaginaryDirectory'
-        );
-        try {
-          await expect(template.render(
-            outPath,
-            { fooData: 'fooValue' }
-          )).rejects.toThrowError(
-            'Failed to render template FooTemplate \
+      await expect(template.render(
+        '/my/out/path/shouldnt/matter',
+        { fooData: 'fooValue' }
+      )).rejects.toThrowError(
+        'Failed to render template FooTemplate \
 of category FooCategory. No valid path found to read template files'
-          );
-        } finally {
-          fs.removeSync(outPath);
-        }
-      }
+      );
     });
 
     test('should find alternative source directories for template path', () => {
@@ -206,7 +192,7 @@ of category FooCategory. No valid path found to read template files'
         'FooTemplate',
         templatePath
       );
-      const templatePathResolved = template._getExistantTemplatePath();
+      const templatePathResolved = template._getResolvedTemplatePath();
       process.chdir(originalCwd);
       expect(fs.existsSync(templatePathResolved)).toBeTruthy();
     });
