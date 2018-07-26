@@ -1,6 +1,9 @@
 # The service name
 service: {{service}}
 
+# The service base path
+# basePath: ./
+
 # The installed plugins
 plugins:
 
@@ -8,5 +11,11 @@ plugins:
   # services
   - ./lib/plugins/graphQL:
 
+      # The GraphQL plugin base path
+      # basePath: ./
+
       # The GraphQL model path
       # model: ./model.graphql
+
+      # The script to start the GraphQL API server when starting this service
+      # server: ./lib/plugins/graphQL/templates/default/bin/server.js

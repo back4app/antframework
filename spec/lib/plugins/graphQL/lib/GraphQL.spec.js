@@ -41,11 +41,17 @@ describe('lib/plugins/graphQL/lib/GraphQL.js', () => {
     }
   });
 
-  test('should export "GraphQL" class extending "Plugin" class', () => {
+  test('should export "GraphQL" class extending "Plugin" class', async () => {
     const graphQL = new GraphQL(ant);
     expect(graphQL.constructor.name).toEqual('GraphQL');
     expect(graphQL).toBeInstanceOf(Plugin);
     expect(graphQL.name).toEqual('GraphQL');
+    await graphQL.startService();
+  });
+
+  test('should fail if invalid server', () => {
+    const graphQL = new GraphQL(ant, { server: '/foo/server' });
+    expect(graphQL.startService()).rejects.toThrow('Could not start server');
   });
 
   describe('GraphQL.loadYargsSettings', () => {
@@ -93,41 +99,10 @@ describe('lib/plugins/graphQL/lib/GraphQL.js', () => {
         done();
       });
       const antCli = (new AntCli());
-      antCli._ant.pluginController.getPlugin('GraphQL').start = () => {
+      antCli._ant.pluginController.getPlugin('GraphQL').start = async () => {
         throw new Error('Some start error');
       };
       antCli._yargs.parse('start');
-    });
-
-    test('should not change the error if not the start command in argv', () => {
-      const originalArgv = process.argv;
-      process.argv = [];
-      const originalExit = process.exit;
-      process.exit = jest.fn();
-      const originalLog = console.log;
-      console.log = jest.fn();
-      const originalError = console.error;
-      console.error = jest.fn();
-      const originalCwd = process.cwd();
-      process.chdir(path.resolve(
-        __dirname,
-        '../../../../support/configs/graphQLPluginConfig'
-      ));
-      try {
-        (new AntCli())._yargs.parse('start foo');
-        expect(process.exit).toHaveBeenCalledWith(1);
-        expect(console.error.mock.calls[0][0]).toContain(
-          'Fatal => Unknown command: configpath'
-        );
-      } catch (e) {
-        throw e;
-      } finally {
-        process.argv = originalArgv;
-        process.exit = originalExit;
-        process.chdir(originalCwd);
-        console.log = originalLog;
-        console.error = originalError;
-      }
     });
 
     test('should show friendly error when more passed arguments', (done) => {
