@@ -60,7 +60,7 @@ describe('lib/templates/Template.js', () => {
         '../../support/out/lib/templates/Template.js',
         'out' + Math.floor(Math.random() * 1000)
       );
-      fs.ensureDirSync('../../support/out/lib/templates/Template.js');
+      fs.ensureDirSync(path.resolve(__dirname, '../../support/out/lib/templates/Template.js'));
       try {
         fs.removeSync(outPath);
       } finally {
@@ -139,7 +139,7 @@ describe('lib/templates/Template.js', () => {
         '../../support/out/lib/templates/Template.js',
         'out' + Math.floor(Math.random() * 1000)
       );
-      fs.ensureDirSync('../../support/out/lib/templates/Template.js');
+      fs.ensureDirSync(path.resolve(__dirname, '../../support/out/lib/templates/Template.js'));
       try {
         fs.removeSync(outPath);
       } finally {
@@ -167,13 +167,13 @@ describe('lib/templates/Template.js', () => {
       }
     });
 
-    test('should not render when template was not found', async () => {
+    test('should not render when template was not found', () => {
       const template = new Template(
         'FooCategory',
         'FooTemplate',
         '/foo/bar/imaginaryDirectory'
       );
-      await expect(template.render(
+      expect(template.render(
         '/my/out/path/shouldnt/matter',
         { fooData: 'fooValue' }
       )).rejects.toThrowError(

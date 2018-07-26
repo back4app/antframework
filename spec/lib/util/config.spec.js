@@ -34,6 +34,31 @@ describe('lib/util/config.js', () => {
     expect(parsedTemplates[2].path).toEqual(barPath);
   });
 
+  test('should load templates from config with basePath', () => {
+    const customTemplatePath = './path/to/my/custom';
+    const fooPath = 'path/to/foo';
+    const barPath = '../../../path/to/bar';
+    const absolutePath = '/absolute/path';
+    const templatesConfig = {
+      CustomCategory: {
+        CustomTemplate: customTemplatePath,
+        Foo: fooPath
+      },
+      Custom_2: {
+        Bar: barPath,
+        Absolute: absolutePath
+      }
+    };
+    const basePath = '/home/user/myworkspace/';
+    const parsedTemplates = configUtils.parseConfigTemplates(templatesConfig, basePath);
+    expect(parsedTemplates.length).toBe(4);
+
+    expect(parsedTemplates[0].path).toEqual('/home/user/myworkspace/path/to/my/custom');
+    expect(parsedTemplates[1].path).toEqual('/home/user/myworkspace/path/to/foo');
+    expect(parsedTemplates[2].path).toEqual('/path/to/bar');
+    expect(parsedTemplates[3].path).toEqual(absolutePath);
+  });
+
   test('should throw error with invalid templates config', () => {
     expect(() => configUtils.parseConfigTemplates('this should\'ve been an object'))
       .toThrowError(
