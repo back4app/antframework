@@ -1,2 +1,2 @@
 plugins:
-  - ./lib/plugins/core
+  - ./plugins/core
