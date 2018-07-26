@@ -323,7 +323,7 @@ ant.js --help create`)
 
       test(
         'should work with no args',
-        () => _expectSuccessMessage('start', 'Service started...')
+        () => _expectSuccessMessage('start', 'Server => GraphQL API server listening for requests...\n\n')
       );
 
       test(

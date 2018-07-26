@@ -6,6 +6,7 @@
 
 const path = require('path');
 const fs = require('fs-extra');
+const childProcess = require('child_process');
 const Ant = require('../../../../../lib/Ant');
 const AntCli = require('../../../../../lib/cli/AntCli');
 const Plugin = require('../../../../../lib/plugins/Plugin');
@@ -51,7 +52,44 @@ describe('lib/plugins/graphQL/lib/GraphQL.js', () => {
 
   test('should fail if invalid server', () => {
     const graphQL = new GraphQL(ant, { server: '/foo/server' });
-    expect(graphQL.startService()).rejects.toThrow('Could not start server');
+    expect(graphQL.startService()).rejects.toThrow();
+  });
+
+  test('should fail if server process fail to be spawned', async () => {
+    expect.hasAssertions();
+    const originalSpawn = childProcess.spawn;
+    childProcess.spawn = jest.fn(function (server) {
+      if (server.contains('templates/server/default/bin/server.js')) {
+        throw new Error('Some spawn error');
+      } else {
+        return originalSpawn(...arguments);
+      }
+    });
+    const graphQL = new GraphQL(ant);
+    try {
+      await graphQL.startService();
+    } catch(e) {
+      expect(e.message).toEqual(
+        expect.stringContaining('Could not spawn server')
+      );
+    }
+    childProcess.spawn = originalSpawn;
+  });
+
+  test('should show server errors', async () => {
+    expect.hasAssertions();
+    const originalError = console.error;
+    console.error = jest.fn();
+    const server = path.resolve(
+      __dirname,
+      '../../../../support/templates/fooServerTemplate/server.js'
+    );
+    const graphQL = new GraphQL(ant, { server });
+    await graphQL.startService();
+    expect(console.error).toHaveBeenCalledWith(
+      expect.stringContaining('Some server error')
+    );
+    console.error = originalError;
   });
 
   describe('GraphQL.loadYargsSettings', () => {
@@ -66,7 +104,7 @@ describe('lib/plugins/graphQL/lib/GraphQL.js', () => {
       const originalExit = process.exit;
       process.exit = jest.fn((code) => {
         expect(console.log).toHaveBeenCalledWith(
-          expect.stringContaining('Service started...')
+          expect.stringContaining('Server => GraphQL API server listening for requests...')
         );
         expect(code).toEqual(0);
         console.log = originalLog;
