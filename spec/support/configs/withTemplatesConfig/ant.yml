@@ -1,0 +1,6 @@
+templates:
+  CustomCategory:
+    CustomTemplate: /path/to/my/custom
+    Foo: /path/to/foo
+  Custom_2:
+    Bar: /path/to/bar

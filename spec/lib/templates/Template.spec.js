@@ -60,7 +60,7 @@ describe('lib/templates/Template.js', () => {
         '../../support/out/lib/templates/Template.js',
         'out' + Math.floor(Math.random() * 1000)
       );
-      fs.ensureDirSync(outPath);
+      fs.ensureDirSync(path.resolve(__dirname, '../../support/out/lib/templates/Template.js'));
       try {
         fs.removeSync(outPath);
       } finally {
@@ -131,6 +131,70 @@ describe('lib/templates/Template.js', () => {
         `Could not render template: path "${outPath}" already exists`
       );
       fs.removeSync(outPath);
+    });
+
+    test('should render template with relative path', async () => {
+      const outPath = path.resolve(
+        __dirname,
+        '../../support/out/lib/templates/Template.js',
+        'out' + Math.floor(Math.random() * 1000)
+      );
+      fs.ensureDirSync(path.resolve(__dirname, '../../support/out/lib/templates/Template.js'));
+      try {
+        fs.removeSync(outPath);
+      } finally {
+        const template = new Template(
+          'FooCategory',
+          'FooTemplate',
+          './spec/support/templates/fooTemplate'
+        );
+        await template.render(
+          outPath,
+          { fooData: 'fooValue' }
+        );
+        expect(fs.readdirSync(path.resolve(__dirname, '../../support')))
+          .toContain('out');
+
+        // Checks template directory files
+        const outDir = fs.readdirSync(outPath);
+        expect(outDir).toContain('mustacheFile.txt');
+        expect(outDir).toContain('notAMustacheFile.txt');
+        expect(outDir).toContain('templates.mustache.gz');
+
+        // If first level is ok, deeper levels are covered by other test.
+        // No need to check them here.
+        fs.removeSync(outPath);
+      }
+    });
+
+    test('should not render when template was not found', () => {
+      const template = new Template(
+        'FooCategory',
+        'FooTemplate',
+        '/foo/bar/imaginaryDirectory'
+      );
+      expect(template.render(
+        '/my/out/path/shouldnt/matter',
+        { fooData: 'fooValue' }
+      )).rejects.toThrowError(
+        'Failed to render template FooTemplate \
+of category FooCategory. No valid path found to read template files'
+      );
+    });
+
+    test('should find alternative source directories for template path', () => {
+      const originalCwd = process.cwd();
+      process.chdir(path.resolve(__dirname, '..'));
+
+      const templatePath = './spec/support/templates/fooTemplate';
+      const template = new Template(
+        'FooCategory',
+        'FooTemplate',
+        templatePath
+      );
+      const templatePathResolved = template._getResolvedTemplatePath();
+      process.chdir(originalCwd);
+      expect(fs.existsSync(templatePathResolved)).toBeTruthy();
     });
   });
 });

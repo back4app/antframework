@@ -68,6 +68,27 @@ describe('lib/templates/TemplateController.js', () => {
     );
   });
 
+  test('should fail to load templates due to invalid param type', () => {
+    expect(() => new TemplateController(ant, 'invalid_template_config')).toThrowError(
+      'Could not initialize the template controller: param "templates" should \
+be an array'
+    );
+  });
+
+  test('should load templates', () => {
+    const myCustomTemplate = new Template('MyCustomCategory', 'MyCustomTemplate',
+      '/path/to/my/custom');
+    const fooTemplate = new Template('Foo', 'Bar', '/foo/bar');
+    const templates = [myCustomTemplate, fooTemplate];
+    const templateControllerWithTemplates = new TemplateController(ant, templates);
+    expect(() => templateControllerWithTemplates.getTemplate(
+      myCustomTemplate.category, myCustomTemplate.name).toEqual(myCustomTemplate));
+    expect(() => templateControllerWithTemplates.getTemplate(
+      fooTemplate.category, fooTemplate.name).toEqual(myCustomTemplate));
+    expect(() => templateControllerWithTemplates.getTemplate(
+      fooTemplate.category, 'Should not find').toEqual(null));
+  });
+
   describe('TemplateController.ant', () => {
     test('should be readonly', () => {
       expect(templateController.ant).toEqual(ant);
