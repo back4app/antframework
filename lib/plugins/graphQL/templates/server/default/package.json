@@ -3,5 +3,9 @@
   "main": "index.js",
   "scripts": {
     "start": "./bin/server.js"
+  },
+  "dependencies": {
+    "express": "^4.16.3",
+    "express-graphql": "^0.6.12"
   }
 }
