@@ -1,0 +1,4 @@
+plugins:
+  - ./lib/plugins/graphQL:
+    server:
+      bin: '../../templates/fooServerTemplate/server.js'

@@ -5,7 +5,8 @@
 const path = require('path');
 const fs = require('fs-extra');
 const util = require('util');
-const exec = util.promisify(require('child_process').exec);
+const childProcess = require('child_process');
+const exec = util.promisify(childProcess.exec);
 const AntCli = require('../../lib/cli/AntCli');
 
 const binPath = path.resolve(__dirname, '../../bin/ant.js');
@@ -309,12 +310,13 @@ ant.js --help create`)
   describe('GraphQL plugin', () => {
     describe('start command', () => {
       const originalCwd = process.cwd();
+      const graphQlPluginConfigPath = path.resolve(
+        __dirname,
+        '../support/configs/graphQLPluginConfig'
+      );
 
       beforeEach(() => {
-        process.chdir(path.resolve(
-          __dirname,
-          '../support/configs/graphQLPluginConfig'
-        ));
+        process.chdir(graphQlPluginConfigPath);
       });
 
       afterEach(() => {
@@ -323,7 +325,22 @@ ant.js --help create`)
 
       test(
         'should work with no args',
-        () => _expectSuccessMessage('start', 'Server => GraphQL API server listening for requests...\n\n')
+        (done) => {
+          const cliProcess = childProcess.spawn(
+            `${binPath}`,
+            ['start'],
+            { cwd: graphQlPluginConfigPath }
+          );
+          cliProcess.stdout.on('data', data => {
+            data = data.toString();
+            if (
+              data.includes('GraphQL API server listening for requests')
+            ) {
+              cliProcess.kill();
+              done();
+            }
+          });
+        }
       );
 
       test(
