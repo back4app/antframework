@@ -161,7 +161,7 @@ Template category value is not an object!'
       ant.pluginController._plugins = new Map();
       await expect(ant.createService('FooService', 'FooTemplate'))
         .rejects.toThrow(
-          'Service could not be created because the Core plugin is not loaded'
+          'Service could not be created'
         );
     });
 
@@ -187,5 +187,33 @@ Template category value is not an object!'
         await expect(ant.createService('FooService', 'FooTemplate'))
           .rejects.toThrow('Service could not be created');
       });
+  });
+
+  describe('Ant.installPlugin', () => {
+    test('should be async and call Core plugin method', async () => {
+      const ant = new Ant();
+      const installPlugin = jest.fn();
+      ant.pluginController.getPlugin('Core').installPlugin = installPlugin;
+      const installPluginReturn = ant.installPlugin(
+        'MyPlugin',
+        true
+      );
+      expect(installPluginReturn).toBeInstanceOf(Promise);
+      await installPluginReturn;
+      expect(installPlugin).toHaveBeenCalledWith(
+        'MyPlugin',
+        true
+      );
+    });
+
+    test('should fail if Core plugin not loaded', async () => {
+      expect.hasAssertions();
+      const ant = new Ant({ plugins: [] });
+      ant.pluginController._plugins = new Map();
+      await expect(ant.installPlugin('asdds'))
+        .rejects.toThrow(
+          'Plugin could not be installed'
+        );
+    });
   });
 });

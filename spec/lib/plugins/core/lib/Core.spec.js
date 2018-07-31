@@ -13,6 +13,7 @@ const Ant = require('../../../../../lib/Ant');
 const Plugin = require('../../../../../lib/plugins/Plugin');
 const Template = require('../../../../../lib/templates/Template');
 const Core = require('../../../../../lib/plugins/core/lib/Core');
+const nodeFs = require('fs');
 
 const ant = new Ant();
 
@@ -92,58 +93,56 @@ describe('lib/plugins/core/lib/Core.js', () => {
   });
 
   describe('Core.loadYargsSettings', () => {
+    const originalArgv = process.argv;
+    const originalLog = console.log;
+    const originalError = console.error;
+    const originalExit = process.exit;
+
+    afterEach(() => {
+      process.argv = originalArgv;
+      console.log = originalLog;
+      console.error = originalError;
+      process.exit = originalExit;
+    });
+
     test('should load "create" command', (done) => {
-      const originalLog = console.log;
       console.log = jest.fn();
-      const originalExit = process.exit;
       process.exit = jest.fn((code) => {
         expect(console.log).toHaveBeenCalledWith(
           expect.stringContaining('Service "MyService" successfully created')
         );
         expect(code).toEqual(0);
-        console.log = originalLog;
-        process.exit = originalExit;
         done();
       });
       (new AntCli())._yargs.parse('create MyService');
     });
 
     test('should have "template" option', (done) => {
-      const originalLog = console.log;
       console.log = jest.fn();
-      const originalExit = process.exit;
       process.exit = jest.fn((code) => {
         expect(console.log).toHaveBeenCalledWith(
           expect.stringContaining('Service "MyService" successfully created')
         );
         expect(code).toEqual(0);
-        console.log = originalLog;
-        process.exit = originalExit;
         done();
       });
       (new AntCli())._yargs.parse('create MyService --template Default');
     });
 
     test('should have "t" option alias', (done) => {
-      const originalLog = console.log;
       console.log = jest.fn();
-      const originalExit = process.exit;
       process.exit = jest.fn((code) => {
         expect(console.log).toHaveBeenCalledWith(
           expect.stringContaining('Service "MyService" successfully created')
         );
         expect(code).toEqual(0);
-        console.log = originalLog;
-        process.exit = originalExit;
         done();
       });
       (new AntCli())._yargs.parse('create MyService -t Default');
     });
 
     test('should show friendly errors', (done) => {
-      const originalError = console.error;
       console.error = jest.fn();
-      const originalExit = process.exit;
       process.exit = jest.fn((code) => {
         expect(console.error).toHaveBeenCalledWith(
           expect.stringContaining(
@@ -151,19 +150,14 @@ describe('lib/plugins/core/lib/Core.js', () => {
           )
         );
         expect(code).toEqual(1);
-        console.error = originalError;
-        process.exit = originalExit;
         done();
       });
       (new AntCli())._yargs.parse('create MyService --template NotExistent');
     });
 
     test('should show friendly error when service name not passed', (done) => {
-      const originalArgv = process.argv;
       process.argv.push('create');
-      const originalError = console.error;
       console.error = jest.fn();
-      const originalExit = process.exit;
       process.exit = jest.fn((code) => {
         expect(console.error).toHaveBeenCalledWith(
           expect.stringContaining(
@@ -171,9 +165,6 @@ describe('lib/plugins/core/lib/Core.js', () => {
           )
         );
         expect(code).toEqual(1);
-        console.argv = originalArgv;
-        console.error = originalError;
-        process.exit = originalExit;
         done();
       });
       const core = new Core(ant);
@@ -187,11 +178,8 @@ describe('lib/plugins/core/lib/Core.js', () => {
     });
 
     test('should show friendly error when more passed arguments', (done) => {
-      const originalArgv = process.argv;
       process.argv.push('create');
-      const originalError = console.error;
       console.error = jest.fn();
-      const originalExit = process.exit;
       process.exit = jest.fn((code) => {
         expect(console.error).toHaveBeenCalledWith(
           expect.stringContaining(
@@ -199,9 +187,6 @@ describe('lib/plugins/core/lib/Core.js', () => {
           )
         );
         expect(code).toEqual(1);
-        console.argv = originalArgv;
-        console.error = originalError;
-        process.exit = originalExit;
         done();
       });
       const core = new Core(ant);
@@ -215,11 +200,8 @@ describe('lib/plugins/core/lib/Core.js', () => {
     });
 
     test('should show friendly error when template name not passed', (done) => {
-      const originalArgv = process.argv;
       process.argv.push('create');
-      const originalError = console.error;
       console.error = jest.fn();
-      const originalExit = process.exit;
       process.exit = jest.fn((code) => {
         expect(console.error).toHaveBeenCalledWith(
           expect.stringContaining(
@@ -227,9 +209,6 @@ describe('lib/plugins/core/lib/Core.js', () => {
           )
         );
         expect(code).toEqual(1);
-        console.argv = originalArgv;
-        console.error = originalError;
-        process.exit = originalExit;
         done();
       });
       const core = new Core(ant);
@@ -242,12 +221,31 @@ describe('lib/plugins/core/lib/Core.js', () => {
       );
     });
 
-    test('should not change the error message for other cases', () => {
-      const originalArgv = process.argv;
-      process.argv.push('create');
-      const originalError = console.error;
+    test('should show friendly error when plugin was not passed', (done) => {
+      process.argv = ['plugin', 'install'];
       console.error = jest.fn();
-      const originalExit = process.exit;
+      process.exit = jest.fn((code) => {
+        expect(console.error).toHaveBeenCalledWith(
+          expect.stringContaining(
+            'Plugin install command requires plugin argument'
+          )
+        );
+        expect(code).toEqual(1);
+        done();
+      });
+      const core = new Core(ant);
+      core._yargsFailed(
+        'Not enough non-option arguments',
+        {
+          handleErrorMessage: (msg, err, command) =>
+            (new AntCli())._handleErrorMessage(msg, err, command)
+        }
+      );
+    });
+
+    test('should not change the error message for other cases', () => {
+      process.argv.push('create');
+      console.error = jest.fn();
       process.exit = jest.fn();
 
       const core = new Core(ant);
@@ -264,18 +262,11 @@ describe('lib/plugins/core/lib/Core.js', () => {
 
       expect(console.error).not.toHaveBeenCalled();
       expect(process.exit).not.toHaveBeenCalled();
-
-      console.argv = originalArgv;
-      console.error = originalError;
-      process.exit = originalExit;
     });
 
     test('should show error stack in verbose mode', (done) => {
-      const originalArgv = process.argv;
       process.argv.push('-v');
-      const originalError = console.error;
       console.error = jest.fn();
-      const originalExit = process.exit;
       process.exit = jest.fn((code) => {
         expect(console.error).toHaveBeenCalledWith(
           expect.stringContaining(
@@ -283,12 +274,35 @@ describe('lib/plugins/core/lib/Core.js', () => {
           )
         );
         expect(code).toEqual(1);
-        console.error = originalError;
-        process.exit = originalExit;
-        process.argv = originalArgv;
         done();
       });
       (new AntCli())._yargs.parse('create -v MyService --template NotExistent');
+    });
+
+    test('should do nothing', (done) => {
+      process.argv.push('create');
+      console.error = jest.fn();
+      process.exit = jest.fn();
+
+      const core = new Core(ant);
+      core._yargsFailed('');
+
+      expect(console.error).not.toHaveBeenCalled();
+      expect(process.exit).not.toHaveBeenCalled();
+      done();
+    });
+
+    test('should do nothing when unexpected error is thrown on plugin install', (done) => {
+      process.argv = ['plugin', 'install'];
+      console.error = jest.fn();
+      process.exit = jest.fn();
+
+      const core = new Core(ant);
+      core._yargsFailed('An unexpected error');
+
+      expect(console.error).not.toHaveBeenCalled();
+      expect(process.exit).not.toHaveBeenCalled();
+      done();
     });
   });
 
@@ -335,6 +349,119 @@ describe('lib/plugins/core/lib/Core.js', () => {
         'Could not render template: path'
       );
       fs.rmdirSync('MyService');
+    });
+  });
+
+  describe('Core.pluginInstall', () => {
+    const originalExistsSync = nodeFs.existsSync;
+    const originalReadFileSync = nodeFs.readFileSync;
+    const originalSafeLoad = yaml.safeLoad;
+
+    afterEach (() => {
+      nodeFs.existsSync = originalExistsSync;
+      nodeFs.readFileSync = originalReadFileSync;
+      yaml.safeLoad = originalSafeLoad;
+    });
+
+    test(
+      'should be async and install plugin locally',
+      async () => {
+        const core = new Core(ant);
+        const configPath = await core.installPlugin('/foo/bar/myplugin');
+        expect(yaml.safeLoad(fs.readFileSync(configPath))).toEqual({ plugins: [ '/foo/bar/myplugin' ] });
+      }
+    );
+
+    test(
+      'should consider empty config object when yaml loads null',
+      async () => {
+        nodeFs.existsSync = () => true;
+        nodeFs.readFileSync = () => '';
+        yaml.safeLoad = () => null;
+
+        const core = new Core(ant);
+        const configPath = await core.installPlugin('/foo/bar/myplugin');
+        expect(originalSafeLoad(fs.readFileSync(configPath))).toEqual({ plugins: [ '/foo/bar/myplugin' ] });
+      }
+    );
+
+    test(
+      'should append the plugin to the existant configuration',
+      async () => {
+        nodeFs.existsSync = () => true;
+        nodeFs.readFileSync = () => 'plugins:\n - /existant/plugin';
+
+        const core = new Core(ant);
+        const configPath = await core.installPlugin('/foo/bar/myplugin');
+        expect(yaml.safeLoad(fs.readFileSync(configPath))).toEqual({ plugins: [ '/existant/plugin', '/foo/bar/myplugin' ] });
+      }
+    );
+
+    test(
+      'should do nothing because plugin is already installed',
+      async () => {
+        nodeFs.existsSync = () => true;
+        nodeFs.readFileSync = () => 'plugins:\n - /foo/bar/myplugin';
+
+        const core = new Core(ant);
+        const configPath = await core.installPlugin('/foo/bar/myplugin');
+        expect(configPath).toBe(null);
+      }
+    );
+
+    test(
+      'should fail when loading invalid config file',
+      async () => {
+        nodeFs.existsSync = () => true;
+        yaml.safeLoad = () => {
+          throw new Error('Mocked error');
+        };
+
+        const core = new Core(ant);
+        await expect(core.installPlugin('/foo/bar/myplugin')).rejects
+          .toThrowError(`Could not load config ${outPath}/ant.yml`);
+      }
+    );
+
+    describe('global', () => {
+      const originalReadFileSync = nodeFs.readFileSync;
+      const originalWriteFileSync = nodeFs.writeFileSync;
+      const originalSafeLoad = yaml.safeLoad;
+
+      afterEach (() => {
+        nodeFs.readFileSync = originalReadFileSync;
+        nodeFs.writeFileSync = originalWriteFileSync;
+        yaml.safeLoad = originalSafeLoad;
+      });
+
+      test(
+        'should be async and install plugin globally',
+        async () => {
+          const plugin = '/foo/bar/myplugin';
+          nodeFs.readFileSync = () => '';
+          nodeFs.writeFileSync = (path, data) => {
+            expect(path).toBe(core._getGlobalConfigPath());
+            expect(data).toBe(`plugins:\n  - ${plugin}\n`);
+          };
+
+          const core = new Core(ant);
+          await core.installPlugin(plugin, true);
+        }
+      );
+
+      test(
+        'should fail when loading invalid global config file',
+        async () => {
+          yaml.safeLoad = () => {
+            throw new Error('Mocked error');
+          };
+
+          const core = new Core(ant);
+          await core.installPlugin('/foo/bar/myplugin', true).catch(
+            e => expect(e.message.startsWith('Could not load global config')).toBeTruthy()
+          );
+        }
+      );
     });
   });
 });

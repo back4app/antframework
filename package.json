@@ -42,7 +42,7 @@
   },
   "homepage": "https://github.com/back4app/antframework#readme",
   "devDependencies": {
-    "eslint": "^5.0.1",
+    "eslint": "^5.2.0",
     "graphql": "^0.13.2",
     "graphql-tools": "^3.0.5",
     "jsdoc": "^3.5.5",
@@ -50,7 +50,7 @@
   },
   "dependencies": {
     "fs-extra": "^7.0.0",
-    "jest": "^23.4.1",
+    "jest": "^23.4.2",
     "js-yaml": "^3.12.0",
     "mustache": "^2.3.0",
     "yargs": "^12.0.1"
