@@ -216,4 +216,32 @@ Template category value is not an object!'
         );
     });
   });
+
+  describe('Ant.removePlugin', () => {
+    test('should be async and call Core plugin method', async () => {
+      const ant = new Ant();
+      const core = ant.pluginController.getPlugin('Core');
+      const removePlugin = jest.spyOn(core, 'removePlugin');
+      const removePluginReturn = ant.removePlugin(
+        'MyPlugin',
+        true
+      );
+      expect(removePluginReturn).toBeInstanceOf(Promise);
+      await removePluginReturn;
+      expect(removePlugin).toHaveBeenCalledWith(
+        'MyPlugin',
+        true
+      );
+    });
+
+    test('should fail if Core plugin not loaded', async () => {
+      expect.hasAssertions();
+      const ant = new Ant({ plugins: [] });
+      ant.pluginController._plugins = new Map();
+      await expect(ant.removePlugin('asdds'))
+        .rejects.toThrow(
+          'Plugin could not be removed'
+        );
+    });
+  });
 });

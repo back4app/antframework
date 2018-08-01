@@ -56,13 +56,13 @@ async function _expectUsageInstructions(args) {
 
 /**
  * Helper function to run the CLI command with args and check the expected error
- * message as an output.
+ * messages as an output.
  * @param {string} args The args to be sent to the CLI command.
- * @param {string} errorMessage The expected error message.
+ * @param {string} errorMessages The expected error messages.
  * @async
  * @private
  */
-async function _expectErrorMessage(args, errorMessage) {
+async function _expectErrorMessage(args, ...errorMessages) {
   expect.hasAssertions();
   try {
     await exec(
@@ -73,7 +73,9 @@ async function _expectErrorMessage(args, errorMessage) {
     const { code, stdout, stderr } = e;
     expect(code).toEqual(1);
     expect(stdout).toEqual('');
-    expect(stderr).toContain(`${errorMessage}\n`);
+    for(const errorMessage of errorMessages) {
+      expect(stderr).toContain(errorMessage);
+    }
   }
 }
 
@@ -374,7 +376,7 @@ ant.js --help plugin install`)
           'ant.js plugin install <plugin> [--global]',
           'Installs new plugin',
           'plugin  The plugin to be installed                                  [required]',
-          `--global, -g   Installs plugin(s) into global configuration file
+          `--global, -g   Installs plugin into global configuration file
                                                       [boolean] [default: false]`
         )
       );
@@ -403,6 +405,101 @@ ant.js --help plugin install`)
               throw Error('Mocked error');
             });
           antCli._yargs.parse('plugin install MyPlugin');
+        }
+      );
+    });
+
+    describe('plugin remove command', () => {
+      test(
+        'should work only with "plugin" arg',
+        (done) => {
+          const originalExit = process.exit;
+          process.exit = jest.fn(() => {
+            process.exit = originalExit;
+            expect.hasAssertions();
+            done();
+          });
+
+          const antCli = new AntCli();
+          antCli
+            ._ant
+            .pluginController
+            .getPlugin('Core')
+            .removePlugin = jest.fn(async (plugin, isGlobal) => {
+              expect(plugin).toEqual('MyPlugin');
+              expect(isGlobal).toEqual(false);
+              done();
+            });
+          antCli._yargs.parse('plugin remove MyPlugin');
+        }
+      );
+
+      test(
+        'should not work without "plugin" arg',
+        () => _expectErrorMessage('plugin remove',
+          'Fatal => Plugin remove command requires plugin argument',
+          'ant.js --help plugin remove')
+      );
+
+      test(
+        'should work with "plugin" arg and "--global" or "-g" option',
+        (done) => {
+          const originalExit = process.exit;
+          process.exit = jest.fn(() => {
+            process.exit = originalExit;
+            expect.hasAssertions();
+            done();
+          });
+
+          const antCli = new AntCli();
+          antCli
+            ._ant
+            .pluginController
+            .getPlugin('Core')
+            .removePlugin = jest.fn(async (plugin, isGlobal) => {
+              expect(plugin).toEqual('MyPlugin');
+              expect(isGlobal).toEqual(true);
+            });
+          antCli._yargs.parse('plugin remove MyPlugin --global');
+        }
+      );
+
+      test(
+        'should print command help',
+        () => _expectSuccessMessage(
+          '--help plugin remove',
+          'ant.js plugin remove <plugin> [--global]',
+          'Removes a plugin',
+          'plugin  The plugin to be removed                                    [required]',
+          `--global, -g   Removes plugin from global configuration file
+                                                      [boolean] [default: false]`
+        )
+      );
+
+      test(
+        'should handle removePlugin error',
+        (done) => {
+          const originalExit = process.exit;
+          const originalError = console.error;
+          console.error = jest.fn();
+          process.exit = jest.fn(() => {
+            expect(console.error).toBeCalledWith(
+              expect.stringContaining('Mocked error')
+            );
+            process.exit = originalExit;
+            console.error = originalError;
+            done();
+          });
+
+          const antCli = new AntCli();
+          antCli
+            ._ant
+            .pluginController
+            .getPlugin('Core')
+            .removePlugin = jest.fn(async () => {
+              throw Error('Mocked error');
+            });
+          antCli._yargs.parse('plugin remove MyPlugin');
         }
       );
     });
