@@ -10,7 +10,7 @@ const childProcess = require('child_process');
 const Ant = require('../../../../../lib/Ant');
 const AntCli = require('../../../../../lib/cli/AntCli');
 const Plugin = require('../../../../../lib/plugins/Plugin');
-const GraphQL = require('../../../../../lib/plugins/graphql/lib/GraphQL');
+const GraphQL = require('../../../../../lib/plugins/graphQL/lib/GraphQL');
 
 const ant = new Ant();
 
@@ -204,12 +204,50 @@ http://localhost:3000\n'
     });
     childProcess.exec = jest.fn((command) => {
       expect(command).toEqual(
-        'open http://localhost:3000\n'
+        expect.stringContaining('http://localhost:3000')
       );
       childProcess.exec = originalExec;
       process.chdir(originalCwd);
       console.log = originalLog;
       graphQL._serverProcess.kill();
+    });
+    try {
+      await graphQL.startService();
+    } catch(e) {
+      expect(e.message).toEqual(
+        expect.stringContaining('Server process closed')
+      );
+      done();
+    }
+  });
+
+  test('should use xdg-open if other platform', async (done) => {
+    expect.hasAssertions();
+    const originalPlatform = process.platform;
+    Object.defineProperty(process, 'platform', { value: 'FooPlatform' });
+    const originalCwd = process.cwd();
+    process.chdir(path.resolve(
+      __dirname,
+      '../../../../support/configs/graphQLPluginConfig'
+    ));
+    const originalExec = childProcess.exec;
+    const originalLog = console.log;
+    const graphQL = new GraphQL(ant);
+    console.log = jest.fn((msg) => {
+      expect(msg).toEqual(
+        'Server => GraphQL API server listening for requests on \
+http://localhost:3000\n'
+      );
+    });
+    childProcess.exec = jest.fn((command) => {
+      expect(command).toEqual(
+        expect.stringContaining('xdg-open http://localhost:3000')
+      );
+      childProcess.exec = originalExec;
+      process.chdir(originalCwd);
+      console.log = originalLog;
+      graphQL._serverProcess.kill();
+      Object.defineProperty(process, 'platform', { value: originalPlatform });
     });
     try {
       await graphQL.startService();

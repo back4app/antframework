@@ -329,14 +329,14 @@ ant.js --help create`)
           const cliProcess = childProcess.spawn(
             `${binPath}`,
             ['start'],
-            { cwd: graphQlPluginConfigPath }
+            { cwd: graphQlPluginConfigPath, detached: true }
           );
           cliProcess.stdout.on('data', data => {
             data = data.toString();
             if (
               data.includes('GraphQL API server listening for requests')
             ) {
-              cliProcess.kill();
+              process.kill(-cliProcess.pid);
               done();
             }
           });
