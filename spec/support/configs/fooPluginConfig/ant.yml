@@ -1,2 +1,5 @@
 plugins:
-  - ../../spec/support/plugins/FooPlugin
+  - ./spec/support/plugins/FooPlugin:
+      a: 1
+      b: 2
+      c: 3

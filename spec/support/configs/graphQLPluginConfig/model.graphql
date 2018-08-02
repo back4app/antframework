@@ -1,0 +1,7 @@
+schema {
+  query: Query
+}
+
+type Query {
+  hello: String @mock(with: "Hello, world!!!")
+}

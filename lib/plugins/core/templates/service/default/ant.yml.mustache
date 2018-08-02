@@ -1,8 +1,26 @@
 # The service name
 service: {{service}}
 
-# The GraphQL model path
-# model: ./model.graphql
+# The service base path
+# basePath: ./
+
+# The installed plugins
+plugins:
+
+  # This plugin enables the Ant Framework for building and starting GraphQL API
+  # services
+  - ./lib/plugins/graphQL:
+
+      # The GraphQL plugin base path
+      # basePath: ./
+
+      # The GraphQL model path
+      # model: ./model.graphql
+
+      # The script to start the GraphQL API server when starting this service
+      # server:
+        # bin: ./lib/plugins/graphQL/templates/default/bin/server.js
+        # port: 3000
 
 # Below is an example of how to load custom templates using this config file.
 # There will be loaded templates from two custom categories (MyCustomCategory and Foo).
@@ -10,7 +28,7 @@ service: {{service}}
 # - The first one with name MyCustomTemplate, with path /path/to/my/custom
 # - The second one with name AnotherCustom, and path /path/to/another/foo
 #
-# The second category, Foo, will load only the Bar template, whose path is /whatever/foo/bar. 
+# The second category, Foo, will load only the Bar template, whose path is /whatever/foo/bar.
 #
 # templates:
 #   MyCustomCategory:

@@ -5,7 +5,8 @@
 const path = require('path');
 const fs = require('fs-extra');
 const util = require('util');
-const exec = util.promisify(require('child_process').exec);
+const childProcess = require('child_process');
+const exec = util.promisify(childProcess.exec);
 const AntCli = require('../../lib/cli/AntCli');
 
 const binPath = path.resolve(__dirname, '../../bin/ant.js');
@@ -302,6 +303,72 @@ ant.js --help create`)
             });
           antCli._yargs.parse('create MyService');
         }
+      );
+    });
+  });
+
+  describe('GraphQL plugin', () => {
+    describe('start command', () => {
+      const originalCwd = process.cwd();
+      const graphQlPluginConfigPath = path.resolve(
+        __dirname,
+        '../support/configs/graphQLPluginConfig'
+      );
+
+      beforeEach(() => {
+        process.chdir(graphQlPluginConfigPath);
+      });
+
+      afterEach(() => {
+        process.chdir(originalCwd);
+      });
+
+      test(
+        'should work with no args',
+        (done) => {
+          const cliProcess = childProcess.spawn(
+            `${binPath}`,
+            ['start'],
+            { cwd: graphQlPluginConfigPath, detached: true }
+          );
+          cliProcess.stdout.on('data', data => {
+            data = data.toString();
+            if (
+              data.includes('GraphQL API server listening for requests')
+            ) {
+              process.kill(-cliProcess.pid);
+              done();
+            }
+          });
+        }
+      );
+
+      test(
+        'should print command help',
+        () => _expectSuccessMessage(
+          '--help start',
+          `ant.js start [--config <path>]
+
+Start a service in localhost
+
+Options:
+  --help, -h     Show help                                             [boolean]
+  --version      Show version number                                   [boolean]
+  --config, -c   Path to YAML config file
+  --verbose, -v  Show execution logs and error stacks [boolean] [default: false]
+`
+        )
+      );
+
+      test(
+        'should fail with too many args',
+        () => _expectErrorMessage(
+          'start foo',
+          `Fatal => Start command accepts no arguments
+
+For getting help:
+ant.js --help start`
+        )
       );
     });
   });

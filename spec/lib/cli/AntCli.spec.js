@@ -162,6 +162,8 @@ describe('lib/cli/AntCli.js', () => {
   });
 
   test('should load config with no plugins', () => {
+    const originalArgv = process.argv;
+    process.argv = ['--config', 'ant.yml'];
     const originalExit = process.exit;
     process.exit = jest.fn();
     const originalLog = console.log;
@@ -172,7 +174,7 @@ describe('lib/cli/AntCli.js', () => {
       '../../support/configs/noPluginsConfig'
     ));
     try {
-      (new AntCli()).execute();
+      (new AntCli())._yargs.parse('--config ant.yml');
       expect(process.exit).toHaveBeenCalledWith(0);
       expect(console.log.mock.calls[0][0]).toContain(`Plugins:
   Core
@@ -183,6 +185,7 @@ describe('lib/cli/AntCli.js', () => {
       process.exit = originalExit;
       console.log = originalLog;
       process.chdir(originalCwd);
+      process.argv = originalArgv;
     }
   });
 

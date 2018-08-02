@@ -3,3 +3,6 @@ docs
 
 # jest coverage output
 coverage
+
+# Dependency directory
+node_modules

@@ -7,6 +7,7 @@ const Ant = require('../lib/Ant');
 const Plugin = require('../lib/plugins/Plugin');
 const Template = require('../lib/templates/Template');
 const Core = require('../lib/plugins/core/lib/Core');
+const GraphQL = require('../lib/plugins/graphQL/lib/GraphQL');
 const util = require('../lib/util');
 
 describe('index.js', () => {
@@ -25,6 +26,12 @@ describe('index.js', () => {
   test('should export "Template" class', () => {
     expect(index.Template).toEqual(
       Template
+    );
+  });
+
+  test('should export "GraphQL" class', () => {
+    expect(index.GraphQL).toEqual(
+      GraphQL
     );
   });
 

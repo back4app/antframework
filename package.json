@@ -25,8 +25,10 @@
     "lint": "eslint ./",
     "pretest": "npm run lint",
     "test": "jest",
+    "posttest": "rm -r ./spec/support/out",
     "apidocs": "jsdoc -c ./jsdoc.json",
-    "docs": "npm run apidocs"
+    "docs": "npm run apidocs",
+    "install": "cd ./lib/plugins/graphQL/templates/server/default && npm install"
   },
   "bin": {
     "ant": "./bin/ant.js"
