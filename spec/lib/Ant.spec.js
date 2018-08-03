@@ -46,9 +46,8 @@ describe('lib/Ant.js', () => {
   });
 
   test('should fail if global config cannot be read', () => {
-    const yaml = require('js-yaml');
-    const safeLoad = yaml.safeLoad;
-    yaml.safeLoad = () => { throw new Error(); };
+    const readFileSync = fs.readFileSync;
+    fs.readFileSync = () => { throw new Error(); };
     try {
       expect(() => new Ant()).toThrowError(
         'Could not load global config'
@@ -56,7 +55,7 @@ describe('lib/Ant.js', () => {
     } catch (e) {
       throw e;
     } finally {
-      yaml.safeLoad = safeLoad;
+      fs.readFileSync = readFileSync;
     }
   });
 
@@ -163,7 +162,7 @@ Template category value is not an object!'
       ant.pluginController._plugins = new Map();
       await expect(ant.createService('FooService', 'FooTemplate'))
         .rejects.toThrow(
-          'Service could not be created because the Core plugin is not loaded'
+          'Service could not be created'
         );
     });
 
@@ -207,6 +206,62 @@ Template category value is not an object!'
       await startServiceReturn;
       expect(startService).toHaveBeenCalled();
       process.chdir(originalCwd);
+    });
+  });
+
+  describe('Ant.addPlugin', () => {
+    test('should be async and call Core plugin method', async () => {
+      const ant = new Ant();
+      const addPlugin = jest.fn();
+      ant.pluginController.getPlugin('Core').addPlugin = addPlugin;
+      const addPluginReturn = ant.addPlugin(
+        'MyPlugin',
+        true
+      );
+      expect(addPluginReturn).toBeInstanceOf(Promise);
+      await addPluginReturn;
+      expect(addPlugin).toHaveBeenCalledWith(
+        'MyPlugin',
+        true
+      );
+    });
+
+    test('should fail if Core plugin not loaded', async () => {
+      expect.hasAssertions();
+      const ant = new Ant({ plugins: [] });
+      ant.pluginController._plugins = new Map();
+      await expect(ant.addPlugin('asdds'))
+        .rejects.toThrow(
+          'Plugin could not be added'
+        );
+    });
+  });
+
+  describe('Ant.removePlugin', () => {
+    test('should be async and call Core plugin method', async () => {
+      const ant = new Ant();
+      const core = ant.pluginController.getPlugin('Core');
+      const removePlugin = jest.spyOn(core, 'removePlugin');
+      const removePluginReturn = ant.removePlugin(
+        'MyPlugin',
+        true
+      );
+      expect(removePluginReturn).toBeInstanceOf(Promise);
+      await removePluginReturn;
+      expect(removePlugin).toHaveBeenCalledWith(
+        'MyPlugin',
+        true
+      );
+    });
+
+    test('should fail if Core plugin not loaded', async () => {
+      expect.hasAssertions();
+      const ant = new Ant({ plugins: [] });
+      ant.pluginController._plugins = new Map();
+      await expect(ant.removePlugin('asdds'))
+        .rejects.toThrow(
+          'Plugin could not be removed'
+        );
     });
   });
 });

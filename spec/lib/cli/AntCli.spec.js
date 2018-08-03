@@ -5,7 +5,7 @@
  */
 
 const path = require('path');
-const yaml = require('js-yaml');
+const yaml = require('yaml').default;
 const YError = require('yargs/lib/yerror');
 const AntCli = require('../../../lib/cli/AntCli');
 const logger = require('../../../lib/util/logger');
@@ -142,8 +142,8 @@ describe('lib/cli/AntCli.js', () => {
   });
 
   test('should work with no plugins', () => {
-    const originalSafeLoad = yaml.safeLoad;
-    yaml.safeLoad = () => null;
+    const originalParse = yaml.parse;
+    yaml.parse = () => null;
     const originalExit = process.exit;
     process.exit = jest.fn();
     const originalLog = console.log;
@@ -155,7 +155,7 @@ describe('lib/cli/AntCli.js', () => {
     } catch (e) {
       throw e;
     } finally {
-      yaml.safeLoad = originalSafeLoad;
+      yaml.parse = originalParse;
       process.exit = originalExit;
       console.log = originalLog;
     }
