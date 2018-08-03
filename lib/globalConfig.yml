@@ -1,6 +1,3 @@
-plugins:
-  - ./plugins/core
-
 # Below is an example of how to load custom templates using this config file.
 # There will be loaded templates from two custom categories (MyCustomCategory and Foo).
 # On MyCustomCategory, two templates will be loaded:
@@ -15,3 +12,7 @@ plugins:
 #     AnotherCustom: /path/to/another/foo
 #   Foo:
 #     Bar: /whatever/foo/bar
+
+plugins:
+  - ./plugins/core
+  - /foo/bar/myplugin

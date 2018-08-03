@@ -6,7 +6,7 @@
 
 const path = require('path');
 const fs = require('fs-extra');
-const yaml = require('js-yaml');
+const yaml = require('yaml').default;
 const { makeExecutableSchema } = require('graphql-tools');
 const AntCli = require('../../../../../lib/cli/AntCli');
 const Ant = require('../../../../../lib/Ant');
@@ -79,7 +79,7 @@ describe('lib/plugins/core/lib/Core.js', () => {
           );
           expect(fs.readdirSync(outPath)).toEqual(['ant.yml', 'model.graphql']);
           expect(
-            yaml.safeLoad(
+            yaml.parse(
               fs.readFileSync(path.resolve(outPath, 'ant.yml'), 'utf8')
             ).service
           ).toEqual('MyService');
@@ -377,12 +377,12 @@ describe('lib/plugins/core/lib/Core.js', () => {
   describe('Core.pluginInstall', () => {
     const originalExistsSync = nodeFs.existsSync;
     const originalReadFileSync = nodeFs.readFileSync;
-    const originalSafeLoad = yaml.safeLoad;
+    const originalParseDocument = yaml.parseDocument;
 
     afterEach (() => {
       nodeFs.existsSync = originalExistsSync;
       nodeFs.readFileSync = originalReadFileSync;
-      yaml.safeLoad = originalSafeLoad;
+      yaml.parseDocument = originalParseDocument;
     });
 
     test(
@@ -390,7 +390,36 @@ describe('lib/plugins/core/lib/Core.js', () => {
       async () => {
         const core = new Core(ant);
         const configPath = await core.installPlugin('/foo/bar/myplugin');
-        expect(yaml.safeLoad(fs.readFileSync(configPath))).toEqual({ plugins: [ '/foo/bar/myplugin' ] });
+        const configFileContent = fs.readFileSync(configPath, 'utf-8');
+        expect(configFileContent).toBe('plugins:\n  - /foo/bar/myplugin\n');
+        expect(yaml.parse(configFileContent)).toEqual({ plugins: [ '/foo/bar/myplugin' ] });
+      }
+    );
+
+    test(
+      'should install and keep comments',
+      async () => {
+        const configFileContent = '# Should not be removed\n' +
+          'plugins:\n' +
+          '  - ./plugins/core\n' +
+          '\n' +
+          '  # Should not be removed below\n';
+        nodeFs.existsSync = jest.fn().mockImplementation(() => true);
+        nodeFs.readFileSync = jest.fn().mockImplementation(() => configFileContent);
+
+        const core = new Core(ant);
+        const configPath = await core.installPlugin('/foo/bar/myplugin');
+        const actualConfigFileContent = fs.readFileSync(configPath, 'utf-8');
+
+        // Notice that the empty line is removed when the yaml tree is rendered
+        expect(actualConfigFileContent).toBe('# Should not be removed\n' +
+        'plugins:\n' +
+        '  - ./plugins/core\n' +
+        '  - /foo/bar/myplugin\n' +
+        '  # Should not be removed below\n');
+        expect(yaml.parse(actualConfigFileContent)).toEqual(
+          { plugins: [ './plugins/core', '/foo/bar/myplugin' ] }
+        );
       }
     );
 
@@ -403,7 +432,7 @@ describe('lib/plugins/core/lib/Core.js', () => {
 
         const core = new Core(ant);
         const configPath = await core.installPlugin('/foo/bar/myplugin');
-        expect(originalSafeLoad(fs.readFileSync(configPath))).toEqual({ plugins: [ '/foo/bar/myplugin' ] });
+        expect(yaml.parse(fs.readFileSync(configPath, 'utf-8'))).toEqual({ plugins: [ '/foo/bar/myplugin' ] });
       }
     );
 
@@ -415,7 +444,7 @@ describe('lib/plugins/core/lib/Core.js', () => {
 
         const core = new Core(ant);
         const configPath = await core.installPlugin('/foo/bar/myplugin');
-        expect(yaml.safeLoad(fs.readFileSync(configPath))).toEqual({ plugins: [ '/existant/plugin', '/foo/bar/myplugin' ] });
+        expect(yaml.parse(fs.readFileSync(configPath, 'utf-8'))).toEqual({ plugins: [ '/existant/plugin', '/foo/bar/myplugin' ] });
       }
     );
 
@@ -435,9 +464,9 @@ describe('lib/plugins/core/lib/Core.js', () => {
       'should fail when loading invalid config file',
       async () => {
         nodeFs.existsSync = () => true;
-        yaml.safeLoad = () => {
+        yaml.parseDocument = jest.fn().mockImplementation(() => {
           throw new Error('Mocked error');
-        };
+        });
 
         const core = new Core(ant);
         await expect(core.installPlugin('/foo/bar/myplugin')).rejects
@@ -474,9 +503,9 @@ describe('lib/plugins/core/lib/Core.js', () => {
       test(
         'should fail when loading invalid global config file',
         async () => {
-          yaml.safeLoad = () => {
+          yaml.parseDocument = jest.fn().mockImplementation(() => {
             throw new Error('Mocked error');
-          };
+          });
 
           const core = new Core(ant);
           await core.installPlugin('/foo/bar/myplugin', true).catch(
@@ -494,10 +523,9 @@ describe('lib/plugins/core/lib/Core.js', () => {
         async () => {
           const core = new Core(ant);
           const localConfigFilePath = await core.installPlugin('/foo/bar/myplugin', false);
-
           const configPath = await core.removePlugin('/foo/bar/myplugin');
           expect(configPath).toBe(localConfigFilePath);
-          expect(yaml.safeLoad(fs.readFileSync(configPath))).toEqual({ plugins: [] });
+          expect(yaml.parse(fs.readFileSync(configPath, 'utf-8'))).toEqual({ plugins: [] });
         }
       );
 
@@ -513,24 +541,44 @@ describe('lib/plugins/core/lib/Core.js', () => {
       test(
         'should do nothing because config file is empty',
         async () => {
+          const log = jest.spyOn(logger, 'log');
           const core = new Core(ant);
           const configFilePath = core._getLocalConfigPath();
           fs.writeFileSync(configFilePath, '');
 
           const configPath = await core.removePlugin('/foo/bar/myplugin');
           expect(configPath).toBe(null);
+          expect(log).toBeCalledWith('Configuration not found. plugin remove command should do nothing');
+        }
+      );
+
+      test(
+        'should do nothing because config file does not have a plugins entry',
+        async () => {
+          const log = jest.spyOn(logger, 'log');
+          const core = new Core(ant);
+          const configFilePath = core._getLocalConfigPath();
+          fs.writeFileSync(configFilePath, 'foo: bar');
+
+          const configPath = await core.removePlugin('/foo/bar/myplugin');
+          expect(configPath).toBe(null);
+          expect(log).toBeCalledWith('No plugins installed was found on local configuration file. \
+plugin remove command should do nothing');
         }
       );
 
       test(
         'should do nothing because plugins is empty',
         async () => {
+          const log = jest.spyOn(logger, 'log');
           const core = new Core(ant);
           const configFilePath = core._getLocalConfigPath();
-          fs.writeFileSync(configFilePath, yaml.safeDump({ plugins: []}));
+          fs.writeFileSync(configFilePath, 'plugins:\n  []\n');
 
           const configPath = await core.removePlugin('/foo/bar/myplugin');
           expect(configPath).toBe(null);
+          expect(log).toHaveBeenCalledWith('Plugin "/foo/bar/myplugin" is \
+already uninstalled from the local configuration file. plugin remove command should do nothing');
         }
       );
     });
@@ -540,12 +588,12 @@ describe('lib/plugins/core/lib/Core.js', () => {
         async () => {
           const core = new Core(ant);
           const mockedGlobalPath = path.resolve(outPath, 'global');
-          fs.writeFileSync(mockedGlobalPath, yaml.safeDump({ plugins: [] }));
+          fs.writeFileSync(mockedGlobalPath, yaml.stringify({ plugins: [] }));
           core._getGlobalConfigPath = () => mockedGlobalPath;
           const globalConfigFilePath = await core.installPlugin('/foo/bar/myplugin', true);
           const configPath = await core.removePlugin('/foo/bar/myplugin', true);
           expect(configPath).toBe(globalConfigFilePath);
-          expect(yaml.safeLoad(fs.readFileSync(configPath))).toEqual({ plugins: [] });
+          expect(yaml.parse(fs.readFileSync(configPath, 'utf-8'))).toEqual({ plugins: [] });
         }
       );
 
@@ -558,19 +606,19 @@ describe('lib/plugins/core/lib/Core.js', () => {
           const mockedGlobalPath = path.resolve(outPath, 'global');
           core._getGlobalConfigPath = () => mockedGlobalPath;
 
-          fs.writeFileSync(mockedGlobalPath, yaml.safeDump({}));
+          fs.writeFileSync(mockedGlobalPath, yaml.stringify({}));
           let configPath = await core.removePlugin('/foo/bar/myplugin', true);
           expect(log).toBeCalledWith('No plugins installed was found on global \
 configuration file. plugin remove command should do nothing');
           expect(configPath).toBe(null);
 
-          fs.writeFileSync(mockedGlobalPath, yaml.safeDump({ plugins: [] }));
+          fs.writeFileSync(mockedGlobalPath, yaml.stringify({ plugins: [] }));
           configPath = await core.removePlugin('/foo/bar/myplugin', true);
           expect(log).toBeCalledWith('Plugin "/foo/bar/myplugin" is already uninstalled from the global \
 configuration file. plugin remove command should do nothing');
           expect(configPath).toBe(null);
 
-          fs.writeFileSync(mockedGlobalPath, yaml.safeDump({ plugins: ['/foo/bar/myplugin'] }));
+          fs.writeFileSync(mockedGlobalPath, yaml.stringify({ plugins: ['/foo/bar/myplugin'] }));
           configPath = await core.removePlugin('/foo/bar/myplugin', true);
           expect(log).toBeCalledWith('Plugin "/foo/bar/myplugin" uninstalled successfully from the global \
 configuration file');
