@@ -89,6 +89,23 @@ describe('lib/plugins/core/lib/Core.js', () => {
               'utf8'
             )
           });
+          const originalCwd = process.cwd();
+          process.chdir(path.resolve(
+            __dirname,
+            '../../../../support/configs/graphQLPluginConfig'
+          ));
+          const originalLog = console.log;
+          console.log = jest.fn();
+          const originalExit = process.exit;
+          process.exit = jest.fn();
+          (new AntCli()).execute();
+          expect(process.exit).toHaveBeenCalledWith(0);
+          expect(console.log).toHaveBeenCalledWith(expect.stringContaining(
+            'Core, GraphQL'
+          ));
+          process.exit = originalExit;
+          console.log = originalLog;
+          process.chdir(originalCwd);
         });
       });
     });
