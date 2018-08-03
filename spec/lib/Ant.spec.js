@@ -46,9 +46,8 @@ describe('lib/Ant.js', () => {
   });
 
   test('should fail if global config cannot be read', () => {
-    const yaml = require('js-yaml');
-    const safeLoad = yaml.safeLoad;
-    yaml.safeLoad = () => { throw new Error(); };
+    const readFileSync = fs.readFileSync;
+    fs.readFileSync = () => { throw new Error(); };
     try {
       expect(() => new Ant()).toThrowError(
         'Could not load global config'
@@ -56,7 +55,7 @@ describe('lib/Ant.js', () => {
     } catch (e) {
       throw e;
     } finally {
-      yaml.safeLoad = safeLoad;
+      fs.readFileSync = readFileSync;
     }
   });
 
