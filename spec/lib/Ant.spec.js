@@ -209,18 +209,18 @@ Template category value is not an object!'
     });
   });
 
-  describe('Ant.installPlugin', () => {
+  describe('Ant.addPlugin', () => {
     test('should be async and call Core plugin method', async () => {
       const ant = new Ant();
-      const installPlugin = jest.fn();
-      ant.pluginController.getPlugin('Core').installPlugin = installPlugin;
-      const installPluginReturn = ant.installPlugin(
+      const addPlugin = jest.fn();
+      ant.pluginController.getPlugin('Core').addPlugin = addPlugin;
+      const addPluginReturn = ant.addPlugin(
         'MyPlugin',
         true
       );
-      expect(installPluginReturn).toBeInstanceOf(Promise);
-      await installPluginReturn;
-      expect(installPlugin).toHaveBeenCalledWith(
+      expect(addPluginReturn).toBeInstanceOf(Promise);
+      await addPluginReturn;
+      expect(addPlugin).toHaveBeenCalledWith(
         'MyPlugin',
         true
       );
@@ -230,9 +230,9 @@ Template category value is not an object!'
       expect.hasAssertions();
       const ant = new Ant({ plugins: [] });
       ant.pluginController._plugins = new Map();
-      await expect(ant.installPlugin('asdds'))
+      await expect(ant.addPlugin('asdds'))
         .rejects.toThrow(
-          'Plugin could not be installed'
+          'Plugin could not be added'
         );
     });
   });

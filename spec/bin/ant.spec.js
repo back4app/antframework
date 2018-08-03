@@ -313,7 +313,7 @@ ant.js --help create`)
       );
     });
 
-    describe('plugin install command', () => {
+    describe('plugin add command', () => {
       test(
         'should work only with "plugin" arg',
         (done) => {
@@ -329,22 +329,22 @@ ant.js --help create`)
             ._ant
             .pluginController
             .getPlugin('Core')
-            .installPlugin = jest.fn(async (plugin, isGlobal) => {
+            .addPlugin = jest.fn(async (plugin, isGlobal) => {
               expect(plugin).toEqual('MyPlugin');
               expect(isGlobal).toEqual(false);
               done();
             });
-          antCli._yargs.parse('plugin install MyPlugin');
+          antCli._yargs.parse('plugin add MyPlugin');
         }
       );
 
       test(
         'should not work without "plugin" arg',
-        () => _expectErrorMessage('plugin install',
-          `Fatal => Plugin install command requires plugin argument
+        () => _expectErrorMessage('plugin add',
+          `Fatal => Plugin add command requires plugin argument
 
 For getting help:
-ant.js --help plugin install`)
+ant.js --help plugin add`)
       );
 
       test(
@@ -362,28 +362,28 @@ ant.js --help plugin install`)
             ._ant
             .pluginController
             .getPlugin('Core')
-            .installPlugin = jest.fn(async (plugin, isGlobal) => {
+            .addPlugin = jest.fn(async (plugin, isGlobal) => {
               expect(plugin).toEqual('MyPlugin');
               expect(isGlobal).toEqual(true);
             });
-          antCli._yargs.parse('plugin install MyPlugin --global');
+          antCli._yargs.parse('plugin add MyPlugin --global');
         }
       );
 
       test(
         'should print command help',
         () => _expectSuccessMessage(
-          '--help plugin install',
-          'ant.js plugin install <plugin> [--global]',
-          'Installs new plugin',
-          'plugin  The plugin to be installed                                  [required]',
-          `--global, -g   Installs plugin into global configuration file
+          '--help plugin add',
+          'ant.js plugin add <plugin> [--global]',
+          'Adds new plugin',
+          'plugin  The plugin to be added                                      [required]',
+          `--global, -g   Adds plugin into global configuration file
                                                       [boolean] [default: false]`
         )
       );
 
       test(
-        'should handle installPlugin error',
+        'should handle addPlugin error',
         (done) => {
           const originalExit = process.exit;
           const originalError = console.error;
@@ -402,10 +402,10 @@ ant.js --help plugin install`)
             ._ant
             .pluginController
             .getPlugin('Core')
-            .installPlugin = jest.fn(async () => {
+            .addPlugin = jest.fn(async () => {
               throw Error('Mocked error');
             });
-          antCli._yargs.parse('plugin install MyPlugin');
+          antCli._yargs.parse('plugin add MyPlugin');
         }
       );
     });
