@@ -6,6 +6,7 @@ const util = require('../../../lib/util');
 const AntError = require('../../../lib/util/AntError');
 const logger = require('../../../lib/util/logger');
 const yargsHelper = require('../../../lib/util/yargsHelper');
+const rxjsHelper = require('../../../lib/util/rxjsHelper');
 
 describe('lib/util/index.js', () => {
   test('should export "AntError" class', () => {
@@ -20,9 +21,15 @@ describe('lib/util/index.js', () => {
     );
   });
 
-  test('should export "yargsHelper" module', () => {
+  test('should export "rxjsHelper" module', () => {
     expect(util.yargsHelper).toEqual(
       yargsHelper
+    );
+  });
+
+  test('should export "rxjsHelper" module', () => {
+    expect(util.rxjsHelper).toEqual(
+      rxjsHelper
     );
   });
 });
