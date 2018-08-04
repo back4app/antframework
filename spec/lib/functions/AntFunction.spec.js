@@ -29,10 +29,9 @@ describe('lib/functions/AntFunction.js', () => {
   });
 
   describe('AntFunction.run', () => {
-    test('should be async', async () => {
+    test('should return nothing if not implemented', async () => {
       const runReturn = antFunction.run();
-      expect(runReturn).toEqual(expect.any(Promise));
-      expect(await runReturn).toEqual(undefined);
+      expect(runReturn).toEqual(undefined);
     });
   });
 });

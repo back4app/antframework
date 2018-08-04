@@ -4,6 +4,8 @@
 
 const path = require('path');
 const childProcess = require('child_process');
+const { Observable } = require('rxjs');
+const { toArray } = require('rxjs/operators');
 const logger = require('../../../lib/util/logger');
 const BinFunction = require('../../../lib/functions/BinFunction');
 
@@ -24,23 +26,25 @@ describe('lib/functions/BinFunction.js', () => {
   });
 
   describe('BinFunction.run', () => {
-    test('should be async', async () => {
+    test('should export Observable', async () => {
       const runReturn = binFunction.run();
-      expect(runReturn).toEqual(expect.any(Promise));
-      expect(await runReturn).toEqual(expect.any(String));
+      expect(runReturn).toEqual(expect.any(Observable));
+      expect(await runReturn.pipe(toArray()).toPromise())
+        .toEqual(expect.any(Array));
     });
 
     test('should work with args', async () => {
       const runReturn = binFunction.run(['-la']);
-      expect(runReturn).toEqual(expect.any(Promise));
-      expect(await runReturn).toEqual(expect.any(String));
+      expect(runReturn).toEqual(expect.any(Observable));
+      expect((await runReturn.pipe(toArray()).toPromise()).join(''))
+        .toEqual(expect.any(String));
     });
 
     test('should fail with invalid args', () => {
-      expect(binFunction.run({})).rejects.toThrowError(
+      expect(() => { binFunction.run({}); }).toThrowError(
         'Could not run bin function: param "args" should be Array of String'
       );
-      expect(binFunction.run([{}])).rejects.toThrowError(
+      expect(() => { binFunction.run([{}]); }).toThrowError(
         'Could not run bin function: param "args" should be Array of String'
       );
     });
@@ -48,7 +52,7 @@ describe('lib/functions/BinFunction.js', () => {
     test('should fail if spawn fails', () => {
       const originalSpawn = childProcess.spawn;
       childProcess.spawn = jest.fn(() => { throw new Error('Some error'); });
-      expect(binFunction.run()).rejects.toThrowError(
+      expect(binFunction.run().toPromise()).rejects.toThrowError(
         'Could not spawn "fooFunction" bin function process'
       );
       childProcess.spawn = originalSpawn;
@@ -59,10 +63,10 @@ describe('lib/functions/BinFunction.js', () => {
       const errorHandler = jest.fn();
       logger.attachHandler(logHandler);
       logger.attachErrorHandler(errorHandler);
-      expect(await (new BinFunction(
+      expect((await (new BinFunction(
         'fooBinFunction',
         path.resolve(__dirname, '../../support/functions/fooBinFunction.js')
-      )).run()).toEqual(
+      )).run().pipe(toArray()).toPromise()).join('')).toEqual(
         `Some initial log
 Some other log
 `
@@ -86,7 +90,7 @@ Some other log
       expect((new BinFunction(
         'crashBinFunction',
         path.resolve(__dirname, '../../support/functions/crashBinFunction.js')
-      )).run()).rejects.toThrowError(
+      )).run().toPromise()).rejects.toThrowError(
         'crashBinFunction bin function process closed with code "1"'
       );
     });
@@ -95,7 +99,7 @@ Some other log
       expect(await (new BinFunction(
         'binFunction',
         'sleep'
-      )).run(['1'])).toEqual(
+      )).run(['1']).toPromise()).toEqual(
         undefined
       );
     });
@@ -113,7 +117,7 @@ Some other log
         })
       };});
       try {
-        await binFunction.run();
+        await binFunction.run().toPromise();
       } catch(e) {
         expect(e.message).toEqual(
           expect.stringContaining(
