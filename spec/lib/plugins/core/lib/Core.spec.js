@@ -13,8 +13,9 @@ const Ant = require('../../../../../lib/Ant');
 const Plugin = require('../../../../../lib/plugins/Plugin');
 const Template = require('../../../../../lib/templates/Template');
 const Core = require('../../../../../lib/plugins/core/lib/Core');
-const nodeFs = require('fs');
 const yargsHelper = require('../../../../../lib/util/yargsHelper');
+const Config = require('../../../../../lib/Config');
+const configUtil = require('../../../../../lib/util/config');
 
 const ant = new Ant();
 
@@ -243,6 +244,32 @@ describe('lib/plugins/core/lib/Core.js', () => {
 
     describe('plugin command', () => {
       describe('plugin add command', () => {
+        test('should add and save locally', async () => {
+          const getLocalConfigPath = jest.spyOn(configUtil, 'getLocalConfigPath');
+          const addPlugin = jest.spyOn(Config.prototype, 'addPlugin');
+          const save = jest.spyOn(Config.prototype, 'save');
+          const myPlugin = 'myplugin';
+          const core = new Core(ant);
+          await core.addPlugin(myPlugin);
+          expect(getLocalConfigPath).toHaveBeenCalled();
+          expect(addPlugin).toHaveBeenCalledWith(myPlugin);
+          expect(save).toHaveBeenCalled();
+        });
+
+        test('should add and save globally', async () => {
+          const getLocalConfigPath = jest.spyOn(configUtil, 'getLocalConfigPath');
+          const addPlugin = jest.spyOn(Config.prototype, 'addPlugin');
+          const originalSave = Config.prototype.save;
+          const save = Config.prototype.save = jest.fn();
+          const myPlugin = 'myplugin';
+          const core = new Core(ant);
+          await core.addPlugin(myPlugin, true);
+          expect(getLocalConfigPath).not.toHaveBeenCalled();
+          expect(addPlugin).toHaveBeenCalledWith(myPlugin);
+          expect(save).toHaveBeenCalled();
+          Config.prototype.save = originalSave;
+        });
+
         test('should show friendly error when plugin was not passed', (done) => {
           process.argv = ['plugin', 'add'];
           console.error = jest.fn();
@@ -259,6 +286,32 @@ describe('lib/plugins/core/lib/Core.js', () => {
       });
 
       describe('plugin remove command', () => {
+        test('should remove and save locally', async () => {
+          const getLocalConfigPath = jest.spyOn(configUtil, 'getLocalConfigPath');
+          const removePlugin = jest.spyOn(Config.prototype, 'removePlugin');
+          const save = jest.spyOn(Config.prototype, 'save');
+          const myPlugin = 'myplugin';
+          const core = new Core(ant);
+          await core.removePlugin(myPlugin);
+          expect(getLocalConfigPath).toHaveBeenCalled();
+          expect(removePlugin).toHaveBeenCalledWith(myPlugin);
+          expect(save).toHaveBeenCalled();
+        });
+
+        test('should remove and save globally', async () => {
+          const getLocalConfigPath = jest.spyOn(configUtil, 'getLocalConfigPath');
+          const removePlugin = jest.spyOn(Config.prototype, 'removePlugin');
+          const originalSave = Config.prototype.save;
+          const save = Config.prototype.save = jest.fn();
+          const myPlugin = 'myplugin';
+          const core = new Core(ant);
+          await core.removePlugin(myPlugin, true);
+          expect(getLocalConfigPath).not.toHaveBeenCalled();
+          expect(removePlugin).toHaveBeenCalledWith(myPlugin);
+          expect(save).toHaveBeenCalled();
+          Config.prototype.save = originalSave;
+        });
+
         test('should show friendly error when plugin was not passed', (done) => {
           const handleErrorMessage = jest.spyOn(yargsHelper, 'handleErrorMessage');
           process.argv = ['plugin', 'remove'];
@@ -387,258 +440,6 @@ describe('lib/plugins/core/lib/Core.js', () => {
         'Could not render template: path'
       );
       fs.rmdirSync('MyService');
-    });
-  });
-
-  describe('Core.pluginAdd', () => {
-    const originalExistsSync = nodeFs.existsSync;
-    const originalReadFileSync = nodeFs.readFileSync;
-    const originalParseDocument = yaml.parseDocument;
-
-    afterEach (() => {
-      nodeFs.existsSync = originalExistsSync;
-      nodeFs.readFileSync = originalReadFileSync;
-      yaml.parseDocument = originalParseDocument;
-    });
-
-    test(
-      'should be async and add plugin locally',
-      async () => {
-        const core = new Core(ant);
-        const configPath = await core.addPlugin('/foo/bar/myplugin');
-        const configFileContent = fs.readFileSync(configPath, 'utf-8');
-        expect(configFileContent).toBe('plugins:\n  - /foo/bar/myplugin\n');
-        expect(yaml.parse(configFileContent)).toEqual({ plugins: [ '/foo/bar/myplugin' ] });
-      }
-    );
-
-    test(
-      'should add and keep comments',
-      async () => {
-        const configFileContent = '# Should not be removed\n' +
-          'plugins:\n' +
-          '  - ./plugins/core\n' +
-          '\n' +
-          '  # Should not be removed below\n';
-        nodeFs.existsSync = jest.fn().mockImplementation(() => true);
-        nodeFs.readFileSync = jest.fn().mockImplementation(() => configFileContent);
-
-        const core = new Core(ant);
-        const configPath = await core.addPlugin('/foo/bar/myplugin');
-        const actualConfigFileContent = fs.readFileSync(configPath, 'utf-8');
-
-        // Notice that the empty line is removed when the yaml tree is rendered
-        expect(actualConfigFileContent).toBe('# Should not be removed\n' +
-        'plugins:\n' +
-        '  - ./plugins/core\n' +
-        '  - /foo/bar/myplugin\n' +
-        '  # Should not be removed below\n');
-        expect(yaml.parse(actualConfigFileContent)).toEqual(
-          { plugins: [ './plugins/core', '/foo/bar/myplugin' ] }
-        );
-      }
-    );
-
-    test(
-      'should consider empty config object when yaml loads null',
-      async () => {
-        nodeFs.existsSync = () => true;
-        nodeFs.readFileSync = () => '';
-        yaml.safeLoad = () => null;
-
-        const core = new Core(ant);
-        const configPath = await core.addPlugin('/foo/bar/myplugin');
-        expect(yaml.parse(fs.readFileSync(configPath, 'utf-8'))).toEqual({ plugins: [ '/foo/bar/myplugin' ] });
-      }
-    );
-
-    test(
-      'should append the plugin to the existant configuration',
-      async () => {
-        nodeFs.existsSync = () => true;
-        nodeFs.readFileSync = () => 'plugins:\n - /existant/plugin';
-
-        const core = new Core(ant);
-        const configPath = await core.addPlugin('/foo/bar/myplugin');
-        expect(yaml.parse(fs.readFileSync(configPath, 'utf-8'))).toEqual({ plugins: [ '/existant/plugin', '/foo/bar/myplugin' ] });
-      }
-    );
-
-    test(
-      'should do nothing because plugin is already added',
-      async () => {
-        nodeFs.existsSync = () => true;
-        nodeFs.readFileSync = () => 'plugins:\n - /foo/bar/myplugin';
-
-        const core = new Core(ant);
-        const configPath = await core.addPlugin('/foo/bar/myplugin');
-        expect(configPath).toBe(null);
-      }
-    );
-
-    test(
-      'should fail when loading invalid config file',
-      async () => {
-        nodeFs.existsSync = () => true;
-        yaml.parseDocument = jest.fn().mockImplementation(() => {
-          throw new Error('Mocked error');
-        });
-
-        const core = new Core(ant);
-        await expect(core.addPlugin('/foo/bar/myplugin')).rejects
-          .toThrowError(`Could not load config ${outPath}/ant.yml`);
-      }
-    );
-
-    describe('global', () => {
-      const originalReadFileSync = nodeFs.readFileSync;
-      const originalWriteFileSync = nodeFs.writeFileSync;
-      const originalSafeLoad = yaml.safeLoad;
-
-      afterEach (() => {
-        nodeFs.readFileSync = originalReadFileSync;
-        nodeFs.writeFileSync = originalWriteFileSync;
-        yaml.safeLoad = originalSafeLoad;
-      });
-
-      test(
-        'should be async and add plugin globally',
-        async () => {
-          const plugin = '/foo/bar/myplugin';
-          nodeFs.readFileSync = () => '';
-          nodeFs.writeFileSync = (path, data) => {
-            expect(path).toBe(core._getGlobalConfigPath());
-            expect(data).toBe(`plugins:\n  - ${plugin}\n`);
-          };
-
-          const core = new Core(ant);
-          await core.addPlugin(plugin, true);
-        }
-      );
-
-      test(
-        'should fail when loading invalid global config file',
-        async () => {
-          yaml.parseDocument = jest.fn().mockImplementation(() => {
-            throw new Error('Mocked error');
-          });
-
-          const core = new Core(ant);
-          await core.addPlugin('/foo/bar/myplugin', true).catch(
-            e => expect(e.message.startsWith('Could not load global config')).toBeTruthy()
-          );
-        }
-      );
-    });
-  });
-
-  describe('Core.pluginRemove', () => {
-    describe('local configuration', () => {
-      test(
-        'should be async and remove plugin locally',
-        async () => {
-          const core = new Core(ant);
-          const localConfigFilePath = await core.addPlugin('/foo/bar/myplugin', false);
-          const configPath = await core.removePlugin('/foo/bar/myplugin');
-          expect(configPath).toBe(localConfigFilePath);
-          expect(yaml.parse(fs.readFileSync(configPath, 'utf-8'))).toEqual({ plugins: [] });
-        }
-      );
-
-      test(
-        'should do nothing because config file does not exist',
-        async () => {
-          const core = new Core(ant);
-          const configPath = await core.removePlugin('/foo/bar/myplugin');
-          expect(configPath).toBe(null);
-        }
-      );
-
-      test(
-        'should do nothing because config file is empty',
-        async () => {
-          const log = jest.spyOn(console, 'log');
-          const core = new Core(ant);
-          const configFilePath = core._getLocalConfigPath();
-          fs.writeFileSync(configFilePath, '');
-
-          const configPath = await core.removePlugin('/foo/bar/myplugin');
-          expect(configPath).toBe(null);
-          expect(log).toBeCalledWith('Configuration not found. plugin remove command should do nothing');
-        }
-      );
-
-      test(
-        'should do nothing because config file does not have a plugins entry',
-        async () => {
-          const log = jest.spyOn(console, 'log');
-          const core = new Core(ant);
-          const configFilePath = core._getLocalConfigPath();
-          fs.writeFileSync(configFilePath, 'foo: bar');
-
-          const configPath = await core.removePlugin('/foo/bar/myplugin');
-          expect(configPath).toBe(null);
-          expect(log).toBeCalledWith('No plugins was found on local configuration file. \
-plugin remove command should do nothing');
-        }
-      );
-
-      test(
-        'should do nothing because plugins is empty',
-        async () => {
-          const log = jest.spyOn(console, 'log');
-          const core = new Core(ant);
-          const configFilePath = core._getLocalConfigPath();
-          fs.writeFileSync(configFilePath, 'plugins:\n  []\n');
-
-          const configPath = await core.removePlugin('/foo/bar/myplugin');
-          expect(configPath).toBe(null);
-          expect(log).toHaveBeenCalledWith('Plugin "/foo/bar/myplugin" was \
-not found on local configuration file. plugin remove command should do nothing');
-        }
-      );
-    });
-    describe('global configuration', () => {
-      test(
-        'should be async and remove plugin globally',
-        async () => {
-          const core = new Core(ant);
-          const mockedGlobalPath = path.resolve(outPath, 'global');
-          fs.writeFileSync(mockedGlobalPath, yaml.stringify({ plugins: [] }));
-          core._getGlobalConfigPath = () => mockedGlobalPath;
-          const globalConfigFilePath = await core.addPlugin('/foo/bar/myplugin', true);
-          const configPath = await core.removePlugin('/foo/bar/myplugin', true);
-          expect(configPath).toBe(globalConfigFilePath);
-          expect(yaml.parse(fs.readFileSync(configPath, 'utf-8'))).toEqual({ plugins: [] });
-        }
-      );
-
-      test(
-        'should print log messages correctly',
-        async () => {
-          const log = jest.spyOn(console, 'log');
-
-          const core = new Core(ant);
-          const mockedGlobalPath = path.resolve(outPath, 'global');
-          core._getGlobalConfigPath = () => mockedGlobalPath;
-
-          fs.writeFileSync(mockedGlobalPath, yaml.stringify({}));
-          let configPath = await core.removePlugin('/foo/bar/myplugin', true);
-          expect(log).toHaveBeenLastCalledWith('No plugins was found on global configuration file. \
-plugin remove command should do nothing');
-          expect(configPath).toBe(null);
-
-          fs.writeFileSync(mockedGlobalPath, yaml.stringify({ plugins: [] }));
-          configPath = await core.removePlugin('/foo/bar/myplugin', true);
-          expect(log).toHaveBeenLastCalledWith('Plugin "/foo/bar/myplugin" was not found on global \
-configuration file. plugin remove command should do nothing');
-          expect(configPath).toBe(null);
-
-          fs.writeFileSync(mockedGlobalPath, yaml.stringify({ plugins: ['/foo/bar/myplugin'] }));
-          configPath = await core.removePlugin('/foo/bar/myplugin', true);
-          expect(log).toHaveBeenLastCalledWith('Plugin "/foo/bar/myplugin" successfully removed globally');
-        }
-      );
     });
   });
 });
