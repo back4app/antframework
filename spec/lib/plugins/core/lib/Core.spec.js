@@ -240,6 +240,28 @@ describe('lib/plugins/core/lib/Core.js', () => {
           }
         );
       });
+
+      test('should show friendly error when template name not passed', (done) => {
+        process.argv.push('create');
+        console.error = jest.fn();
+        process.exit = jest.fn((code) => {
+          expect(console.error).toHaveBeenCalledWith(
+            expect.stringContaining(
+              'Template option requires name argument'
+            )
+          );
+          expect(code).toEqual(1);
+          done();
+        });
+        const core = new Core(ant);
+        core._yargsFailed(
+          'Not enough arguments following: template',
+          {
+            handleErrorMessage: (msg, err, command) =>
+              (new AntCli())._handleErrorMessage(msg, err, command)
+          }
+        );
+      });
     });
 
     describe('plugin command', () => {
@@ -328,6 +350,125 @@ describe('lib/plugins/core/lib/Core.js', () => {
         test('should not show friendly error when error is unknown', () => {
           const handleErrorMessage = jest.spyOn(yargsHelper, 'handleErrorMessage');
           process.argv = ['plugin', 'remove'];
+          new Core(ant)._yargsFailed('Unknown error');
+          expect(handleErrorMessage).not.toHaveBeenCalled();
+        });
+      });
+    });
+
+    describe('template command', () => {
+      const originalSave = Config.prototype.save;
+
+      beforeEach(() => {
+        Config.prototype.save = jest.fn();
+      });
+
+      afterEach(() => {
+        Config.prototype.save = originalSave;
+      });
+
+      describe('template add command', () => {
+        test('should add and save locally', async () => {
+          const getLocalConfigPath = jest.spyOn(configUtil, 'getLocalConfigPath');
+          const addTemplate = jest.spyOn(Config.prototype, 'addTemplate');
+          const myTemplate = 'myTemplate';
+          const templatePath = 'path/to/my/template';
+          const category = 'myCategory';
+          const core = new Core(ant);
+          await core.addTemplate(myTemplate, templatePath, category);
+          expect(getLocalConfigPath).toHaveBeenCalled();
+          expect(addTemplate).toHaveBeenCalledWith(myTemplate, templatePath, category);
+          expect(Config.prototype.save).toHaveBeenCalled();
+        });
+
+        test('should add and save globally', async () => {
+          const getLocalConfigPath = jest.spyOn(configUtil, 'getLocalConfigPath');
+          const addTemplate = jest.spyOn(Config.prototype, 'addTemplate');
+          const myTemplate = 'myTemplate';
+          const templatePath = 'path/to/my/template';
+          const category = 'myCategory';
+          const core = new Core(ant);
+          await core.addTemplate(myTemplate, templatePath, category, true);
+          expect(getLocalConfigPath).not.toHaveBeenCalled();
+          expect(addTemplate).toHaveBeenCalledWith(myTemplate, templatePath, category);
+          expect(Config.prototype.save).toHaveBeenCalled();
+        });
+
+        test('should show friendly error when template was not passed', (done) => {
+          const handleErrorMessage = jest.spyOn(yargsHelper, 'handleErrorMessage');
+          process.argv = ['template', 'add'];
+          process.exit = jest.fn((code) => {
+            expect(handleErrorMessage).toHaveBeenCalledWith(
+              'Template add command requires template and templatePath arguments', null, 'template add'
+            );
+            expect(code).toEqual(1);
+            done();
+          });
+          new Core(ant)._yargsFailed('Not enough non-option arguments');
+        });
+
+        test('should show friendly error when templatePath was not passed', (done) => {
+          const handleErrorMessage = jest.spyOn(yargsHelper, 'handleErrorMessage');
+          process.argv = ['template', 'add'];
+          process.exit = jest.fn((code) => {
+            expect(handleErrorMessage).toHaveBeenCalledWith(
+              'Template add command requires template and templatePath arguments', null, 'template add'
+            );
+            expect(code).toEqual(1);
+            done();
+          });
+          new Core(ant)._yargsFailed('Not enough non-option arguments');
+        });
+
+        test('should not show friendly error when error is unknown', () => {
+          const handleErrorMessage = jest.spyOn(yargsHelper, 'handleErrorMessage');
+          process.argv = ['template', 'add'];
+          new Core(ant)._yargsFailed('Unknown error');
+          expect(handleErrorMessage).not.toHaveBeenCalled();
+        });
+      });
+
+      describe('template remove command', () => {
+        test('should remove and save locally', async () => {
+          const getLocalConfigPath = jest.spyOn(configUtil, 'getLocalConfigPath');
+          const removeTemplate = jest.spyOn(Config.prototype, 'removeTemplate');
+          const myTemplate = 'myTemplate';
+          const category = 'myCategory';
+          const core = new Core(ant);
+          await core.removeTemplate(myTemplate, category);
+          expect(getLocalConfigPath).toHaveBeenCalled();
+          expect(removeTemplate).toHaveBeenCalledWith(myTemplate, category);
+          expect(Config.prototype.save).toHaveBeenCalled();
+        });
+
+        test('should remove and save globally', async () => {
+          const getLocalConfigPath = jest.spyOn(configUtil, 'getLocalConfigPath');
+          const removeTemplate = jest.spyOn(Config.prototype, 'removeTemplate');
+          const myTemplate = 'myTemplate';
+          const category = 'myCategory';
+          const core = new Core(ant);
+          await core.removeTemplate(myTemplate, category, true);
+          expect(getLocalConfigPath).not.toHaveBeenCalled();
+          expect(removeTemplate).toHaveBeenCalledWith(myTemplate, category);
+          expect(Config.prototype.save).toHaveBeenCalled();
+        });
+
+        test('should show friendly error when template was not passed', (done) => {
+          const handleErrorMessage = jest.spyOn(yargsHelper, 'handleErrorMessage');
+          process.argv = ['template', 'remove'];
+          process.exit = jest.fn((code) => {
+            expect(handleErrorMessage).toHaveBeenCalledWith(
+              'Template remove command requires template argument', null, 'template remove'
+            );
+            expect(code).toEqual(1);
+            done();
+          });
+          new Core(ant)._yargsFailed('Not enough non-option arguments');
+        });
+
+        test('should not show friendly error when error is unknown', () => {
+          const handleErrorMessage = jest.spyOn(yargsHelper, 'handleErrorMessage');
+          process.argv = ['template', 'remove'];
           new Core(ant)._yargsFailed('Unknown error');
           expect(handleErrorMessage).not.toHaveBeenCalled();
         });
