@@ -2,7 +2,7 @@
   "name": "@back4app/antframework",
   "version": "1.0.0",
   "engines": {
-    "node": ">=10.6"
+    "node": ">=10.8"
   },
   "preferGlobal": true,
   "description": "Ant Framework - Serverless microservices made easy",
