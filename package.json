@@ -22,13 +22,13 @@
   ],
   "main": "index.js",
   "scripts": {
+    "install": "cd ./lib/plugins/graphQL/templates/server/default && npm install",
     "lint": "eslint ./",
     "pretest": "npm run lint",
     "test": "jest",
     "posttest": "rm -r ./spec/support/out",
     "apidocs": "jsdoc -c ./jsdoc.json",
-    "docs": "npm run apidocs",
-    "install": "cd ./lib/plugins/graphQL/templates/server/default && npm install"
+    "docs": "npm run apidocs"
   },
   "bin": {
     "ant": "./bin/ant.js"
