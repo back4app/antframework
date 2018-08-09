@@ -1,2 +1,2 @@
 plugins:
-  - ./spec/support/plugins/NotAPlugin
+  - ../../plugins/NotAPlugin

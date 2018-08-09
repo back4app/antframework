@@ -2,15 +2,15 @@
 /**
  * @fileoverview Tests for lib/Config.js file.
  */
-const AntError = require('../../lib/util/AntError');
-const Config = require('../../lib/Config');
+const AntError = require('../../../lib/util/AntError');
+const Config = require('../../../lib/config/Config');
 const fs = require('fs');
 const fsExtra = require('fs-extra');
 const path = require('path');
 const process = require('process');
 const yaml = require('yaml').default;
 
-describe('lib/Config.js', () => {
+describe('lib/config/Config.js', () => {
   const originalCwd = process.cwd();
   const outPath = path.resolve(
     __dirname,
@@ -57,9 +57,33 @@ describe('lib/Config.js', () => {
   test('should return config JSON representation', () => {
     const filePath = path.resolve(outPath, 'antJSONtest.yml');
     try{
-      fs.writeFileSync(filePath, 'plugins:\n  - foo/bar\n');
+      fs.writeFileSync(filePath, 'basePath: $GLOBAL\n\
+plugins:\n  - ../spec/support/plugins/FooPlugin\n\
+templates:\n  MyCategory:\n    MyTemplate: /my/template/path\n');
       const config = new Config(filePath);
-      expect(config.config).toEqual({ plugins: [ 'foo/bar' ]});
+      expect(config.config).toEqual({
+        basePath: path.resolve(__dirname, '../../../lib'),
+        plugins: [ path.resolve(__dirname, '../../support/plugins/FooPlugin.js') ],
+        templates: {
+          MyCategory: {
+            MyTemplate: '/my/template/path'
+          }
+        }
+      });
+    } finally {
+      fs.unlinkSync(filePath);
+    }
+  });
+
+  test('should return cached JSON representation', () => {
+    const filePath = path.resolve(outPath, 'antJSONCacheTest.yml');
+    try{
+      fs.writeFileSync(filePath, 'basePath: $GLOBAL\n\
+plugins:\n  - ../spec/support/plugins/FooPlugin\n\
+templates:\n  MyCategory:\n    MyTemplate: /my/template/path\n');
+      const config = new Config(filePath);
+      const firstCallJson = config.config;
+      expect(firstCallJson).toBe(config.config);
     } finally {
       fs.unlinkSync(filePath);
     }
@@ -70,10 +94,34 @@ describe('lib/Config.js', () => {
     try{
       fs.writeFileSync(filePath, '');
       const config = new Config(filePath);
-      expect(config.config).toEqual({});
+      expect(config.config).toEqual({ basePath: outPath });
     } finally {
       fs.unlinkSync(filePath);
     }
+  });
+
+  describe('save', () => {
+    test(
+      'should save a config object given a path',
+      () => {
+        const config = new Config({ plugins: ['/test/save'] });
+        const configPath = path.resolve(outPath, 'ant.yml');
+        config.save(configPath);
+        expect(fs.readFileSync(configPath, 'utf-8')).toBe('plugins:\n  - /test/save\n');
+        expect(config.path).toBe(configPath);
+      }
+    );
+
+    test('should fail to save config if no path was provided', () => {
+      const config = new Config({ plugins: ['/test/save'] });
+      try {
+        config.save();
+      } catch(e) {
+        expect(e).toBeInstanceOf(AntError);
+        expect(e.message).toBe('The configuration file path was not provided to \
+save the file.');
+      }
+    });
   });
 
   describe('addPlugin', () => {
@@ -93,7 +141,7 @@ describe('lib/Config.js', () => {
         const configPath = path.resolve(outPath, 'ant.yml');
         const config = new Config(configPath);
         config.addPlugin('/foo/bar/myplugin');
-        expect(config.config).toEqual({ plugins: [ '/foo/bar/myplugin' ] });
+        expect(config.config.plugins).toEqual([ '/foo/bar/myplugin' ]);
       }
     );
 
@@ -143,7 +191,7 @@ describe('lib/Config.js', () => {
           fs.writeFileSync(filePath, '');
           const config = new Config(filePath);
           config.addPlugin('/foo/bar/myplugin');
-          expect(config.config).toEqual({ plugins: [ '/foo/bar/myplugin' ] });
+          expect(config.config).toEqual({ basePath: outPath, plugins: [ '/foo/bar/myplugin' ] });
         } finally {
           fs.unlinkSync(filePath);
         }
@@ -155,10 +203,10 @@ describe('lib/Config.js', () => {
       () => {
         const filePath = path.resolve(outPath, 'existantConfigTest.yml');
         try{
-          fs.writeFileSync(filePath, 'plugins:\n  - foo/bar');
+          fs.writeFileSync(filePath, 'plugins:\n  - /foo/bar');
           const config = new Config(filePath);
-          config.addPlugin('myplugin');
-          expect(config.config).toEqual({ plugins: [ 'foo/bar', 'myplugin' ] });
+          config.addPlugin('/myplugin');
+          expect(config.config.plugins).toEqual([ '/foo/bar', '/myplugin' ]);
         } finally {
           fs.unlinkSync(filePath);
         }
@@ -170,10 +218,10 @@ describe('lib/Config.js', () => {
       () => {
         const filePath = path.resolve(outPath, 'alreadyAddedTest.yml');
         try{
-          fs.writeFileSync(filePath, 'plugins:\n  - foo/bar');
+          fs.writeFileSync(filePath, 'plugins:\n  - /foo/bar');
           const config = new Config(filePath);
-          config.addPlugin('foo/bar');
-          expect(config.config).toEqual({ plugins: [ 'foo/bar' ] });
+          config.addPlugin('/foo/bar');
+          expect(config.config.plugins).toEqual([ '/foo/bar' ]);
         } finally {
           fs.unlinkSync(filePath);
         }
@@ -202,10 +250,14 @@ describe('lib/Config.js', () => {
       test(
         'should return a global instance',
         () => {
-          const globalConfig = Config.GLOBAL;
+          const globalConfig = Config.Global;
           expect(globalConfig).toBeDefined();
-          expect(globalConfig.path).toBe(path.resolve(__dirname, '../../lib', 'globalConfig.yml'));
-          expect(globalConfig.config).toEqual({ plugins: ['./plugins/core'], templates: {} });
+          expect(globalConfig.path).toBe(path.resolve(__dirname, '../../../lib', 'globalConfig.yml'));
+          expect(globalConfig.config).toEqual({
+            basePath: path.resolve(__dirname, '../../../lib'),
+            plugins: [path.resolve(__dirname, '../../../lib/plugins/core/index.js')],
+            templates: {}
+          });
         }
       );
     });
@@ -245,7 +297,7 @@ describe('lib/Config.js', () => {
           const config = new Config(configFilePath);
 
           const json = config.removePlugin('/foo/bar/myplugin').config;
-          expect(json).toEqual({});
+          expect(json.plugins).toBeUndefined();
           expect(log).toBeCalledWith('No plugins was found on configuration file. plugin \
 remove command should do nothing');
         }
@@ -260,7 +312,7 @@ remove command should do nothing');
           const config = new Config(configFilePath);
 
           const json = config.removePlugin('/foo/bar/myplugin').config;
-          expect(json).toEqual({ foo: 'bar' });
+          expect(json.plugins).toBeUndefined();
           expect(log).toBeCalledWith('No plugins was found on configuration file. \
 plugin remove command should do nothing');
         }
@@ -275,11 +327,86 @@ plugin remove command should do nothing');
           const config = new Config(configFilePath);
 
           const json = config.removePlugin('/foo/bar/myplugin').config;
-          expect(json).toEqual({ plugins: [] });
+          expect(json.plugins).toEqual([]);
           expect(log).toHaveBeenCalledWith('Plugin "/foo/bar/myplugin" was \
 not found on configuration file. plugin remove command should do nothing');
         }
       );
+    });
+  });
+
+  describe('static utils', () => {
+    test('should load templates from config', () => {
+      const customTemplatePath = '/path/to/my/custom';
+      const fooPath = '/path/to/foo';
+      const barPath = '/path/to/bar';
+      const templatesConfig = {
+        CustomCategory: {
+          CustomTemplate: customTemplatePath,
+          Foo: fooPath
+        },
+        Custom_2: {
+          Bar: barPath
+        }
+      };
+      const parsedTemplates = Config.ParseConfigTemplates(templatesConfig);
+      expect(parsedTemplates.length).toBe(3);
+
+      expect(parsedTemplates[0].category).toEqual('CustomCategory');
+      expect(parsedTemplates[0].name).toEqual('CustomTemplate');
+      expect(parsedTemplates[0].path).toEqual(customTemplatePath);
+
+      expect(parsedTemplates[1].category).toEqual('CustomCategory');
+      expect(parsedTemplates[1].name).toEqual('Foo');
+      expect(parsedTemplates[1].path).toEqual(fooPath);
+
+      expect(parsedTemplates[2].category).toEqual('Custom_2');
+      expect(parsedTemplates[2].name).toEqual('Bar');
+      expect(parsedTemplates[2].path).toEqual(barPath);
+    });
+
+    test('should load templates from config with basePath', () => {
+      const customTemplatePath = './path/to/my/custom';
+      const fooPath = 'path/to/foo';
+      const barPath = '../../../path/to/bar';
+      const absolutePath = '/absolute/path';
+      const templatesConfig = {
+        CustomCategory: {
+          CustomTemplate: customTemplatePath,
+          Foo: fooPath
+        },
+        Custom_2: {
+          Bar: barPath,
+          Absolute: absolutePath
+        }
+      };
+      const basePath = '/home/user/myworkspace/';
+      const parsedTemplates = Config.ParseConfigTemplates(templatesConfig, basePath);
+      expect(parsedTemplates.length).toBe(4);
+
+      expect(parsedTemplates[0].path).toEqual('/home/user/myworkspace/path/to/my/custom');
+      expect(parsedTemplates[1].path).toEqual('/home/user/myworkspace/path/to/foo');
+      expect(parsedTemplates[2].path).toEqual('/path/to/bar');
+      expect(parsedTemplates[3].path).toEqual(absolutePath);
+    });
+
+    test('should throw error with invalid templates config', () => {
+      expect(() => Config.ParseConfigTemplates('this should\'ve been an object'))
+        .toThrowError(
+          'Error while loading templates from Ant\'s config file. \
+The "template" configuration should be an object!'
+        );
+    });
+
+    test('should throw error with invalid template category value', () => {
+      const templatesConfig = {
+        CustomCategory: 'this should\'ve been an object!'
+      };
+      expect(() => Config.ParseConfigTemplates(templatesConfig))
+        .toThrowError(
+          'Error while loading templates from Ant\'s config file: \
+Template category value is not an object!'
+        );
     });
   });
 });

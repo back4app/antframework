@@ -14,8 +14,7 @@ const Plugin = require('../../../../../lib/plugins/Plugin');
 const Template = require('../../../../../lib/templates/Template');
 const Core = require('../../../../../lib/plugins/core/lib/Core');
 const yargsHelper = require('../../../../../lib/util/yargsHelper');
-const Config = require('../../../../../lib/Config');
-const configUtil = require('../../../../../lib/util/config');
+const Config = require('../../../../../lib/config/Config');
 
 const ant = new Ant();
 
@@ -245,7 +244,7 @@ describe('lib/plugins/core/lib/Core.js', () => {
     describe('plugin command', () => {
       describe('plugin add command', () => {
         test('should add and save locally', async () => {
-          const getLocalConfigPath = jest.spyOn(configUtil, 'getLocalConfigPath');
+          const getLocalConfigPath = jest.spyOn(Config, 'GetLocalConfigPath');
           const addPlugin = jest.spyOn(Config.prototype, 'addPlugin');
           const save = jest.spyOn(Config.prototype, 'save');
           const myPlugin = 'myplugin';
@@ -257,7 +256,7 @@ describe('lib/plugins/core/lib/Core.js', () => {
         });
 
         test('should add and save globally', async () => {
-          const getLocalConfigPath = jest.spyOn(configUtil, 'getLocalConfigPath');
+          const getLocalConfigPath = jest.spyOn(Config, 'GetLocalConfigPath');
           const addPlugin = jest.spyOn(Config.prototype, 'addPlugin');
           const originalSave = Config.prototype.save;
           const save = Config.prototype.save = jest.fn();
@@ -287,7 +286,7 @@ describe('lib/plugins/core/lib/Core.js', () => {
 
       describe('plugin remove command', () => {
         test('should remove and save locally', async () => {
-          const getLocalConfigPath = jest.spyOn(configUtil, 'getLocalConfigPath');
+          const getLocalConfigPath = jest.spyOn(Config, 'GetLocalConfigPath');
           const removePlugin = jest.spyOn(Config.prototype, 'removePlugin');
           const save = jest.spyOn(Config.prototype, 'save');
           const myPlugin = 'myplugin';
@@ -299,7 +298,7 @@ describe('lib/plugins/core/lib/Core.js', () => {
         });
 
         test('should remove and save globally', async () => {
-          const getLocalConfigPath = jest.spyOn(configUtil, 'getLocalConfigPath');
+          const getLocalConfigPath = jest.spyOn(Config, 'GetLocalConfigPath');
           const removePlugin = jest.spyOn(Config.prototype, 'removePlugin');
           const originalSave = Config.prototype.save;
           const save = Config.prototype.save = jest.fn();

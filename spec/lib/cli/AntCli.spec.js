@@ -280,62 +280,6 @@ describe('lib/cli/AntCli.js', () => {
     }
   });
 
-  test('should show stack when using --verbose option', () => {
-    const originalArgv = process.argv;
-    process.argv.push('--verbose');
-    const originalExit = process.exit;
-    process.exit = jest.fn();
-    const originalLog = console.log;
-    console.log = jest.fn();
-    const originalCwd = process.cwd();
-    process.chdir(path.resolve(
-      __dirname,
-      '../../support/configs/notAPluginConfig'
-    ));
-    try {
-      (new AntCli())._yargs.parse('--verbose');
-      expect(process.exit).toHaveBeenCalledWith(0);
-      expect(console.log.mock.calls[0][0]).toContain(
-        'at PluginController._loadPlugin'
-      );
-    } catch (e) {
-      throw e;
-    } finally {
-      process.argv = originalArgv;
-      process.exit = originalExit;
-      console.log = originalLog;
-      process.chdir(originalCwd);
-    }
-  });
-
-  test('should show stack when using -v option', () => {
-    const originalArgv = process.argv;
-    process.argv.push('-v');
-    const originalExit = process.exit;
-    process.exit = jest.fn();
-    const originalLog = console.log;
-    console.log = jest.fn();
-    const originalCwd = process.cwd();
-    process.chdir(path.resolve(
-      __dirname,
-      '../../support/configs/notAPluginConfig'
-    ));
-    try {
-      (new AntCli())._yargs.parse('-v');
-      expect(process.exit).toHaveBeenCalledWith(0);
-      expect(console.log.mock.calls[0][0]).toContain(
-        'at PluginController._loadPlugin'
-      );
-    } catch (e) {
-      throw e;
-    } finally {
-      process.argv = originalArgv;
-      process.exit = originalExit;
-      console.log = originalLog;
-      process.chdir(originalCwd);
-    }
-  });
-
   test(
     'should print error when calling with an inexistent command',
     () => {
@@ -444,15 +388,15 @@ describe('lib/cli/AntCli.js', () => {
 
   test('should load base path', () => {
     const originalCwd = process.cwd();
-    process.chdir(
-      path.resolve(__dirname, '../../support/configs/basePathConfig')
-    );
+    const currentDir = path.resolve(__dirname, '../../support/configs/basePathConfig');
+    process.chdir(currentDir);
     const antCli = new AntCli();
-    expect(antCli._ant._config.basePath).toEqual('../../');
+    const basePath = path.resolve(currentDir, '../../');
+    expect(antCli._ant._config.basePath).toEqual(basePath);
     expect(antCli._ant._config.plugins).toEqual(expect.any(Array));
     expect(antCli._ant._config.plugins).toHaveLength(1);
     expect(antCli._ant._config.plugins[0]).toEqual(
-      './spec/support/plugins/FooPlugin'
+      path.resolve(basePath, './plugins/FooPlugin.js')
     );
     expect(antCli._ant.pluginController.plugins).toEqual(expect.any(Array));
     expect(antCli._ant.pluginController.plugins).toHaveLength(2);

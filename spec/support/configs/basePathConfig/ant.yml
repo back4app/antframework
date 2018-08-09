@@ -1,4 +1,4 @@
 basePath: ../../
 
 plugins:
-  - ./spec/support/plugins/FooPlugin
+  - ./plugins/FooPlugin
