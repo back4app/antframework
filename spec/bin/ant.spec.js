@@ -253,8 +253,8 @@ Options:
   --version       Show version number                                  [boolean]
   --config, -c    Path to YAML config file
   --verbose, -v   Show execution logs and error stacks[boolean] [default: false]
-  --template, -t  Specify the template for the new service
-                                                   [string] [default: "Default"]
+  --template, -t  Specify the template name or template files path for the new
+                  service                          [string] [default: "Default"]
 `
         )
       );

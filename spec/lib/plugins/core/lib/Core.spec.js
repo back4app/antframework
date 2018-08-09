@@ -362,6 +362,22 @@ describe('lib/plugins/core/lib/Core.js', () => {
       }
     );
 
+    test('should render template just with the template path', async (done) => {
+      const core = new Core(ant);
+      const originalRender = Template.prototype.render;
+      const templatePath = core.templates[0].path;
+      Template.prototype.render = jest.fn().mockImplementation(function() {
+        Template.prototype.render = originalRender;
+        expect(this._path).toBe(templatePath);
+        expect(this._name).toBe('CLI Template');
+        expect(this._category).toBe('Service');
+        done();
+      });
+      const createServiceReturn = core.createService('abcd', templatePath);
+      expect(createServiceReturn).toBeInstanceOf(Promise);
+      await createServiceReturn;
+    });
+
     test('should fail if name and template params are not String', async () => {
       expect.hasAssertions();
       const core = new Core(ant);
