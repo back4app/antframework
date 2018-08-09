@@ -2,7 +2,8 @@
  * @fileoverview Tests for lib/plugins/PluginController.js file.
  */
 
-const { AssertionError } = require('assert');
+const assert = require('assert');
+const { AssertionError } = assert;
 const yargs = require('yargs');
 const Ant = require('../../../lib/Ant');
 const Plugin = require('../../../lib/plugins/Plugin');
@@ -364,6 +365,69 @@ different to this controller\'s'
       const plugin = new Plugin(ant);
       const pluginController = new PluginController(ant, [plugin]);
       expect(pluginController.getPlugin('Plugin')).toEqual(plugin);
+    });
+  });
+
+  describe('PluginController.getFromPlugin', () => {
+    const plugin = new Plugin(ant);
+    plugin.fooMember = 'Foo Value';
+    const pluginController = (new PluginController(ant, [plugin]));
+
+    test('should return the plugin memnber value', () => {
+      expect(pluginController.getFromPlugin(
+        plugin,
+        'fooMember',
+        (value) => assert(value === 'Foo Value')
+      )).toEqual('Foo Value');
+      expect(pluginController.loadingErrors).toEqual(expect.any(Array));
+      expect(pluginController.loadingErrors).toHaveLength(0);
+    });
+
+    test('should fail if params are not valid', () => {
+      expect(() => pluginController.getFromPlugin()).toThrowError(
+        'Could not get from plugin: param "plugin" should be Plugin'
+      );
+      expect(() => pluginController.getFromPlugin({})).toThrowError(
+        'Could not get from plugin: param "plugin" should be Plugin'
+      );
+      expect(() => pluginController.getFromPlugin(plugin)).toThrowError(
+        'Could not get from plugin: param "member" should be String'
+      );
+      expect(() => pluginController.getFromPlugin(plugin, {})).toThrowError(
+        'Could not get from plugin: param "member" should be String'
+      );
+      expect(() => pluginController.getFromPlugin(
+        plugin,
+        'fooMember',
+        {})
+      ).toThrowError(
+        'Could not get from plugin: param "assertionFunction" should be \
+Function'
+      );
+    });
+
+    test('should use assertion function to validate the output', () => {
+      const pluginController = (new PluginController(ant, [plugin]));
+      expect(pluginController.getFromPlugin(
+        plugin,
+        'fooMember',
+        (value) => assert(value !== 'Foo Value')
+      )).toEqual(null);
+      expect(pluginController.loadingErrors).toEqual(expect.any(Array));
+      expect(pluginController.loadingErrors).toHaveLength(1);
+      expect(pluginController.loadingErrors[0].message)
+        .toEqual(expect.stringContaining(
+          'Could not get "fooMember" from plugin "Plugin"'
+        ));
+    });
+
+    test('should work without assertion function', () => {
+      expect(pluginController.getFromPlugin(
+        plugin,
+        'fooMember'
+      )).toEqual('Foo Value');
+      expect(pluginController.loadingErrors).toEqual(expect.any(Array));
+      expect(pluginController.loadingErrors).toHaveLength(0);
     });
   });
 

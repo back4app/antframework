@@ -9,8 +9,15 @@ const fs = require('fs-extra');
 const childProcess = require('child_process');
 const Ant = require('../../../../../lib/Ant');
 const AntCli = require('../../../../../lib/cli/AntCli');
+const AntFunction = require('../../../../../lib/functions/AntFunction');
 const Plugin = require('../../../../../lib/plugins/Plugin');
 const GraphQL = require('../../../../../lib/plugins/graphQL/lib/GraphQL');
+const Directive = require(
+  '../../../../../lib/plugins/graphQL/lib/directives/Directive'
+);
+const DirectiveController = require(
+  '../../../../../lib/plugins/graphQL/lib/directives/DirectiveController'
+);
 
 const ant = new Ant();
 
@@ -297,6 +304,18 @@ http://localhost:3000\n'
     }
   });
 
+  test('should load directives', () => {
+    const fooDirective = new Directive(
+      ant,
+      'fooDirective',
+      'fooDefinitiion',
+      new AntFunction('fooFunction')
+    );
+    const graphQL = new GraphQL(ant, { directives: [fooDirective] });
+    expect(graphQL.directiveController.getDirective('fooDirective'))
+      .toEqual(fooDirective);
+  });
+
   describe('GraphQL.loadYargsSettings', () => {
     test('should load "start" command', (done) => {
       const originalExit = process.exit;
@@ -401,6 +420,16 @@ http://localhost:3000\n'
       console.argv = originalArgv;
       console.error = originalError;
       process.exit = originalExit;
+    });
+  });
+
+  describe('GraphQL.directiveController', () => {
+    it('should be an instance of DirectiveController and readonly', () => {
+      const graphQL = new GraphQL(ant);
+      const directiveController = graphQL.directiveController;
+      expect(directiveController).toEqual(expect.any(DirectiveController));
+      graphQL.directiveController = new DirectiveController(ant);
+      expect(directiveController).toEqual(graphQL.directiveController);
     });
   });
 });
