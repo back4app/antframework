@@ -43,12 +43,12 @@ describe('lib/cli/AntCli.js', () => {
     const originalCwd = process.cwd();
     process.chdir(path.resolve(
       __dirname,
-      '../../support/configs/notAPluginConfig'
+      '../../support/configs/fooPluginConfig'
     ));
     try {
       (new AntCli()).execute();
       expect(process.exit).toHaveBeenCalledWith(0);
-      expect(console.log.mock.calls[0][0]).toContain('NotAPlugin');
+      expect(console.log.mock.calls[0][0]).toContain('FooPlugin');
     } catch (e) {
       throw e;
     } finally {
@@ -64,7 +64,7 @@ describe('lib/cli/AntCli.js', () => {
     process.argv.push('--config');
     process.argv.push(path.resolve(
       __dirname,
-      '../../support/configs/notAPluginConfig/ant.yml'
+      '../../support/configs/fooPluginConfig/ant.yml'
     ));
     const originalExit = process.exit;
     process.exit = jest.fn();
@@ -75,7 +75,7 @@ describe('lib/cli/AntCli.js', () => {
     try {
       (new AntCli()).execute();
       expect(process.exit).toHaveBeenCalledWith(0);
-      expect(console.log.mock.calls[0][0]).toContain('NotAPlugin');
+      expect(console.log.mock.calls[0][0]).toContain('FooPlugin');
     } catch (e) {
       throw e;
     } finally {
