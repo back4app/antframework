@@ -23,6 +23,42 @@ const fooDirective = new Directive(
 );
 const directiveController = new DirectiveController(ant, [fooDirective]);
 
+/**
+ * Represents a {@link Directive} that overrides the "name" member and throws an
+ * Error for testing purposes.
+ * @private
+ */
+class NameErrorDirective extends Directive {
+  get name() {
+    throw new Error('Some name error');
+  }
+}
+
+const nameErrorDirective = new NameErrorDirective(
+  ant,
+  'fooDirective',
+  'fooDefinition',
+  fooFunction
+);
+
+/**
+ * Represents a {@link Directive} that overrides the "definition" member and
+ * throws an Error for testing purposes.
+ * @private
+ */
+class DefinitionErrorDirective extends Directive {
+  get definition() {
+    throw new Error('Some definition error');
+  }
+}
+
+const definitionErrorDirective = new DefinitionErrorDirective(
+  ant,
+  'fooDirective',
+  'fooDefinition',
+  fooFunction
+);
+
 describe('lib/plugins/graphQL/lib/directives/DirectiveController.js', () => {
   test('should export "DirectiveController" class', () => {
     expect(directiveController.constructor.name).toEqual('DirectiveController');
@@ -156,5 +192,64 @@ different of this controller\'s'
           fooDirective
         );
       });
+  });
+
+  describe('DirectiveController.getDirectiveName', () => {
+    test('should return the directive name', () => {
+      const directiveController = new DirectiveController(ant);
+      expect(directiveController.getDirectiveName(fooDirective))
+        .toEqual(fooDirective.name);
+      expect(directiveController.loadingErrors).toEqual(expect.any(Array));
+      expect(directiveController.loadingErrors).toHaveLength(0);
+    });
+
+    test('should return the default name in the case of error', () => {
+      const directiveController = new DirectiveController(ant);
+      expect(directiveController.getDirectiveName(nameErrorDirective)).toEqual(
+        'NameErrorDirective'
+      );
+      expect(directiveController.loadingErrors).toEqual(expect.any(Array));
+      expect(directiveController.loadingErrors).toHaveLength(1);
+      expect(directiveController.loadingErrors[0]).toBeInstanceOf(Error);
+      expect(directiveController.loadingErrors[0].message)
+        .toEqual(expect.stringContaining('Could not get directive name'));
+    });
+
+    test('should fail if the "directive" param is not a Directive instance', () => {
+      expect(() => directiveController.getDirectiveName({})).toThrowError(
+        'Could not get directive name: param "directive" should be Directive'
+      );
+    });
+  });
+
+  describe('DirectiveController.getDirectiveDefinition', () => {
+    test('should return the directive\'s definition', () => {
+      const directiveController = new DirectiveController(ant);
+      expect(directiveController.getDirectiveDefinition(fooDirective))
+        .toEqual(fooDirective.definition);
+      expect(directiveController.loadingErrors).toEqual(expect.any(Array));
+      expect(directiveController.loadingErrors).toHaveLength(0);
+    });
+
+    test('should store loading error in the case of error', () => {
+      const directiveController = new DirectiveController(ant);
+      expect(
+        directiveController.getDirectiveDefinition(definitionErrorDirective)
+      ).toEqual(null);
+      expect(directiveController.loadingErrors).toEqual(expect.any(Array));
+      expect(directiveController.loadingErrors).toHaveLength(1);
+      expect(directiveController.loadingErrors[0]).toBeInstanceOf(Error);
+      expect(directiveController.loadingErrors[0].message)
+        .toEqual(expect.stringContaining(
+          'Could not get "fooDirective" directive definition'
+        ));
+    });
+
+    test('should fail if the "directive" param is not a Directive instance', () => {
+      expect(() => directiveController.getDirectiveDefinition({})).toThrowError(
+        'Could not get directive definition: param "directive" should be \
+Directive'
+      );
+    });
   });
 });

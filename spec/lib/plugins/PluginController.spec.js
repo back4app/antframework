@@ -4,6 +4,7 @@
 
 const assert = require('assert');
 const { AssertionError } = assert;
+const { Observable } = require('rxjs');
 const yargs = require('yargs');
 const Ant = require('../../../lib/Ant');
 const Plugin = require('../../../lib/plugins/Plugin');
@@ -333,6 +334,30 @@ different to this controller\'s'
       expect(pluginController.plugins).toEqual(expect.any(Array));
       expect(pluginController.plugins).toHaveLength(1);
       expect(pluginController.plugins[0]).toBeInstanceOf(FooPlugin);
+    });
+  });
+
+  describe('PluginController.pluginsObservable', () => {
+    test('should be readonly and return observable', () => {
+      const fooPlugin = new FooPlugin(ant);
+      const pluginController = new PluginController(ant, [
+        './spec/support/plugins/FooPlugin',
+        fooPlugin
+      ]);
+      expect(pluginController.pluginsObservable).toEqual(
+        expect.any(Observable)
+      );
+      pluginController.pluginsObservable = {};
+      expect(pluginController.pluginsObservable).toEqual(
+        expect.any(Observable)
+      );
+      const next = jest.fn();
+      const subscription = pluginController.pluginsObservable.subscribe(next);
+      expect(next).toHaveBeenCalledWith(fooPlugin);
+      subscription.unsubscribe();
+      const plugin = new Plugin(ant);
+      pluginController.loadPlugin(plugin);
+      expect(next).not.toHaveBeenCalledWith(plugin);
     });
   });
 

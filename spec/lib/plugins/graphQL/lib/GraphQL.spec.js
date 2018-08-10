@@ -316,6 +316,16 @@ http://localhost:3000\n'
       .toEqual(fooDirective);
   });
 
+  describe('GraphQL.directives', () => {
+    test('should be readonly and return the default directives', () => {
+      const graphQL = new GraphQL(ant);
+      expect(graphQL.directives).toEqual(expect.any(Array));
+      expect(graphQL.directives).toHaveLength(1);
+      expect(graphQL.directives[0]).toEqual(expect.any(Directive));
+      expect(graphQL.directives[0].name).toEqual('mock');
+    });
+  });
+
   describe('GraphQL.loadYargsSettings', () => {
     test('should load "start" command', (done) => {
       const originalExit = process.exit;
