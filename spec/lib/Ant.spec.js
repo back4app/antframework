@@ -163,16 +163,6 @@ Template category value is not an object!'
       );
     });
 
-    test('should fail if Core plugin not loaded', async () => {
-      expect.hasAssertions();
-      const ant = new Ant({ plugins: [] });
-      ant.pluginController._plugins = new Map();
-      await expect(ant.createService('FooService', 'FooTemplate'))
-        .rejects.toThrow(
-          'Service could not be created'
-        );
-    });
-
     test(
       'should fail if Core plugin createService method fails',
       async () => {
@@ -232,16 +222,6 @@ Template category value is not an object!'
         true
       );
     });
-
-    test('should fail if Core plugin not loaded', async () => {
-      expect.hasAssertions();
-      const ant = new Ant({ plugins: [] });
-      ant.pluginController._plugins = new Map();
-      await expect(ant.addPlugin('asdds'))
-        .rejects.toThrow(
-          'Plugin could not be added'
-        );
-    });
   });
 
   describe('Ant.removePlugin', () => {
@@ -260,15 +240,51 @@ Template category value is not an object!'
         true
       );
     });
+  });
 
-    test('should fail if Core plugin not loaded', async () => {
-      expect.hasAssertions();
-      const ant = new Ant({ plugins: [] });
-      ant.pluginController._plugins = new Map();
-      await expect(ant.removePlugin('asdds'))
-        .rejects.toThrow(
-          'Plugin could not be removed'
-        );
+  describe('Ant.addTemplate', () => {
+    test('should be async and call Core addTemplate method', async () => {
+      const ant = new Ant();
+      const core = ant.pluginController.getPlugin('Core');
+      const originalAddTemplate = core.addTemplate;
+      core.addTemplate = jest.fn();
+      const addTemplateReturn = ant.addTemplate(
+        'MyTemplate',
+        '/path/to/my/template',
+        'MyCategory',
+        false
+      );
+      expect(addTemplateReturn).toBeInstanceOf(Promise);
+      await addTemplateReturn;
+      expect(core.addTemplate).toHaveBeenCalledWith(
+        'MyTemplate',
+        '/path/to/my/template',
+        'MyCategory',
+        false
+      );
+      core.addTemplate = originalAddTemplate;
+    });
+  });
+
+  describe('Ant.removeTemplate', () => {
+    test('should be async and call Core removeTemplate method', async () => {
+      const ant = new Ant();
+      const core = ant.pluginController.getPlugin('Core');
+      const originalRemoveTemplate = jest.fn();
+      core.removeTemplate = jest.fn();
+      const removeTemplateReturn = ant.removeTemplate(
+        'MyTemplate',
+        'MyCategory',
+        false
+      );
+      expect(removeTemplateReturn).toBeInstanceOf(Promise);
+      await removeTemplateReturn;
+      expect(core.removeTemplate).toHaveBeenCalledWith(
+        'MyTemplate',
+        'MyCategory',
+        false
+      );
+      core.removeTemplate = originalRemoveTemplate;
     });
   });
 });

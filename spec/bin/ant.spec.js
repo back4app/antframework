@@ -701,6 +701,49 @@ ant.js --help plugin add`)
         }
       );
     });
+
+    describe('template ls command', () => {
+      test('should work', (done) => {
+        const originalExit = process.exit;
+        process.exit = jest.fn(code => {
+          process.exit = originalExit;
+          expect.hasAssertions();
+          expect(code).toBe(0);
+          done();
+        });
+
+        const antCli = new AntCli();
+        antCli
+          ._ant
+          .pluginController
+          .getPlugin('Core')
+          .listTemplates = jest.fn(async (args) => {
+            expect(args).toBeUndefined();
+          });
+        antCli._yargs.parse('template ls');
+      });
+
+      test('should handle any errors', (done) => {
+        const originalHandleErrorMessage = yargsHelper.handleErrorMessage;
+        yargsHelper.handleErrorMessage = jest.fn((message, e, command) => {
+          yargsHelper.handleErrorMessage = originalHandleErrorMessage;
+          expect(e).toBeInstanceOf(Error);
+          expect(message).toBe('Mocked error');
+          expect(command).toBe('template ls');
+          done();
+        });
+
+        const antCli = new AntCli();
+        antCli
+          ._ant
+          .pluginController
+          .getPlugin('Core')
+          .listTemplates = jest.fn(async () => {
+            throw Error('Mocked error');
+          });
+        antCli._yargs.parse('template ls');
+      });
+    });
   });
 
   describe('GraphQL plugin', () => {

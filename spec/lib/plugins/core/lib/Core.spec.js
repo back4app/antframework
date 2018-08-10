@@ -473,6 +473,18 @@ describe('lib/plugins/core/lib/Core.js', () => {
           expect(handleErrorMessage).not.toHaveBeenCalled();
         });
       });
+
+      describe('ls command', () => {
+        test('should list templates', async () => {
+          const core = new Core(ant);
+          const log = jest.spyOn(console, 'log');
+          const getAllTemplates = jest.spyOn(ant.templateController, 'getAllTemplates');
+
+          await core.listTemplates();
+          expect(log).toHaveBeenCalledWith('Listing all templates available (<category>: <name> <path>):');
+          expect(getAllTemplates).toHaveBeenCalled();
+        });
+      });
     });
 
     test('should not change the error message for other cases', () => {
