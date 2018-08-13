@@ -210,7 +210,7 @@ describe('lib/plugins/core/lib/Core.js', () => {
         });
         const core = new Core(ant);
         core._yargsFailed(
-          'Unknown argument: templatename',
+          'Unknown argument: templatetemplate',
           {
             handleErrorMessage: (msg, err, command) =>
               (new AntCli())._handleErrorMessage(msg, err, command)

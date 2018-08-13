@@ -34,7 +34,7 @@ async function _expectUsageInstructions(args) {
   );
   expect(stdout).toContain(`Commands:
   ant.js create <service> [--template       Create a new service
-  <name>]`);
+  <template>]`);
   expect(stdout).toContain(
     '--help, -h     Show help                                             [boolean]'
   );
@@ -244,7 +244,7 @@ ant.js --help [command]`
         'should print command help',
         () => _expectSuccessMessage(
           '--help create',
-          `ant.js create <service> [--template <name>]
+          `ant.js create <service> [--template <template>]
 
 Create a new service
 
