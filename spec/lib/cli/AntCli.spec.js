@@ -224,6 +224,31 @@ describe('lib/cli/AntCli.js', () => {
     }
   });
 
+  test('should show verbose message when not using --verbose option', () => {
+    const originalExit = process.exit;
+    process.exit = jest.fn();
+    const originalLog = console.log;
+    console.log = jest.fn();
+    const originalCwd = process.cwd();
+    process.chdir(path.resolve(
+      __dirname,
+      '../../support/configs/notAPluginConfig'
+    ));
+    try {
+      (new AntCli()).execute();
+      expect(process.exit).toHaveBeenCalledWith(0);
+      expect(console.log.mock.calls[0][0]).toContain(
+        'For getting the error stack, use --verbose option'
+      );
+    } catch (e) {
+      throw e;
+    } finally {
+      process.exit = originalExit;
+      console.log = originalLog;
+      process.chdir(originalCwd);
+    }
+  });
+
   test('should show stack when using --verbose option', () => {
     const originalArgv = process.argv;
     process.argv.push('--verbose');
