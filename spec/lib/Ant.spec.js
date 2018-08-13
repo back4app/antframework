@@ -10,6 +10,7 @@ const Plugin = require('../../lib/plugins/Plugin');
 const PluginController = require('../../lib/plugins/PluginController');
 const TemplateController = require('../../lib/templates/TemplateController');
 const Core = require('../../lib/plugins/core');
+const yaml = require('yaml').default;
 
 describe('lib/Ant.js', () => {
   test('should export "Ant" class', () => {
@@ -36,26 +37,32 @@ describe('lib/Ant.js', () => {
   });
 
   test('should load empty global config', () => {
-    const originalReadFileSync = fs.readFileSync;
-    fs.readFileSync = jest.fn(() => '');
-    const ant = new Ant();
-    expect(ant.pluginController).toBeInstanceOf(PluginController);
-    expect(ant.pluginController.plugins).toEqual(expect.any(Array));
-    expect(ant.pluginController.plugins).toHaveLength(0);
-    fs.readFileSync = originalReadFileSync;
+    const originalGetGlobalConfig = Ant.prototype._getGlobalConfig;
+    Ant.prototype._getGlobalConfig = () => {
+      return {};
+    };
+    try {
+      const ant = new Ant();
+      expect(ant._globalConfig).toEqual({});
+      expect(ant.pluginController).toBeInstanceOf(PluginController);
+      expect(ant.pluginController.plugins).toEqual(expect.any(Array));
+      expect(ant.pluginController.plugins).toHaveLength(0);
+    } finally {
+      Ant.prototype._getGlobalConfig = originalGetGlobalConfig;
+    }
   });
 
   test('should fail if global config cannot be read', () => {
-    const readFileSync = fs.readFileSync;
-    fs.readFileSync = () => { throw new Error(); };
+    const originalParseDocument = yaml.parseDocument;
+    yaml.parseDocument = () => { throw new Error('Mocked error'); };
     try {
       expect(() => new Ant()).toThrowError(
-        'Could not load global config'
+        /^Could not load config/
       );
     } catch (e) {
       throw e;
     } finally {
-      fs.readFileSync = readFileSync;
+      yaml.parseDocument = originalParseDocument;
     }
   });
 

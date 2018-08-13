@@ -1,3 +1,4 @@
+basePath: ./
 plugins:
   - ./plugins/core
 templates:
