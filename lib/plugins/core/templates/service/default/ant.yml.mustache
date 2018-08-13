@@ -5,7 +5,7 @@ service: {{service}}
 # The added plugins
 plugins: # Plugins should be listed below
   # This plugin enables the Ant Framework for building and starting GraphQL API services
-  - ./lib/plugins/graphQL:
+  - $GLOBAL/plugins/graphQL:
       {}
     # The GraphQL plugin base path
     # basePath: ./
@@ -13,7 +13,7 @@ plugins: # Plugins should be listed below
     # model: ./model.graphql
     # The script to start the GraphQL API server when starting this service
     # server:
-    #   bin: ./lib/plugins/graphQL/templates/default/bin/server.js
+    #   bin: $GLOBAL/plugins/graphQL/templates/default/bin/server.js
     #   port: 3000
 templates:
   {}
