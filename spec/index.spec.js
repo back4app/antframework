@@ -4,6 +4,7 @@
 
 const index = require('../');
 const Ant = require('../lib/Ant');
+const Config = require('../lib/config/Config');
 const AntFunction = require('../lib/functions/AntFunction');
 const BinFunction = require('../lib/functions/BinFunction');
 const LibFunction = require('../lib/functions/LibFunction');
@@ -17,6 +18,12 @@ describe('index.js', () => {
   test('should export "Ant" class', () => {
     expect(index.Ant).toEqual(
       Ant
+    );
+  });
+
+  test('should export "Config" class', () => {
+    expect(index.Config).toEqual(
+      Config
     );
   });
 

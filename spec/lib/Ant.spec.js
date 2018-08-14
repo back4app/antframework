@@ -12,6 +12,7 @@ const TemplateController = require('../../lib/templates/TemplateController');
 const BinFunction = require('../../lib/functions/BinFunction');
 const FunctionController = require('../../lib/functions/FunctionController');
 const Core = require('../../lib/plugins/core');
+const yaml = require('yaml').default;
 
 describe('lib/Ant.js', () => {
   test('should export "Ant" class', () => {
@@ -38,26 +39,32 @@ describe('lib/Ant.js', () => {
   });
 
   test('should load empty global config', () => {
-    const originalReadFileSync = fs.readFileSync;
-    fs.readFileSync = jest.fn(() => '');
-    const ant = new Ant();
-    expect(ant.pluginController).toBeInstanceOf(PluginController);
-    expect(ant.pluginController.plugins).toEqual(expect.any(Array));
-    expect(ant.pluginController.plugins).toHaveLength(0);
-    fs.readFileSync = originalReadFileSync;
+    const originalGetGlobalConfig = Ant.prototype._getGlobalConfig;
+    Ant.prototype._getGlobalConfig = () => {
+      return {};
+    };
+    try {
+      const ant = new Ant();
+      expect(ant._globalConfig).toEqual({});
+      expect(ant.pluginController).toBeInstanceOf(PluginController);
+      expect(ant.pluginController.plugins).toEqual(expect.any(Array));
+      expect(ant.pluginController.plugins).toHaveLength(0);
+    } finally {
+      Ant.prototype._getGlobalConfig = originalGetGlobalConfig;
+    }
   });
 
   test('should fail if global config cannot be read', () => {
-    const readFileSync = fs.readFileSync;
-    fs.readFileSync = () => { throw new Error(); };
+    const originalParseDocument = yaml.parseDocument;
+    yaml.parseDocument = () => { throw new Error('Mocked error'); };
     try {
       expect(() => new Ant()).toThrowError(
-        'Could not load global config'
+        /^Could not load config/
       );
     } catch (e) {
       throw e;
     } finally {
-      fs.readFileSync = readFileSync;
+      yaml.parseDocument = originalParseDocument;
     }
   });
 
@@ -184,16 +191,6 @@ Template category value is not an object!'
       );
     });
 
-    test('should fail if Core plugin not loaded', async () => {
-      expect.hasAssertions();
-      const ant = new Ant({ plugins: [] });
-      ant.pluginController._plugins = new Map();
-      await expect(ant.createService('FooService', 'FooTemplate'))
-        .rejects.toThrow(
-          'Service could not be created'
-        );
-    });
-
     test(
       'should fail if Core plugin createService method fails',
       async () => {
@@ -253,16 +250,6 @@ Template category value is not an object!'
         true
       );
     });
-
-    test('should fail if Core plugin not loaded', async () => {
-      expect.hasAssertions();
-      const ant = new Ant({ plugins: [] });
-      ant.pluginController._plugins = new Map();
-      await expect(ant.addPlugin('asdds'))
-        .rejects.toThrow(
-          'Plugin could not be added'
-        );
-    });
   });
 
   describe('Ant.removePlugin', () => {
@@ -281,15 +268,51 @@ Template category value is not an object!'
         true
       );
     });
+  });
 
-    test('should fail if Core plugin not loaded', async () => {
-      expect.hasAssertions();
-      const ant = new Ant({ plugins: [] });
-      ant.pluginController._plugins = new Map();
-      await expect(ant.removePlugin('asdds'))
-        .rejects.toThrow(
-          'Plugin could not be removed'
-        );
+  describe('Ant.addTemplate', () => {
+    test('should be async and call Core addTemplate method', async () => {
+      const ant = new Ant();
+      const core = ant.pluginController.getPlugin('Core');
+      const originalAddTemplate = core.addTemplate;
+      core.addTemplate = jest.fn();
+      const addTemplateReturn = ant.addTemplate(
+        'MyCategory',
+        'MyTemplate',
+        '/path/to/my/template',
+        false
+      );
+      expect(addTemplateReturn).toBeInstanceOf(Promise);
+      await addTemplateReturn;
+      expect(core.addTemplate).toHaveBeenCalledWith(
+        'MyCategory',
+        'MyTemplate',
+        '/path/to/my/template',
+        false
+      );
+      core.addTemplate = originalAddTemplate;
+    });
+  });
+
+  describe('Ant.removeTemplate', () => {
+    test('should be async and call Core removeTemplate method', async () => {
+      const ant = new Ant();
+      const core = ant.pluginController.getPlugin('Core');
+      const originalRemoveTemplate = jest.fn();
+      core.removeTemplate = jest.fn();
+      const removeTemplateReturn = ant.removeTemplate(
+        'MyCategory',
+        'MyTemplate',
+        false
+      );
+      expect(removeTemplateReturn).toBeInstanceOf(Promise);
+      await removeTemplateReturn;
+      expect(core.removeTemplate).toHaveBeenCalledWith(
+        'MyCategory',
+        'MyTemplate',
+        false
+      );
+      core.removeTemplate = originalRemoveTemplate;
     });
   });
 });

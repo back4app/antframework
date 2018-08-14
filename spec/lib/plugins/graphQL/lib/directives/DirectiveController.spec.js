@@ -101,8 +101,8 @@ describe('lib/plugins/graphQL/lib/directives/DirectiveController.js', () => {
       }
     }
 
-    antWithDirectives.pluginController.loadPlugin(PluginWithoutDirectives);
-    antWithDirectives.pluginController.loadPlugin(PluginWithDirectives);
+    antWithDirectives.pluginController.loadPlugins([PluginWithoutDirectives]);
+    antWithDirectives.pluginController.loadPlugins([PluginWithDirectives]);
     const controllerWithDirectives = new DirectiveController(antWithDirectives);
 
     expect(controllerWithDirectives._directives).toEqual(expect.any(Map));
