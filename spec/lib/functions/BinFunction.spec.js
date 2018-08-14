@@ -71,17 +71,15 @@ describe('lib/functions/BinFunction.js', () => {
 Some other log
 `
       );
-      expect(logHandler).toHaveBeenCalledWith(
-        `Bin function fooBinFunction => Some initial log
-`
-      );
-      expect(logHandler).toHaveBeenCalledWith(
-        `Bin function fooBinFunction => Some other log
-`
-      );
-      expect(errorHandler).toHaveBeenCalledWith(
-        'Bin function fooBinFunction => Some error log\n'
-      );
+      expect(logHandler).toHaveBeenCalledWith(expect.stringContaining(
+        'Some initial log'
+      ));
+      expect(logHandler).toHaveBeenCalledWith(expect.stringContaining(
+        'Some other log'
+      ));
+      expect(errorHandler).toHaveBeenCalledWith(expect.stringContaining(
+        'Some error log'
+      ));
       logger._handlers.delete(logHandler);
       logger._errorHandlers.delete(errorHandler);
     });

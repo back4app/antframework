@@ -126,7 +126,7 @@ describe('lib/plugins/graphQL/lib/directives/DirectiveController.js', () => {
 
   test('should fail to load directives if not valid', () => {
     expect(() => new DirectiveController(ant, {})).toThrowError(
-      'Could not load directives: param "directives" should be an array'
+      'Could not load directives: param "directives" should be Array'
     );
     expect(() => new DirectiveController(ant, [{}])).toThrowError(
       'Directive "Object" should be an instance of Directive'

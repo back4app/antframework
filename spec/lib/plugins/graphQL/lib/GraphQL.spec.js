@@ -320,9 +320,11 @@ http://localhost:3000\n'
     test('should be readonly and return the default directives', () => {
       const graphQL = new GraphQL(ant);
       expect(graphQL.directives).toEqual(expect.any(Array));
-      expect(graphQL.directives).toHaveLength(1);
+      expect(graphQL.directives).toHaveLength(2);
       expect(graphQL.directives[0]).toEqual(expect.any(Directive));
       expect(graphQL.directives[0].name).toEqual('mock');
+      expect(graphQL.directives[1]).toEqual(expect.any(Directive));
+      expect(graphQL.directives[1].name).toEqual('resolve');
     });
   });
 
