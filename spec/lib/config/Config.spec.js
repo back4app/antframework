@@ -341,7 +341,7 @@ not found on configuration file. plugin remove command should do nothing');
       expect(config.config.templates).toBeUndefined();
 
       const templatePath = '/path/to/my/template';
-      config.addTemplate('myTemplate', templatePath, 'myCategory');
+      config.addTemplate('myCategory', 'myTemplate', templatePath);
       expect(config.config.templates).toEqual({
         myCategory: {
           myTemplate: templatePath
@@ -364,7 +364,7 @@ not found on configuration file. plugin remove command should do nothing');
       });
 
       const templatePath = '/path/to/my/template';
-      config.addTemplate('myTemplate', templatePath, 'myCategory');
+      config.addTemplate('myCategory', 'myTemplate', templatePath);
       expect(config.config.templates).toEqual({
         fooCategory: {
           barTemplate: '/path/to/bar'
@@ -390,7 +390,7 @@ not found on configuration file. plugin remove command should do nothing');
           myTemplate: '/path/to/my/template'
         }
       });
-      config.addTemplate('myTemplate', '/my/other/path', 'myCategory');
+      config.addTemplate('myCategory', 'myTemplate', '/my/other/path');
       expect(config.config.templates).toEqual({
         myCategory: {
           myTemplate: '/my/other/path'
@@ -419,14 +419,14 @@ not found on configuration file. plugin remove command should do nothing');
       expect(config.config.templates).toBeUndefined();
 
       const templatePath = '/path/to/my/template';
-      config.addTemplate('myTemplate', templatePath, 'myCategory');
+      config.addTemplate('myCategory', 'myTemplate', templatePath);
       expect(config.config.templates).toEqual({
         myCategory: {
           myTemplate: templatePath
         }
       });
 
-      config.removeTemplate('myTemplate', 'myCategory');
+      config.removeTemplate('myCategory', 'myTemplate');
       expect(config.config.templates).toEqual({
         myCategory: {}
       });
@@ -446,7 +446,7 @@ not found on configuration file. plugin remove command should do nothing');
         }
       });
 
-      config.removeTemplate('myTemplate', 'myCategory');
+      config.removeTemplate('myCategory', 'myTemplate');
       expect(config.config.templates).toEqual({
         myCategory: {}
       });
@@ -460,7 +460,7 @@ not found on configuration file. plugin remove command should do nothing');
       const config = new Config(path.resolve(outPath, 'templateRemoval2.yml'));
       expect(config.config.templates).toBeUndefined();
 
-      config.removeTemplate('myTemplate', 'myCategory');
+      config.removeTemplate('myCategory', 'myTemplate');
       expect(config.config.templates).toBeUndefined();
       expect(console.log).toHaveBeenCalledWith('"templates" entry was not found on the \
 configuration. template remove command should do nothing');
@@ -472,7 +472,7 @@ configuration. template remove command should do nothing');
       const config = new Config(configFilePath);
       expect(config.config.templates).toEqual({});
 
-      config.removeTemplate('myTemplate', 'myCategory');
+      config.removeTemplate('myCategory', 'myTemplate');
       expect(config.config.templates).toEqual({});
       expect(console.log).toHaveBeenCalledWith('Template category "myCategory" was not found on the \
 configuration. template remove command should do nothing');
@@ -488,7 +488,7 @@ configuration. template remove command should do nothing');
         }
       });
 
-      config.removeTemplate('myTemplate', 'myCategory');
+      config.removeTemplate('myCategory', 'myTemplate');
       expect(config.config.templates).toEqual({
         myCategory: {
           foo: '/bar'

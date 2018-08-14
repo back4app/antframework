@@ -249,17 +249,17 @@ Template category value is not an object!'
       const originalAddTemplate = core.addTemplate;
       core.addTemplate = jest.fn();
       const addTemplateReturn = ant.addTemplate(
+        'MyCategory',
         'MyTemplate',
         '/path/to/my/template',
-        'MyCategory',
         false
       );
       expect(addTemplateReturn).toBeInstanceOf(Promise);
       await addTemplateReturn;
       expect(core.addTemplate).toHaveBeenCalledWith(
+        'MyCategory',
         'MyTemplate',
         '/path/to/my/template',
-        'MyCategory',
         false
       );
       core.addTemplate = originalAddTemplate;
@@ -273,15 +273,15 @@ Template category value is not an object!'
       const originalRemoveTemplate = jest.fn();
       core.removeTemplate = jest.fn();
       const removeTemplateReturn = ant.removeTemplate(
-        'MyTemplate',
         'MyCategory',
+        'MyTemplate',
         false
       );
       expect(removeTemplateReturn).toBeInstanceOf(Promise);
       await removeTemplateReturn;
       expect(core.removeTemplate).toHaveBeenCalledWith(
-        'MyTemplate',
         'MyCategory',
+        'MyTemplate',
         false
       );
       core.removeTemplate = originalRemoveTemplate;

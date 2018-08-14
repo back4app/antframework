@@ -508,7 +508,7 @@ ant.js --help plugin add`)
 
     describe('template add command', () => {
       test(
-        'should work only with "template" and "templatePath" args',
+        'should work only with "category", template" and "path" args',
         (done) => {
           const originalExit = process.exit;
           process.exit = jest.fn(code => {
@@ -523,32 +523,39 @@ ant.js --help plugin add`)
             ._ant
             .pluginController
             .getPlugin('Core')
-            .addTemplate = jest.fn(async (template, templatePath, category, isGlobal) => {
+            .addTemplate = jest.fn(async (category, template, templatePath, isGlobal) => {
+              expect(category).toEqual('MyCategory');
               expect(template).toEqual('MyTemplate');
               expect(templatePath).toEqual('my/template/path');
-              expect(category).toEqual('Default');
               expect(isGlobal).toEqual(false);
             });
-          antCli._yargs.parse('template add MyTemplate my/template/path');
+          antCli._yargs.parse('template add MyCategory MyTemplate my/template/path');
         }
       );
 
       test(
-        'should not work without "template" arg',
+        'should not work without "category" arg',
         () => _expectErrorMessage('template add',
-          'Fatal => Template add command requires template and templatePath arguments',
+          'Fatal => Template add command requires category, template and path arguments',
           'ant.js --help template add')
       );
 
       test(
-        'should not work without "templatePath" arg',
-        () => _expectErrorMessage('template add myTemplate',
-          'Fatal => Template add command requires template and templatePath arguments',
+        'should not work without "template" arg',
+        () => _expectErrorMessage('template add MyCategory',
+          'Fatal => Template add command requires category, template and path arguments',
           'ant.js --help template add')
       );
 
       test(
-        'should work with "template" and "templatePath" args and "--global" or "-g" option',
+        'should not work without "path" arg',
+        () => _expectErrorMessage('template add MyCategory myTemplate',
+          'Fatal => Template add command requires category, template and path arguments',
+          'ant.js --help template add')
+      );
+
+      test(
+        'should work with "category", "template" and "templatePath" args and "--global" or "-g" option',
         (done) => {
           const originalExit = process.exit;
           process.exit = jest.fn(() => {
@@ -562,13 +569,13 @@ ant.js --help plugin add`)
             ._ant
             .pluginController
             .getPlugin('Core')
-            .addTemplate = jest.fn(async (template, templatePath, category, isGlobal) => {
+            .addTemplate = jest.fn(async (category, template, templatePath, isGlobal) => {
+              expect(category).toEqual('MyCategory');
               expect(template).toEqual('MyTemplate');
               expect(templatePath).toEqual('path/to/my/template');
-              expect(category).toEqual('Default');
               expect(isGlobal).toEqual(true);
             });
-          antCli._yargs.parse('template add MyTemplate path/to/my/template --global');
+          antCli._yargs.parse('template add MyCategory MyTemplate path/to/my/template --global');
         }
       );
 
@@ -576,11 +583,11 @@ ant.js --help plugin add`)
         'should print command help',
         () => _expectSuccessMessage(
           '--help template add',
-          'ant.js template add <template> <templatePath> [category] [--global]',
+          'ant.js template add <category> <template> <path> [--global]',
           'Adds/overrides a template',
-          'template      The template to be added/overwritten                  [required]',
-          'templatePath  The path to the template files                        [required]',
-          'category      The template category                       [default: "Default"]',
+          'category  The template category                                     [required]',
+          'template  The template to be added/overwritten                      [required]',
+          'path      The path to the template files                            [required]',
           `--global, -g   Adds template into global configuration file
                                                       [boolean] [default: false]`
         )
@@ -604,7 +611,7 @@ ant.js --help plugin add`)
             .addTemplate = jest.fn(async () => {
               throw Error('Mocked error');
             });
-          antCli._yargs.parse('template add MyTemplate MyCategory');
+          antCli._yargs.parse('template add MyCategory MyTemplate foo/bar');
         }
       );
     });
@@ -626,24 +633,24 @@ ant.js --help plugin add`)
             ._ant
             .pluginController
             .getPlugin('Core')
-            .removeTemplate = jest.fn(async (template, category, isGlobal) => {
-              expect(template).toEqual('MyTemplate');
+            .removeTemplate = jest.fn(async (category, template, isGlobal) => {
               expect(category).toEqual('MyCategory');
+              expect(template).toEqual('MyTemplate');
               expect(isGlobal).toEqual(false);
             });
-          antCli._yargs.parse('plugin remove MyTemplate MyCategory');
+          antCli._yargs.parse('template remove MyCategory MyTemplate');
         }
       );
 
       test(
         'should not work without "template" arg',
         () => _expectErrorMessage('template remove',
-          'Fatal => Template remove command requires template argument',
+          'Fatal => Template remove command requires category and template arguments',
           'ant.js --help template remove')
       );
 
       test(
-        'should work with "template" arg and "--global" or "-g" option',
+        'should work with "category" and "template" args and "--global" or "-g" option',
         (done) => {
           const originalExit = process.exit;
           process.exit = jest.fn(() => {
@@ -657,12 +664,12 @@ ant.js --help plugin add`)
             ._ant
             .pluginController
             .getPlugin('Core')
-            .removeTemplate = jest.fn(async (template, category, isGlobal) => {
+            .removeTemplate = jest.fn(async (category, template, isGlobal) => {
+              expect(category).toEqual('MyCategory');
               expect(template).toEqual('MyTemplate');
-              expect(category).toEqual('Default');
               expect(isGlobal).toEqual(true);
             });
-          antCli._yargs.parse('template remove MyTemplate --global');
+          antCli._yargs.parse('template remove MyCategory MyTemplate --global');
         }
       );
 
@@ -670,10 +677,10 @@ ant.js --help plugin add`)
         'should print command help',
         () => _expectSuccessMessage(
           '--help template remove',
-          'ant.js template remove <template> [category] [--global]',
+          'ant.js template remove <category> <template> [--global]',
           'Removes a template',
+          'category  The template category                                     [required]',
           'template  The template to be removed                                [required]',
-          'category  The template category                           [default: "Default"]',
           `--global, -g   Removes template from global configuration file
                                                       [boolean] [default: false]`
         )
@@ -697,7 +704,7 @@ ant.js --help plugin add`)
             .removeTemplate = jest.fn(async () => {
               throw Error('Mocked error');
             });
-          antCli._yargs.parse('template remove MyTemplate');
+          antCli._yargs.parse('template remove MyCategory MyTemplate');
         }
       );
     });
