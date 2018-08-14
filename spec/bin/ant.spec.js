@@ -10,6 +10,7 @@ const util = require('util');
 const childProcess = require('child_process');
 const exec = util.promisify(childProcess.exec);
 const AntCli = require('../../lib/cli/AntCli');
+const yargsHelper = require('../../lib/util/yargsHelper');
 
 const binPath = path.resolve(__dirname, '../../bin/ant.js');
 
@@ -503,6 +504,252 @@ ant.js --help plugin add`)
           antCli._yargs.parse('plugin remove MyPlugin');
         }
       );
+    });
+
+    describe('template add command', () => {
+      test(
+        'should work only with "category", template" and "path" args',
+        (done) => {
+          const originalExit = process.exit;
+          process.exit = jest.fn(code => {
+            process.exit = originalExit;
+            expect.hasAssertions();
+            expect(code).toBe(0);
+            done();
+          });
+
+          const antCli = new AntCli();
+          antCli
+            ._ant
+            .pluginController
+            .getPlugin('Core')
+            .addTemplate = jest.fn(async (category, template, templatePath, isGlobal) => {
+              expect(category).toEqual('MyCategory');
+              expect(template).toEqual('MyTemplate');
+              expect(templatePath).toEqual('my/template/path');
+              expect(isGlobal).toEqual(false);
+            });
+          antCli._yargs.parse('template add MyCategory MyTemplate my/template/path');
+        }
+      );
+
+      test(
+        'should not work without "category" arg',
+        () => _expectErrorMessage('template add',
+          'Fatal => Template add command requires category, template and path arguments',
+          'ant.js --help template add')
+      );
+
+      test(
+        'should not work without "template" arg',
+        () => _expectErrorMessage('template add MyCategory',
+          'Fatal => Template add command requires category, template and path arguments',
+          'ant.js --help template add')
+      );
+
+      test(
+        'should not work without "path" arg',
+        () => _expectErrorMessage('template add MyCategory myTemplate',
+          'Fatal => Template add command requires category, template and path arguments',
+          'ant.js --help template add')
+      );
+
+      test(
+        'should work with "category", "template" and "templatePath" args and "--global" or "-g" option',
+        (done) => {
+          const originalExit = process.exit;
+          process.exit = jest.fn(() => {
+            process.exit = originalExit;
+            expect.hasAssertions();
+            done();
+          });
+
+          const antCli = new AntCli();
+          antCli
+            ._ant
+            .pluginController
+            .getPlugin('Core')
+            .addTemplate = jest.fn(async (category, template, templatePath, isGlobal) => {
+              expect(category).toEqual('MyCategory');
+              expect(template).toEqual('MyTemplate');
+              expect(templatePath).toEqual('path/to/my/template');
+              expect(isGlobal).toEqual(true);
+            });
+          antCli._yargs.parse('template add MyCategory MyTemplate path/to/my/template --global');
+        }
+      );
+
+      test(
+        'should print command help',
+        () => _expectSuccessMessage(
+          '--help template add',
+          'ant.js template add <category> <template> <path> [--global]',
+          'Adds/overrides a template',
+          'category  The template category                                     [required]',
+          'template  The template to be added/overwritten                      [required]',
+          'path      The path to the template files                            [required]',
+          `--global, -g   Adds template into global configuration file
+                                                      [boolean] [default: false]`
+        )
+      );
+
+      test(
+        'should handle addTemplate error',
+        (done) => {
+          const originalHandleErrorMessage = yargsHelper.handleErrorMessage;
+          yargsHelper.handleErrorMessage = jest.fn(message => {
+            yargsHelper.handleErrorMessage = originalHandleErrorMessage;
+            expect(message).toBe('Mocked error');
+            done();
+          });
+
+          const antCli = new AntCli();
+          antCli
+            ._ant
+            .pluginController
+            .getPlugin('Core')
+            .addTemplate = jest.fn(async () => {
+              throw Error('Mocked error');
+            });
+          antCli._yargs.parse('template add MyCategory MyTemplate foo/bar');
+        }
+      );
+    });
+
+    describe('template remove command', () => {
+      test(
+        'should work only with "template" and "category" args',
+        (done) => {
+          const originalExit = process.exit;
+          process.exit = jest.fn(code => {
+            process.exit = originalExit;
+            expect.hasAssertions();
+            expect(code).toBe(0);
+            done();
+          });
+
+          const antCli = new AntCli();
+          antCli
+            ._ant
+            .pluginController
+            .getPlugin('Core')
+            .removeTemplate = jest.fn(async (category, template, isGlobal) => {
+              expect(category).toEqual('MyCategory');
+              expect(template).toEqual('MyTemplate');
+              expect(isGlobal).toEqual(false);
+            });
+          antCli._yargs.parse('template remove MyCategory MyTemplate');
+        }
+      );
+
+      test(
+        'should not work without "template" arg',
+        () => _expectErrorMessage('template remove',
+          'Fatal => Template remove command requires category and template arguments',
+          'ant.js --help template remove')
+      );
+
+      test(
+        'should work with "category" and "template" args and "--global" or "-g" option',
+        (done) => {
+          const originalExit = process.exit;
+          process.exit = jest.fn(() => {
+            process.exit = originalExit;
+            expect.hasAssertions();
+            done();
+          });
+
+          const antCli = new AntCli();
+          antCli
+            ._ant
+            .pluginController
+            .getPlugin('Core')
+            .removeTemplate = jest.fn(async (category, template, isGlobal) => {
+              expect(category).toEqual('MyCategory');
+              expect(template).toEqual('MyTemplate');
+              expect(isGlobal).toEqual(true);
+            });
+          antCli._yargs.parse('template remove MyCategory MyTemplate --global');
+        }
+      );
+
+      test(
+        'should print command help',
+        () => _expectSuccessMessage(
+          '--help template remove',
+          'ant.js template remove <category> <template> [--global]',
+          'Removes a template',
+          'category  The template category                                     [required]',
+          'template  The template to be removed                                [required]',
+          `--global, -g   Removes template from global configuration file
+                                                      [boolean] [default: false]`
+        )
+      );
+
+      test(
+        'should handle removeTemplate error',
+        (done) => {
+          const originalHandleErrorMessage = yargsHelper.handleErrorMessage;
+          yargsHelper.handleErrorMessage = jest.fn(message => {
+            yargsHelper.handleErrorMessage = originalHandleErrorMessage;
+            expect(message).toBe('Mocked error');
+            done();
+          });
+
+          const antCli = new AntCli();
+          antCli
+            ._ant
+            .pluginController
+            .getPlugin('Core')
+            .removeTemplate = jest.fn(async () => {
+              throw Error('Mocked error');
+            });
+          antCli._yargs.parse('template remove MyCategory MyTemplate');
+        }
+      );
+    });
+
+    describe('template ls command', () => {
+      test('should work', (done) => {
+        const originalExit = process.exit;
+        process.exit = jest.fn(code => {
+          process.exit = originalExit;
+          expect.hasAssertions();
+          expect(code).toBe(0);
+          done();
+        });
+
+        const antCli = new AntCli();
+        antCli
+          ._ant
+          .pluginController
+          .getPlugin('Core')
+          .listTemplates = jest.fn(async (args) => {
+            expect(args).toBeUndefined();
+          });
+        antCli._yargs.parse('template ls');
+      });
+
+      test('should handle any errors', (done) => {
+        const originalHandleErrorMessage = yargsHelper.handleErrorMessage;
+        yargsHelper.handleErrorMessage = jest.fn((message, e, command) => {
+          yargsHelper.handleErrorMessage = originalHandleErrorMessage;
+          expect(e).toBeInstanceOf(Error);
+          expect(message).toBe('Mocked error');
+          expect(command).toBe('template ls');
+          done();
+        });
+
+        const antCli = new AntCli();
+        antCli
+          ._ant
+          .pluginController
+          .getPlugin('Core')
+          .listTemplates = jest.fn(async () => {
+            throw Error('Mocked error');
+          });
+        antCli._yargs.parse('template ls');
+      });
     });
   });
 

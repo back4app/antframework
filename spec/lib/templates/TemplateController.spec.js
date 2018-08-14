@@ -89,6 +89,20 @@ be an array'
       fooTemplate.category, 'Should not find').toEqual(null));
   });
 
+  test('should get all templates', () => {
+    let templates = [];
+    for(const plugin of ant._pluginController._plugins.values()) {
+      templates = templates.concat(plugin.templates);
+    }
+    const myCustomTemplate = new Template('MyCustomCategory', 'MyCustomTemplate',
+      '/path/to/my/custom');
+    const fooTemplate = new Template('Foo', 'Bar', '/foo/bar');
+    templates.push(myCustomTemplate);
+    templates.push(fooTemplate);
+    const templateController = new TemplateController(ant, templates);
+    expect(templateController.getAllTemplates()).toEqual(templates);
+  });
+
   describe('TemplateController.ant', () => {
     test('should be readonly', () => {
       expect(templateController.ant).toEqual(ant);

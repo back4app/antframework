@@ -335,6 +335,170 @@ not found on configuration file. plugin remove command should do nothing');
     });
   });
 
+  describe('addTemplate', () => {
+    test('should add template', () => {
+      const config = new Config(path.resolve(outPath, 'templateAdd1.yml'));
+      expect(config.config.templates).toBeUndefined();
+
+      const templatePath = '/path/to/my/template';
+      config.addTemplate('myCategory', 'myTemplate', templatePath);
+      expect(config.config.templates).toEqual({
+        myCategory: {
+          myTemplate: templatePath
+        }
+      });
+      expect(config.toString()).toContain(`templates:
+  myCategory:
+    myTemplate: /path/to/my/template
+`);
+    });
+
+    test('should add template on an existing file', () => {
+      const configFilePath = path.resolve(outPath, 'templateAdd2.yml');
+      fs.writeFileSync(configFilePath, 'templates:\n  fooCategory:\n    barTemplate: /path/to/bar');
+      const config = new Config(configFilePath);
+      expect(config.config.templates).toEqual({
+        fooCategory: {
+          barTemplate: '/path/to/bar'
+        }
+      });
+
+      const templatePath = '/path/to/my/template';
+      config.addTemplate('myCategory', 'myTemplate', templatePath);
+      expect(config.config.templates).toEqual({
+        fooCategory: {
+          barTemplate: '/path/to/bar'
+        },
+        myCategory: {
+          myTemplate: templatePath
+        }
+      });
+      expect(config.toString()).toContain(`templates:
+  fooCategory:
+    barTemplate: /path/to/bar
+  myCategory:
+    myTemplate: /path/to/my/template
+`);
+    });
+
+    test('should override a template', () => {
+      const configFilePath = path.resolve(outPath, 'templateAdd2.yml');
+      fs.writeFileSync(configFilePath, 'templates:\n  myCategory:\n    myTemplate: /path/to/my/template');
+      const config = new Config(configFilePath);
+      expect(config.config.templates).toEqual({
+        myCategory: {
+          myTemplate: '/path/to/my/template'
+        }
+      });
+      config.addTemplate('myCategory', 'myTemplate', '/my/other/path');
+      expect(config.config.templates).toEqual({
+        myCategory: {
+          myTemplate: '/my/other/path'
+        }
+      });
+      expect(config.toString()).toContain(`templates:
+  myCategory:
+    myTemplate: /my/other/path
+`);
+    });
+  });
+
+  describe('removeTemplate', () => {
+    const originalConsoleLog = console.log;
+
+    beforeEach(() => {
+      console.log = jest.fn();
+    });
+
+    afterEach(() => {
+      console.log = originalConsoleLog;
+    });
+
+    test('should remove template', () => {
+      const config = new Config(path.resolve(outPath, 'templateRemoval1.yml'));
+      expect(config.config.templates).toBeUndefined();
+
+      const templatePath = '/path/to/my/template';
+      config.addTemplate('myCategory', 'myTemplate', templatePath);
+      expect(config.config.templates).toEqual({
+        myCategory: {
+          myTemplate: templatePath
+        }
+      });
+
+      config.removeTemplate('myCategory', 'myTemplate');
+      expect(config.config.templates).toEqual({
+        myCategory: {}
+      });
+      expect(config.toString()).toContain(`templates:
+  myCategory:
+    {}
+`);
+    });
+
+    test('should remove template on an existing file', () => {
+      const configFilePath = path.resolve(outPath, 'templateRemoval1.yml');
+      fs.writeFileSync(configFilePath, 'templates:\n  myCategory:\n    myTemplate: /path/to/my/template');
+      const config = new Config(configFilePath);
+      expect(config.config.templates).toEqual({
+        myCategory: {
+          myTemplate: '/path/to/my/template'
+        }
+      });
+
+      config.removeTemplate('myCategory', 'myTemplate');
+      expect(config.config.templates).toEqual({
+        myCategory: {}
+      });
+      expect(config.toString()).toContain(`templates:
+  myCategory:
+    {}
+`);
+    });
+
+    test('should do nothing because templates entry was not found', () => {
+      const config = new Config(path.resolve(outPath, 'templateRemoval2.yml'));
+      expect(config.config.templates).toBeUndefined();
+
+      config.removeTemplate('myCategory', 'myTemplate');
+      expect(config.config.templates).toBeUndefined();
+      expect(console.log).toHaveBeenCalledWith('"templates" entry was not found on the \
+configuration. template remove command should do nothing');
+    });
+
+    test('should do nothing because category was not found', () => {
+      const configFilePath = path.resolve(outPath, 'templateRemoval3.yml');
+      fs.writeFileSync(configFilePath, 'templates:\n  {}');
+      const config = new Config(configFilePath);
+      expect(config.config.templates).toEqual({});
+
+      config.removeTemplate('myCategory', 'myTemplate');
+      expect(config.config.templates).toEqual({});
+      expect(console.log).toHaveBeenCalledWith('Template category "myCategory" was not found on the \
+configuration. template remove command should do nothing');
+    });
+
+    test('should do nothing because template was not found', () => {
+      const configFilePath = path.resolve(outPath, 'templateRemoval3.yml');
+      fs.writeFileSync(configFilePath, 'templates:\n  myCategory:\n    foo: /bar');
+      const config = new Config(configFilePath);
+      expect(config.config.templates).toEqual({
+        myCategory: {
+          foo: '/bar'
+        }
+      });
+
+      config.removeTemplate('myCategory', 'myTemplate');
+      expect(config.config.templates).toEqual({
+        myCategory: {
+          foo: '/bar'
+        }
+      });
+      expect(console.log).toHaveBeenCalledWith('Template "myTemplate" was not found on the \
+configuration. template remove command should do nothing');
+    });
+  });
+
   describe('static utils', () => {
     test('should load templates from config', () => {
       const customTemplatePath = '/path/to/my/custom';
