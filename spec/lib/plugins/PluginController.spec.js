@@ -10,6 +10,7 @@ const Ant = require('../../../lib/Ant');
 const Plugin = require('../../../lib/plugins/Plugin');
 const PluginController = require('../../../lib/plugins/PluginController');
 const Template = require('../../../lib/templates/Template');
+const AntFunction = require('../../../lib/functions/AntFunction');
 const Core = require('../../../lib/plugins/core');
 const FooPlugin = require('../../support/plugins/FooPlugin');
 const NotAPlugin = require('../../support/plugins/NotAPlugin');
@@ -103,6 +104,42 @@ class TemplatesErrorPlugin extends NameErrorPlugin {
 class PluginWithNotValidTemplate extends Plugin {
   get templates() {
     return [template1, {}, template2];
+  }
+}
+
+const function1 = new AntFunction('function1');
+const function2 = new AntFunction('function2');
+
+/**
+ * Represents a {@link Plugin} with functions for testing purposes.
+ * @extends Plugin
+ * @private
+ */
+class PluginWithFunctions extends Plugin {
+  get functions() {
+    return [function1, function2];
+  }
+}
+
+/**
+ * Represents a {@link Plugin} that overrides the "functions" member and
+ * throws an Error for testing purposes.
+ * @private
+ */
+class FunctionsErrorPlugin extends NameErrorPlugin {
+  get functions() {
+    throw new Error('Some functions error');
+  }
+}
+
+/**
+ * Represents a {@link Plugin} with a not valid function for testing purposes.
+ * @extends Plugin
+ * @private
+ */
+class PluginWithNotValidFunction extends Plugin {
+  get functions() {
+    return [function1, {}, function2];
   }
 }
 
@@ -552,6 +589,80 @@ plugin templates'));
       const pluginController = new PluginController(ant);
       expect(() => pluginController.getPluginTemplates({})).toThrowError(
         'Could not get plugin templates: param "plugin" should be Plugin'
+      );
+    });
+  });
+
+  describe('PluginController.getPluginFunctions', () => {
+    test('should return the plugin\'s functions', () => {
+      const pluginController = new PluginController(ant, [PluginWithFunctions]);
+      expect(pluginController.plugins).toEqual(expect.any(Array));
+      expect(pluginController.plugins).toHaveLength(1);
+      const pluginFunctions = pluginController.getPluginFunctions(
+        pluginController.plugins[0]
+      );
+      expect(pluginFunctions).toEqual(expect.any(Array));
+      expect(pluginFunctions).toHaveLength(2);
+      expect(pluginFunctions[0]).toEqual(function1);
+      expect(pluginFunctions[1]).toEqual(function2);
+      expect(pluginController.loadingErrors).toEqual(expect.any(Array));
+      expect(pluginController.loadingErrors).toHaveLength(0);
+    });
+
+    test('should store loading error in the case of error', () => {
+      const pluginController = new PluginController(
+        ant, [PluginWithFunctions, FunctionsErrorPlugin]
+      );
+      expect(pluginController.plugins).toEqual(expect.any(Array));
+      expect(pluginController.plugins).toHaveLength(2);
+      expect(pluginController.plugins[0])
+        .toEqual(expect.any(PluginWithFunctions));
+      expect(pluginController.plugins[1])
+        .toEqual(expect.any(FunctionsErrorPlugin));
+      expect(pluginController.getPluginFunctions(pluginController.plugins[1]))
+        .toEqual([]);
+      expect(pluginController.loadingErrors).toEqual(expect.any(Array));
+      expect(pluginController.loadingErrors).toHaveLength(3);
+      expect(pluginController.loadingErrors[0]).toBeInstanceOf(Error);
+      expect(pluginController.loadingErrors[0].message)
+        .toEqual(expect.stringContaining('Could not get plugin name'));
+      expect(pluginController.loadingErrors[1]).toBeInstanceOf(Error);
+      expect(pluginController.loadingErrors[1].message)
+        .toEqual(expect.stringContaining('Could not get plugin name'));
+      expect(pluginController.loadingErrors[2]).toBeInstanceOf(Error);
+      expect(pluginController.loadingErrors[2].message)
+        .toEqual(expect.stringContaining('Could not get "FunctionsErrorPlugin" \
+plugin functions'));
+    });
+
+    test('should store loading error if contains a not valid Function', () => {
+      const pluginController = new PluginController(
+        ant, [PluginWithFunctions, PluginWithNotValidFunction]
+      );
+      expect(pluginController.plugins).toEqual(expect.any(Array));
+      expect(pluginController.plugins).toHaveLength(2);
+      expect(pluginController.plugins[0])
+        .toEqual(expect.any(PluginWithFunctions));
+      expect(pluginController.plugins[1])
+        .toEqual(expect.any(PluginWithNotValidFunction));
+      const pluginFunctions = pluginController.getPluginFunctions(
+        pluginController.plugins[1]
+      );
+      expect(pluginFunctions).toEqual(expect.any(Array));
+      expect(pluginFunctions).toHaveLength(2);
+      expect(pluginFunctions[0]).toEqual(function1);
+      expect(pluginFunctions[1]).toEqual(function2);
+      expect(pluginController.loadingErrors).toEqual(expect.any(Array));
+      expect(pluginController.loadingErrors).toHaveLength(1);
+      expect(pluginController.loadingErrors[0]).toBeInstanceOf(Error);
+      expect(pluginController.loadingErrors[0].message)
+        .toEqual(expect.stringContaining('it is not a Function'));
+    });
+
+    test('should fail if the "plugin" param is not a Plugin instance', () => {
+      const pluginController = new PluginController(ant);
+      expect(() => pluginController.getPluginFunctions({})).toThrowError(
+        'Could not get plugin functions: param "plugin" should be Plugin'
       );
     });
   });
