@@ -265,7 +265,7 @@ describe('lib/cli/AntCli.js', () => {
       (new AntCli())._yargs.parse('--verbose');
       expect(process.exit).toHaveBeenCalledWith(0);
       expect(console.log.mock.calls[0][0]).toContain(
-        'at PluginController._loadPlugin'
+        'at PluginController.loadPlugin'
       );
     } catch (e) {
       throw e;
@@ -293,7 +293,7 @@ describe('lib/cli/AntCli.js', () => {
       (new AntCli())._yargs.parse('-v');
       expect(process.exit).toHaveBeenCalledWith(0);
       expect(console.log.mock.calls[0][0]).toContain(
-        'at PluginController._loadPlugin'
+        'at PluginController.loadPlugin'
       );
     } catch (e) {
       throw e;

@@ -2,7 +2,7 @@
   "name": "@back4app/antframework",
   "version": "1.0.0",
   "engines": {
-    "node": ">=10.6"
+    "node": ">=10.8"
   },
   "preferGlobal": true,
   "description": "Ant Framework - Serverless microservices made easy",
@@ -22,13 +22,13 @@
   ],
   "main": "index.js",
   "scripts": {
+    "install": "cd ./lib/plugins/graphQL/templates/server/default && npm install",
     "lint": "eslint ./",
     "pretest": "npm run lint",
     "test": "jest",
     "posttest": "rm -r ./spec/support/out",
     "apidocs": "jsdoc -c ./jsdoc.json",
-    "docs": "npm run apidocs",
-    "install": "cd ./lib/plugins/graphQL/templates/server/default && npm install"
+    "docs": "npm run apidocs"
   },
   "bin": {
     "ant": "./bin/ant.js"
@@ -54,6 +54,7 @@
     "fs-extra": "^7.0.0",
     "jest": "^23.4.2",
     "mustache": "^2.3.0",
+    "rxjs": "^6.2.2",
     "yaml": "^1.0.0-rc.7",
     "yargs": "^12.0.1"
   }

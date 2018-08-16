@@ -9,7 +9,7 @@ schema {
 
 # Design your queries in the Query type below
 type Query {
-  hello: String @mock(with: "Hello, world!!!")
+  hello(name: String = "World"): String @mock(with: "Hello {{name}}!!!")
 }
 
 # Design your mutations in the Mutation type below

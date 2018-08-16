@@ -8,4 +8,10 @@ describe('lib/plugins/graphQL/index.js', () => {
       require('../../../../lib/plugins/graphQL/lib/GraphQL')
     );
   });
+
+  test('should export "Directive" class', () => {
+    expect(require('../../../../lib/plugins/graphQL').Directive).toEqual(
+      require('../../../../lib/plugins/graphQL/lib/directives/Directive')
+    );
+  });
 });

@@ -40,4 +40,36 @@ describe('lib/util/logger.js', () => {
       logger._handlers.delete(handler2);
     });
   });
+
+  describe('Logger.attachErrorHandler', () => {
+    test('should attach a function as an error handler', () => {
+      const myHandler = () => {};
+      logger.attachErrorHandler(myHandler);
+      expect(logger._errorHandlers).toEqual(expect.any(Set));
+      expect(logger._errorHandlers.size).toEqual(1);
+      expect(Array.from(logger._errorHandlers.values())[0]).toEqual(myHandler);
+      logger._errorHandlers.delete(myHandler);
+    });
+
+    test('should fail if error handler is not a function', () => {
+      expect(() => logger.attachErrorHandler({})).toThrowError(
+        'Could not attach error handler: param "errorHandler" should be \
+Function'
+      );
+    });
+  });
+
+  describe('Logger.error', () => {
+    test('should log an error entry by calling the handlers', () => {
+      const handler1 = jest.fn();
+      const handler2 = jest.fn();
+      logger.attachErrorHandler(handler1);
+      logger.attachErrorHandler(handler2);
+      logger.error('Some error entry');
+      expect(handler1).toHaveBeenCalledWith('Some error entry');
+      expect(handler2).toHaveBeenCalledWith('Some error entry');
+      logger._errorHandlers.delete(handler1);
+      logger._errorHandlers.delete(handler2);
+    });
+  });
 });
