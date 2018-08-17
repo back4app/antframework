@@ -9,7 +9,7 @@ const Directive = require(
 );
 
 const ant = new Ant();
-const fooFunction = new AntFunction('fooFunction');
+const fooFunction = new AntFunction(ant, 'fooFunction');
 const fooDirective = new Directive(
   ant,
   'fooDirective',
@@ -87,7 +87,7 @@ describe('lib/plugins/graphQL/lib/directives/Directive.js', () => {
   describe('Directive.resolver', () => {
     test('should be readonly', () => {
       expect(fooDirective.resolver).toEqual(fooFunction);
-      fooDirective.resolver = new AntFunction('otherFunction');
+      fooDirective.resolver = new AntFunction(ant, 'otherFunction');
       expect(fooDirective.resolver).toEqual(fooFunction);
     });
   });

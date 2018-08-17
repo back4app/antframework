@@ -21,7 +21,7 @@ describe('lib/plugins/graphQL/functions/resolve.js', () => {
   test('should use function to resolve', async () => {
     const ant = new Ant();
     ant.functionController.loadFunctions([
-      new AntFunction('fooFunction', () => 'foo output')
+      new AntFunction(ant, 'fooFunction', () => 'foo output')
     ]);
     expect(await resolve(ant, { to: 'fooFunction' })).toEqual('foo output');
   });
@@ -43,7 +43,7 @@ describe('lib/plugins/graphQL/functions/resolve.js', () => {
     logger.attachErrorHandler(error);
     const ant = new Ant();
     ant.functionController.loadFunctions([
-      new AntFunction('fooFunction', () => { throw new Error('Foo error'); })
+      new AntFunction(ant, 'fooFunction', () => { throw new Error('Foo error'); })
     ]);
     expect(await resolve(ant, { to: 'fooFunction' })).toEqual(null);
     expect(error).toHaveBeenCalledWith(expect.any(

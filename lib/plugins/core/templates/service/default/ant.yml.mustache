@@ -3,6 +3,9 @@ service: {{service}}
 # The service base path
 # basePath: ./
 # The added plugins
+hosts:
+  Default:
+    provider: Serverless
 plugins: # Plugins should be listed below
   # This plugin enables the Ant Framework for building and starting GraphQL API services
   - $GLOBAL/plugins/graphQL:
@@ -15,6 +18,9 @@ plugins: # Plugins should be listed below
     # server:
     #   bin: $GLOBAL/plugins/graphQL/templates/default/bin/server.js
     #   port: 3000
+  # This plugin enables the Ant Framework for deploying functions using the Serverless framework
+  - $GLOBAL/plugins/serverless:
+      {}
 templates:
   {}
 # Below is an example of how to load custom templates using this config file.

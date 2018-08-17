@@ -9,7 +9,7 @@ const AntCli = require('../../lib/cli/AntCli');
 const Plugin = require('../../lib/plugins/Plugin');
 const PluginController = require('../../lib/plugins/PluginController');
 const TemplateController = require('../../lib/templates/TemplateController');
-const BinFunction = require('../../lib/functions/BinFunction');
+const Runtime = require('../../lib/functions/runtimes/Runtime');
 const FunctionController = require('../../lib/functions/FunctionController');
 const Core = require('../../lib/plugins/core');
 const yaml = require('yaml').default;
@@ -152,25 +152,21 @@ Template category value is not an object!'
     test('should be readonly', () => {
       const ant = new Ant();
       expect(ant.functionController).toBeInstanceOf(FunctionController);
-      expect(ant.functionController.getFunction('runtime').name)
-        .toEqual('runtime');
       ant.functionController = null;
       expect(ant.functionController).toBeInstanceOf(FunctionController);
-      expect(ant.functionController.getFunction('runtime').name)
-        .toEqual('runtime');
     });
   });
 
   describe('Ant.runtime', () => {
     test('should be readonly', () => {
       const ant = new Ant();
-      expect(ant.runtime).toBeInstanceOf(BinFunction);
+      expect(ant.runtime).toBeInstanceOf(Runtime);
       expect(ant.runtime.name)
-        .toEqual('runtime');
+        .toEqual('Default');
       ant.runtime = null;
-      expect(ant.runtime).toBeInstanceOf(BinFunction);
+      expect(ant.runtime).toBeInstanceOf(Runtime);
       expect(ant.runtime.name)
-        .toEqual('runtime');
+        .toEqual('Default');
     });
   });
 

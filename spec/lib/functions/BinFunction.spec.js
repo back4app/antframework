@@ -7,9 +7,11 @@ const childProcess = require('child_process');
 const { Observable } = require('rxjs');
 const { toArray } = require('rxjs/operators');
 const logger = require('../../../lib/util/logger');
+const Ant = require('../../../lib/Ant');
 const BinFunction = require('../../../lib/functions/BinFunction');
 
-const binFunction = new BinFunction('fooFunction', 'ls');
+const ant = new Ant();
+const binFunction = new BinFunction(ant, 'fooFunction', 'ls');
 
 describe('lib/functions/BinFunction.js', () => {
   test('should export "BinFunction" class', () => {
@@ -17,10 +19,10 @@ describe('lib/functions/BinFunction.js', () => {
   });
 
   test('should fail if the bin is not String', () => {
-    expect(() => new BinFunction('fooFunction')).toThrowError(
+    expect(() => new BinFunction(ant, 'fooFunction')).toThrowError(
       'Could not initialize BinFunction: param "bin" should be String'
     );
-    expect(() => new BinFunction('fooFunction', {})).toThrowError(
+    expect(() => new BinFunction(ant, 'fooFunction', {})).toThrowError(
       'Could not initialize BinFunction: param "bin" should be String'
     );
   });
@@ -64,6 +66,7 @@ describe('lib/functions/BinFunction.js', () => {
       logger.attachHandler(logHandler);
       logger.attachErrorHandler(errorHandler);
       expect((await (new BinFunction(
+        ant,
         'fooBinFunction',
         path.resolve(__dirname, '../../support/functions/fooBinFunction.js')
       )).run().pipe(toArray()).toPromise()).join('')).toEqual(
@@ -86,6 +89,7 @@ Some other log
 
     test('should fail if bin fails', () => {
       expect((new BinFunction(
+        ant,
         'crashBinFunction',
         path.resolve(__dirname, '../../support/functions/crashBinFunction.js')
       )).run().toPromise()).rejects.toThrowError(
@@ -95,6 +99,7 @@ Some other log
 
     test('should return undefined if bin returns nothing', async () => {
       expect(await (new BinFunction(
+        ant,
         'binFunction',
         'sleep'
       )).run(['1']).toPromise()).toEqual(

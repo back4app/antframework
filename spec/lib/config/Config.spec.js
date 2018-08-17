@@ -255,7 +255,7 @@ save the file.');
           expect(globalConfig.path).toBe(path.resolve(__dirname, '../../../lib', 'globalConfig.yml'));
           expect(globalConfig.config).toEqual({
             basePath: path.resolve(__dirname, '../../../lib'),
-            plugins: [path.resolve(__dirname, '../../../lib/plugins/core/index.js')],
+            plugins: [path.resolve(__dirname, '../../../lib/plugins/core')],
             templates: {}
           });
         }

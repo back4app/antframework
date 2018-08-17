@@ -2,9 +2,11 @@
  * @fileoverview Tests for lib/functions/AntFunction.js file.
  */
 
+const Ant = require('../../../lib/Ant');
 const AntFunction = require('../../../lib/functions/AntFunction');
 
-const antFunction = new AntFunction('fooFunction');
+const ant = new Ant();
+const antFunction = new AntFunction(ant, 'fooFunction');
 
 describe('lib/functions/AntFunction.js', () => {
   test('should export "AntFunction" class', () => {
@@ -12,10 +14,10 @@ describe('lib/functions/AntFunction.js', () => {
   });
 
   test('should fail if the name is not String', () => {
-    expect(() => new AntFunction()).toThrowError(
+    expect(() => new AntFunction(ant)).toThrowError(
       'Could not initialize AntFunction: param "name" should be String'
     );
-    expect(() => new AntFunction({})).toThrowError(
+    expect(() => new AntFunction(ant, {})).toThrowError(
       'Could not initialize AntFunction: param "name" should be String'
     );
   });

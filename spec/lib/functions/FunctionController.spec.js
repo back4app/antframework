@@ -16,9 +16,11 @@ describe('lib/functions/FunctionController.js', () => {
   });
 
   test('should load plugins\' functions', () => {
-    const function1 = new AntFunction('function1');
-    const function2 = new AntFunction('function2');
-    const function2v2 = new AntFunction('function2');
+    const antWithFunctions = new Ant();
+
+    const function1 = new AntFunction(antWithFunctions, 'function1');
+    const function2 = new AntFunction(antWithFunctions, 'function2');
+    const function2v2 = new AntFunction(antWithFunctions, 'function2');
 
     /**
      * Represents a {@link Plugin} with functions for testing purposes.
@@ -31,7 +33,7 @@ describe('lib/functions/FunctionController.js', () => {
       }
     }
 
-    const antWithFunctions = new Ant({ plugins: [PluginWithFunctions] });
+    antWithFunctions.pluginController.loadPlugins([PluginWithFunctions]);
     expect(
       antWithFunctions.functionController._functions
         .get('function1')
@@ -65,12 +67,12 @@ describe('lib/functions/FunctionController.js', () => {
       ant,
       [() => {}]
     )).toThrowError(
-      'should be an instance of Function'
+      'should be an instance of AntFunction'
     );
   });
 
   test('should load functions', () => {
-    const myCustomFunction = new AntFunction('myCustomFunction');
+    const myCustomFunction = new AntFunction(ant, 'myCustomFunction');
     const functions = [myCustomFunction];
     const functionController = new FunctionController(ant, functions);
     expect(() => functionController.getFunction(
@@ -87,9 +89,6 @@ describe('lib/functions/FunctionController.js', () => {
 
   describe('FunctionController.getFunction', () => {
     test('should return null if function not found', () => {
-      expect(functionController.getFunction('runtime')).toEqual(
-        expect.any(AntFunction)
-      );
       expect(functionController.getFunction('NotExistent'))
         .toEqual(null);
     });

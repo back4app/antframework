@@ -14,7 +14,7 @@ const DirectiveController = require(
 );
 
 const ant = new Ant();
-const fooFunction = new AntFunction('fooFunction');
+const fooFunction = new AntFunction(ant, 'fooFunction');
 const fooDirective = new Directive(
   ant,
   'fooDirective',
@@ -70,13 +70,13 @@ describe('lib/plugins/graphQL/lib/directives/DirectiveController.js', () => {
       antWithDirectives,
       'fooDirective1',
       'fooDefinition1',
-      new AntFunction('fooFunction1')
+      new AntFunction(ant, 'fooFunction1')
     );
     const fooDirective2 = new Directive(
       antWithDirectives,
       'fooDirective2',
       'fooDefinition2',
-      new AntFunction('fooFunction2')
+      new AntFunction(ant, 'fooFunction2')
     );
 
     /**

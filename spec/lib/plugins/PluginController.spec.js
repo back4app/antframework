@@ -111,8 +111,8 @@ class PluginWithNotValidTemplate extends Plugin {
   }
 }
 
-const function1 = new AntFunction('function1');
-const function2 = new AntFunction('function2');
+const function1 = new AntFunction(ant, 'function1');
+const function2 = new AntFunction(ant, 'function2');
 
 /**
  * Represents a {@link Plugin} with functions for testing purposes.
