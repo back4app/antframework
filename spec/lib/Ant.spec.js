@@ -8,6 +8,7 @@ const Ant = require('../../lib/Ant');
 const AntCli = require('../../lib/cli/AntCli');
 const Plugin = require('../../lib/plugins/Plugin');
 const PluginController = require('../../lib/plugins/PluginController');
+const Serverless = require('../../lib/plugins/serverless');
 const TemplateController = require('../../lib/templates/TemplateController');
 const Runtime = require('../../lib/functions/runtimes/Runtime');
 const FunctionController = require('../../lib/functions/FunctionController');
@@ -22,10 +23,16 @@ describe('lib/Ant.js', () => {
   });
 
   test('should load custom config', () => {
-    const ant = new Ant({ plugins: [Plugin] });
+    const ant = new Ant({
+      plugins: [
+        Plugin,
+        Serverless
+      ],
+      hosts: { FooHost: { provider: 'Serverless' }}
+    });
     expect(ant.pluginController).toBeInstanceOf(PluginController);
     expect(ant.pluginController.plugins).toEqual(expect.any(Array));
-    expect(ant.pluginController.plugins).toHaveLength(2);
+    expect(ant.pluginController.plugins).toHaveLength(3);
     expect(ant.pluginController.plugins[0]).toEqual(expect.any(Core));
     expect(ant.pluginController.plugins[1]).toEqual(expect.any(Plugin));
   });
@@ -170,6 +177,15 @@ Template category value is not an object!'
     });
   });
 
+  describe('Ant.host', () => {
+    test('should be readonly', () => {
+      const ant = new Ant();
+      expect(ant.host).toEqual(null);
+      ant.runtime = {};
+      expect(ant.host).toEqual(null);
+    });
+  });
+
   describe('Ant.createService', () => {
     test('should be async and call Core plugin method', async () => {
       const ant = new Ant();
@@ -192,8 +208,8 @@ Template category value is not an object!'
       async () => {
         expect.hasAssertions();
         /**
-         * Represents a fake {@link Core} plugin with no createService method
-         * for testing purposes.
+         * Represents a fake {@link Core} plugin with createService method
+         * throwing error for testing purposes.
          * @private
          */
         class FakeCore extends Core {
@@ -208,6 +224,41 @@ Template category value is not an object!'
         const ant = new Ant({ plugins: [FakeCore] });
         await expect(ant.createService('FooService', 'FooTemplate'))
           .rejects.toThrow('Service could not be created');
+      });
+  });
+
+  describe('Ant.deployService', () => {
+    test('should be async and call Core plugin method', async () => {
+      const ant = new Ant();
+      const deployService = jest.fn();
+      ant.pluginController.getPlugin('Core').deployService = deployService;
+      const deployServiceReturn = ant.deployService();
+      expect(deployServiceReturn).toBeInstanceOf(Promise);
+      await deployServiceReturn;
+      expect(deployService).toHaveBeenCalledWith();
+    });
+
+    test(
+      'should fail if Core plugin deployService method fails',
+      async () => {
+        expect.hasAssertions();
+        /**
+         * Represents a fake {@link Core} plugin with deployService method
+         * throwing error for testing purposes.
+         * @private
+         */
+        class FakeCore extends Core {
+          get name() {
+            return 'Core';
+          }
+
+          deployService() {
+            throw new Error('Some deploy service error');
+          }
+        }
+        const ant = new Ant({ plugins: [FakeCore] });
+        await expect(ant.deployService())
+          .rejects.toThrow('Service could not be deployed');
       });
   });
 

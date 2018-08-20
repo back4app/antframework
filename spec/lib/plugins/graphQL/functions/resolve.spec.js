@@ -38,6 +38,17 @@ describe('lib/plugins/graphQL/functions/resolve.js', () => {
       .toEqual([1, 2, 3]);
   });
 
+  test('should log error if function not found', async () => {
+    const error = jest.fn();
+    logger.attachErrorHandler(error);
+    const ant = new Ant();
+    expect(await resolve(ant, { to: 'fooFunction' })).toEqual(null);
+    expect(error).toHaveBeenCalledWith(expect.any(
+      AntError
+    ));
+    logger._errorHandlers.delete(error);
+  });
+
   test('should log error if function fails', async () => {
     const error = jest.fn();
     logger.attachErrorHandler(error);

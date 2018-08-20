@@ -11,6 +11,8 @@ const Plugin = require('../../../lib/plugins/Plugin');
 const PluginController = require('../../../lib/plugins/PluginController');
 const Template = require('../../../lib/templates/Template');
 const AntFunction = require('../../../lib/functions/AntFunction');
+const Runtime = require('../../../lib/functions/runtimes/Runtime');
+const Provider = require('../../../lib/hosts/providers/Provider');
 const Core = require('../../../lib/plugins/core');
 const FooPlugin = require('../../support/plugins/FooPlugin');
 const NotAPlugin = require('../../support/plugins/NotAPlugin');
@@ -144,6 +146,78 @@ class FunctionsErrorPlugin extends NameErrorPlugin {
 class PluginWithNotValidFunction extends Plugin {
   get functions() {
     return [function1, {}, function2];
+  }
+}
+
+const runtime1 = new Runtime(ant, 'runtime1', '/foo/path');
+const runtime2 = new Runtime(ant, 'runtime2', '/foo/path');
+
+/**
+ * Represents a {@link Plugin} with runtimes for testing purposes.
+ * @extends Plugin
+ * @private
+ */
+class PluginWithRuntimes extends Plugin {
+  get runtimes() {
+    return [runtime1, runtime2];
+  }
+}
+
+/**
+ * Represents a {@link Plugin} that overrides the "runtimes" member and
+ * throws an Error for testing purposes.
+ * @private
+ */
+class RuntimesErrorPlugin extends NameErrorPlugin {
+  get runtimes() {
+    throw new Error('Some runtimes error');
+  }
+}
+
+/**
+ * Represents a {@link Plugin} with a not valid runtime for testing purposes.
+ * @extends Plugin
+ * @private
+ */
+class PluginWithNotValidRuntime extends Plugin {
+  get runtimes() {
+    return [runtime1, {}, runtime2];
+  }
+}
+
+const provider1 = new Provider('provider1');
+const provider2 = new Provider('provider2');
+
+/**
+ * Represents a {@link Plugin} with providers for testing purposes.
+ * @extends Plugin
+ * @private
+ */
+class PluginWithProviders extends Plugin {
+  get providers() {
+    return [provider1, provider2];
+  }
+}
+
+/**
+ * Represents a {@link Plugin} that overrides the "providers" member and
+ * throws an Error for testing purposes.
+ * @private
+ */
+class ProvidersErrorPlugin extends NameErrorPlugin {
+  get providers() {
+    throw new Error('Some providers error');
+  }
+}
+
+/**
+ * Represents a {@link Plugin} with a not valid provider for testing purposes.
+ * @extends Plugin
+ * @private
+ */
+class PluginWithNotValidProvider extends Plugin {
+  get providers() {
+    return [provider1, {}, provider2];
   }
 }
 
@@ -617,6 +691,154 @@ plugin functions'));
       const pluginController = new PluginController(ant);
       expect(() => pluginController.getPluginFunctions({})).toThrowError(
         'Could not get plugin functions: param "plugin" should be Plugin'
+      );
+    });
+  });
+
+  describe('PluginController.getPluginRuntimes', () => {
+    test('should return the plugin\'s runtimes', () => {
+      const pluginController = new PluginController(ant, [PluginWithRuntimes]);
+      expect(pluginController.plugins).toEqual(expect.any(Array));
+      expect(pluginController.plugins).toHaveLength(1);
+      const pluginRuntimes = pluginController.getPluginRuntimes(
+        pluginController.plugins[0]
+      );
+      expect(pluginRuntimes).toEqual(expect.any(Array));
+      expect(pluginRuntimes).toHaveLength(2);
+      expect(pluginRuntimes[0]).toEqual(runtime1);
+      expect(pluginRuntimes[1]).toEqual(runtime2);
+      expect(pluginController.loadingErrors).toEqual(expect.any(Array));
+      expect(pluginController.loadingErrors).toHaveLength(0);
+    });
+
+    test('should store loading error in the case of error', () => {
+      const pluginController = new PluginController(
+        ant, [PluginWithRuntimes, RuntimesErrorPlugin]
+      );
+      expect(pluginController.plugins).toEqual(expect.any(Array));
+      expect(pluginController.plugins).toHaveLength(2);
+      expect(pluginController.plugins[0])
+        .toEqual(expect.any(PluginWithRuntimes));
+      expect(pluginController.plugins[1])
+        .toEqual(expect.any(RuntimesErrorPlugin));
+      expect(pluginController.getPluginRuntimes(pluginController.plugins[1]))
+        .toEqual([]);
+      expect(pluginController.loadingErrors).toEqual(expect.any(Array));
+      expect(pluginController.loadingErrors).toHaveLength(3);
+      expect(pluginController.loadingErrors[0]).toBeInstanceOf(Error);
+      expect(pluginController.loadingErrors[0].message)
+        .toEqual(expect.stringContaining('Could not get plugin name'));
+      expect(pluginController.loadingErrors[1]).toBeInstanceOf(Error);
+      expect(pluginController.loadingErrors[1].message)
+        .toEqual(expect.stringContaining('Could not get plugin name'));
+      expect(pluginController.loadingErrors[2]).toBeInstanceOf(Error);
+      expect(pluginController.loadingErrors[2].message)
+        .toEqual(expect.stringContaining('Could not get "RuntimesErrorPlugin" \
+plugin runtimes'));
+    });
+
+    test('should store loading error if contains a not valid runtime', () => {
+      const pluginController = new PluginController(
+        ant, [PluginWithRuntimes, PluginWithNotValidRuntime]
+      );
+      expect(pluginController.plugins).toEqual(expect.any(Array));
+      expect(pluginController.plugins).toHaveLength(2);
+      expect(pluginController.plugins[0])
+        .toEqual(expect.any(PluginWithRuntimes));
+      expect(pluginController.plugins[1])
+        .toEqual(expect.any(PluginWithNotValidRuntime));
+      const pluginProviders = pluginController.getPluginRuntimes(
+        pluginController.plugins[1]
+      );
+      expect(pluginProviders).toEqual(expect.any(Array));
+      expect(pluginProviders).toHaveLength(2);
+      expect(pluginProviders[0]).toEqual(runtime1);
+      expect(pluginProviders[1]).toEqual(runtime2);
+      expect(pluginController.loadingErrors).toEqual(expect.any(Array));
+      expect(pluginController.loadingErrors).toHaveLength(1);
+      expect(pluginController.loadingErrors[0]).toBeInstanceOf(Error);
+      expect(pluginController.loadingErrors[0].message)
+        .toEqual(expect.stringContaining('it is not a Runtime'));
+    });
+
+    test('should fail if the "plugin" param is not a Plugin instance', () => {
+      const pluginController = new PluginController(ant);
+      expect(() => pluginController.getPluginProviders({})).toThrowError(
+        'Could not get plugin providers: param "plugin" should be Plugin'
+      );
+    });
+  });
+
+  describe('PluginController.getPluginProviders', () => {
+    test('should return the plugin\'s providers', () => {
+      const pluginController = new PluginController(ant, [PluginWithProviders]);
+      expect(pluginController.plugins).toEqual(expect.any(Array));
+      expect(pluginController.plugins).toHaveLength(1);
+      const pluginProviders = pluginController.getPluginProviders(
+        pluginController.plugins[0]
+      );
+      expect(pluginProviders).toEqual(expect.any(Array));
+      expect(pluginProviders).toHaveLength(2);
+      expect(pluginProviders[0]).toEqual(provider1);
+      expect(pluginProviders[1]).toEqual(provider2);
+      expect(pluginController.loadingErrors).toEqual(expect.any(Array));
+      expect(pluginController.loadingErrors).toHaveLength(0);
+    });
+
+    test('should store loading error in the case of error', () => {
+      const pluginController = new PluginController(
+        ant, [PluginWithProviders, ProvidersErrorPlugin]
+      );
+      expect(pluginController.plugins).toEqual(expect.any(Array));
+      expect(pluginController.plugins).toHaveLength(2);
+      expect(pluginController.plugins[0])
+        .toEqual(expect.any(PluginWithProviders));
+      expect(pluginController.plugins[1])
+        .toEqual(expect.any(ProvidersErrorPlugin));
+      expect(pluginController.getPluginProviders(pluginController.plugins[1]))
+        .toEqual([]);
+      expect(pluginController.loadingErrors).toEqual(expect.any(Array));
+      expect(pluginController.loadingErrors).toHaveLength(3);
+      expect(pluginController.loadingErrors[0]).toBeInstanceOf(Error);
+      expect(pluginController.loadingErrors[0].message)
+        .toEqual(expect.stringContaining('Could not get plugin name'));
+      expect(pluginController.loadingErrors[1]).toBeInstanceOf(Error);
+      expect(pluginController.loadingErrors[1].message)
+        .toEqual(expect.stringContaining('Could not get plugin name'));
+      expect(pluginController.loadingErrors[2]).toBeInstanceOf(Error);
+      expect(pluginController.loadingErrors[2].message)
+        .toEqual(expect.stringContaining('Could not get "ProvidersErrorPlugin" \
+plugin providers'));
+    });
+
+    test('should store loading error if contains a not valid provider', () => {
+      const pluginController = new PluginController(
+        ant, [PluginWithProviders, PluginWithNotValidProvider]
+      );
+      expect(pluginController.plugins).toEqual(expect.any(Array));
+      expect(pluginController.plugins).toHaveLength(2);
+      expect(pluginController.plugins[0])
+        .toEqual(expect.any(PluginWithProviders));
+      expect(pluginController.plugins[1])
+        .toEqual(expect.any(PluginWithNotValidProvider));
+      const pluginProviders = pluginController.getPluginProviders(
+        pluginController.plugins[1]
+      );
+      expect(pluginProviders).toEqual(expect.any(Array));
+      expect(pluginProviders).toHaveLength(2);
+      expect(pluginProviders[0]).toEqual(provider1);
+      expect(pluginProviders[1]).toEqual(provider2);
+      expect(pluginController.loadingErrors).toEqual(expect.any(Array));
+      expect(pluginController.loadingErrors).toHaveLength(1);
+      expect(pluginController.loadingErrors[0]).toBeInstanceOf(Error);
+      expect(pluginController.loadingErrors[0].message)
+        .toEqual(expect.stringContaining('it is not a Provider'));
+    });
+
+    test('should fail if the "plugin" param is not a Plugin instance', () => {
+      const pluginController = new PluginController(ant);
+      expect(() => pluginController.getPluginProviders({})).toThrowError(
+        'Could not get plugin providers: param "plugin" should be Plugin'
       );
     });
   });

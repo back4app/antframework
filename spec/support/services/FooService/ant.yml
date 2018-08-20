@@ -1,0 +1,39 @@
+# The service name
+service: FooService
+# The service base path
+# basePath: ./
+# The added plugins
+hosts:
+  Default:
+    provider: Serverless
+plugins: # Plugins should be listed below
+  # This plugin enables the Ant Framework for building and starting GraphQL API services
+  - $GLOBAL/plugins/graphQL:
+      {}
+    # The GraphQL plugin base path
+    # basePath: ./
+    # The GraphQL model path
+    # model: ./model.graphql
+    # The script to start the GraphQL API server when starting this service
+    # server:
+    #   bin: $GLOBAL/plugins/graphQL/templates/default/bin/server.js
+    #   port: 3000
+  # This plugin enables the Ant Framework for deploying functions using the Serverless framework
+  - $GLOBAL/plugins/serverless:
+      {}
+templates:
+  {}
+# Below is an example of how to load custom templates using this config file.
+# There will be loaded templates from two custom categories (MyCustomCategory and Foo).
+# On MyCustomCategory, two templates will be loaded:
+# - The first one with name MyCustomTemplate, with path /path/to/my/custom
+# - The second one with name AnotherCustom, and path /path/to/another/foo
+#
+# The second category, Foo, will load only the Bar template, whose path is /whatever/foo/bar.
+#
+# templates:
+#   MyCustomCategory:
+#     MyCustomTemplate: /path/to/my/custom
+#     AnotherCustom: /path/to/another/foo
+#   Foo:
+#     Bar: /whatever/foo/bar

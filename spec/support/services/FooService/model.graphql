@@ -1,0 +1,21 @@
+# The main schema
+schema {
+  query: Query
+  # Uncomment the line below to start designing mutations
+  # mutation: Mutation
+  # Uncomment the line below to start designing subscriptions
+  # subscription: Subscription
+}
+
+# Design your queries in the Query type below
+type Query {
+  hello(name: String = "World"): String @resvole(to: "helloQuery") @mock(with: "Hello {{name}}!!!")
+}
+
+# Design your mutations in the Mutation type below
+# type Mutation {
+# }
+
+# Design your subscriptions in the Subscription type below
+# type Subscription {
+# }

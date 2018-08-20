@@ -12,6 +12,9 @@ const AntCli = require('../../../../../lib/cli/AntCli');
 const Ant = require('../../../../../lib/Ant');
 const Plugin = require('../../../../../lib/plugins/Plugin');
 const Template = require('../../../../../lib/templates/Template');
+const AntFunction = require('../../../../../lib/functions/AntFunction');
+const Provider = require('../../../../../lib/hosts/providers/Provider');
+const Host = require('../../../../../lib/hosts/Host');
 const Core = require('../../../../../lib/plugins/core/lib/Core');
 const yargsHelper = require('../../../../../lib/util/yargsHelper');
 const Config = require('../../../../../lib/config/Config');
@@ -233,6 +236,63 @@ describe('lib/plugins/core/lib/Core.js', () => {
         const core = new Core(ant);
         core._yargsFailed(
           'Not enough arguments following: template',
+          {
+            handleErrorMessage: (msg, err, command) =>
+              (new AntCli())._handleErrorMessage(msg, err, command)
+          }
+        );
+      });
+    });
+
+    describe('deploy command', () => {
+      test('should load "deploy" command', (done) => {
+        console.log = jest.fn();
+        process.exit = jest.fn((code) => {
+          expect(console.log).toHaveBeenCalledWith(
+            expect.stringContaining('Service successfully deployed')
+          );
+          expect(code).toEqual(0);
+          done();
+        });
+        const fooServicePath = path.resolve(
+          __dirname,
+          '../../../../support/services/fooService'
+        );
+        process.chdir(fooServicePath);
+        (new AntCli())._yargs.parse(
+          `deploy --config ${fooServicePath}/ant.yml`
+        );
+      });
+
+      test('should show friendly errors', (done) => {
+        console.error = jest.fn();
+        process.exit = jest.fn((code) => {
+          expect(console.error).toHaveBeenCalledWith(
+            expect.stringContaining(
+              'Could not find service config'
+            )
+          );
+          expect(code).toEqual(1);
+          done();
+        });
+        (new AntCli())._yargs.parse('deploy');
+      });
+
+      test('should accept no arguments', (done) => {
+        process.argv = ['deploy'];
+        console.error = jest.fn();
+        process.exit = jest.fn((code) => {
+          expect(console.error).toHaveBeenCalledWith(
+            expect.stringContaining(
+              'Deploy command accepts no arguments'
+            )
+          );
+          expect(code).toEqual(1);
+          done();
+        });
+        const core = new Core(ant);
+        core._yargsFailed(
+          'Unknown argument: configpath',
           {
             handleErrorMessage: (msg, err, command) =>
               (new AntCli())._handleErrorMessage(msg, err, command)
@@ -642,5 +702,98 @@ describe('lib/plugins/core/lib/Core.js', () => {
       );
       fs.rmdirSync('MyService');
     });
+  });
+
+  describe('Core.deployService', () => {
+    test('should be async and deploy each function to its host', async () => {
+      const provider1 = new Provider('provider1', jest.fn());
+      const provider2 = new Provider('provider2', jest.fn());
+      const config1 = { fooMember1: 'fooValue1' };
+      const config2 = { fooMember2: 'fooValue2' };
+      const config3 = { fooMember3: 'fooValue3' };
+      const host1 = new Host('host1', provider1, config1);
+      const host2 = new Host('host2', provider2, config2);
+      const host3 = new Host('host3', provider1, config3);
+      const ant = new Ant({});
+      const function1 = new AntFunction(ant, 'function1', undefined, host1);
+      const function2 = new AntFunction(ant, 'function2', undefined, host2);
+      const function3 = new AntFunction(ant, 'function3', undefined, host3);
+      const function4 = new AntFunction(ant, 'function4', undefined, host1);
+      const function5 = new AntFunction(ant, 'function5', undefined, host2);
+      const function6 = new AntFunction(ant, 'function6', undefined, host3);
+      ant.functionController.loadFunctions([
+        function1,
+        function2,
+        function3,
+        function4,
+        function5,
+        function6
+      ]);
+      const core = new Core(ant);
+      const deployReturn = core.deployService();
+      expect(deployReturn).toEqual(expect.any(Promise));
+      await deployReturn;
+      expect(provider1.deploy).toHaveBeenCalledWith(
+        config1,
+        [function1, function4]
+      );
+      expect(provider2.deploy).toHaveBeenCalledWith(
+        config2,
+        [function2, function5]
+      );
+      expect(provider1.deploy).toHaveBeenCalledWith(
+        config3,
+        [function3, function6]
+      );
+    });
+
+    test(
+      'should fail if ant was initialized without service config',
+      async () => {
+        expect.hasAssertions();
+        const ant = new Ant();
+        const core = new Core(ant);
+        try {
+          await core.deployService();
+        } catch (e) {
+          expect(e.message).toEqual('Could not find service config');
+        }
+      }
+    );
+
+    test(
+      'should fail if there is a function with no host assigned to it',
+      async () => {
+        expect.hasAssertions();
+        const ant = new Ant({});
+        ant.functionController.loadFunctions([
+          new AntFunction(ant, 'fooFunction')
+        ]);
+        const core = new Core(ant);
+        try {
+          await core.deployService();
+        } catch (e) {
+          expect(e.message).toEqual(
+            'There is not a host assigned to the "fooFunction" function'
+          );
+        }
+      }
+    );
+
+    test(
+      'should fail if there is no functions to be deployed',
+      async () => {
+        expect.hasAssertions();
+        const ant = new Ant({});
+        const core = new Core(ant);
+        try {
+          await core.deployService();
+        } catch (e) {
+          expect(e.message).toEqual(
+            'There are no functions to be deployed.'
+          );
+        }
+      }
+    );
   });
 });
