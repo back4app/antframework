@@ -2,6 +2,8 @@
  * @fileoverview Tests for lib/functions/FunctionController.js file.
  */
 
+const AntError = require('../../../lib/util/AntError');
+const logger = require('../../../lib/util/logger');
 const Ant = require('../../../lib/Ant');
 const Plugin = require('../../../lib/plugins/Plugin');
 const AntFunction = require('../../../lib/functions/AntFunction');
@@ -16,9 +18,11 @@ describe('lib/functions/FunctionController.js', () => {
   });
 
   test('should load plugins\' functions', () => {
-    const function1 = new AntFunction('function1');
-    const function2 = new AntFunction('function2');
-    const function2v2 = new AntFunction('function2');
+    const antWithFunctions = new Ant();
+
+    const function1 = new AntFunction(antWithFunctions, 'function1');
+    const function2 = new AntFunction(antWithFunctions, 'function2');
+    const function2v2 = new AntFunction(antWithFunctions, 'function2');
 
     /**
      * Represents a {@link Plugin} with functions for testing purposes.
@@ -31,14 +35,14 @@ describe('lib/functions/FunctionController.js', () => {
       }
     }
 
-    const antWithFunctions = new Ant({ plugins: [PluginWithFunctions] });
+    antWithFunctions.pluginController.loadPlugins([PluginWithFunctions]);
+    expect(antWithFunctions.functionController.functions)
+      .toEqual(expect.any(Array));
     expect(
-      antWithFunctions.functionController._functions
-        .get('function1')
+      antWithFunctions.functionController.functions[0]
     ).toEqual(function1);
     expect(
-      antWithFunctions.functionController._functions
-        .get('function2')
+      antWithFunctions.functionController.functions[1]
     ).toEqual(function2v2);
   });
 
@@ -65,16 +69,26 @@ describe('lib/functions/FunctionController.js', () => {
       ant,
       [() => {}]
     )).toThrowError(
-      'should be an instance of Function'
+      'should be an instance of AntFunction'
     );
   });
 
   test('should load functions', () => {
-    const myCustomFunction = new AntFunction('myCustomFunction');
+    const myCustomFunction = new AntFunction(ant, 'myCustomFunction');
     const functions = [myCustomFunction];
     const functionController = new FunctionController(ant, functions);
     expect(() => functionController.getFunction(
       myCustomFunction.name).toEqual(myCustomFunction));
+  });
+
+  test('should log an error if basePath cannot be read', () => {
+    const fakeError = jest.fn();
+    logger.attachErrorHandler(fakeError);
+    const ant = new Ant({ basePath: '/foo/path' });
+    new FunctionController(ant);
+    expect(fakeError)
+      .toHaveBeenCalledWith(expect.any(AntError));
+    logger._errorHandlers.delete(fakeError);
   });
 
   describe('FunctionController.ant', () => {
@@ -87,9 +101,6 @@ describe('lib/functions/FunctionController.js', () => {
 
   describe('FunctionController.getFunction', () => {
     test('should return null if function not found', () => {
-      expect(functionController.getFunction('runtime')).toEqual(
-        expect.any(AntFunction)
-      );
       expect(functionController.getFunction('NotExistent'))
         .toEqual(null);
     });

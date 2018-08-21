@@ -1,0 +1,4 @@
+{
+  "description": "Plugin for Ant Framework to enable deployments using the Serverless framework",
+  "main": "index.js"
+}

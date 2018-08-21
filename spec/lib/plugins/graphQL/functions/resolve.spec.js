@@ -21,7 +21,7 @@ describe('lib/plugins/graphQL/functions/resolve.js', () => {
   test('should use function to resolve', async () => {
     const ant = new Ant();
     ant.functionController.loadFunctions([
-      new AntFunction('fooFunction', () => 'foo output')
+      new AntFunction(ant, 'fooFunction', () => 'foo output')
     ]);
     expect(await resolve(ant, { to: 'fooFunction' })).toEqual('foo output');
   });
@@ -38,12 +38,23 @@ describe('lib/plugins/graphQL/functions/resolve.js', () => {
       .toEqual([1, 2, 3]);
   });
 
+  test('should log error if function not found', async () => {
+    const error = jest.fn();
+    logger.attachErrorHandler(error);
+    const ant = new Ant();
+    expect(await resolve(ant, { to: 'fooFunction' })).toEqual(null);
+    expect(error).toHaveBeenCalledWith(expect.any(
+      AntError
+    ));
+    logger._errorHandlers.delete(error);
+  });
+
   test('should log error if function fails', async () => {
     const error = jest.fn();
     logger.attachErrorHandler(error);
     const ant = new Ant();
     ant.functionController.loadFunctions([
-      new AntFunction('fooFunction', () => { throw new Error('Foo error'); })
+      new AntFunction(ant, 'fooFunction', () => { throw new Error('Foo error'); })
     ]);
     expect(await resolve(ant, { to: 'fooFunction' })).toEqual(null);
     expect(error).toHaveBeenCalledWith(expect.any(

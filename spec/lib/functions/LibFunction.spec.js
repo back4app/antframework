@@ -5,15 +5,20 @@
 const path = require('path');
 const { Observable } = require('rxjs');
 const { toArray } = require('rxjs/operators');
+const Ant = require('../../../lib/Ant');
 const LibFunction = require('../../../lib/functions/LibFunction');
-const BinFunction = require('../../../lib/functions/BinFunction');
+const Runtime = require('../../../lib/functions/runtimes/Runtime');
 
-const fooRuntime = new BinFunction(
+const ant = new Ant();
+
+const fooRuntime = new Runtime(
+  ant,
   'fooRuntime',
   path.resolve(__dirname, '../../support/functions/fooRuntime.js')
 );
 
 const libFunction = new LibFunction(
+  ant,
   'fooLibFunction',
   path.resolve(__dirname, '../../support/functions/fooLibFunction'),
   fooRuntime
@@ -25,20 +30,20 @@ describe('lib/functions/LibFunction.js', () => {
   });
 
   test('should fail if handler is not String', () => {
-    expect(() => new LibFunction('fooFunction')).toThrowError(
+    expect(() => new LibFunction(ant, 'fooFunction')).toThrowError(
       'Could not initialize LibFunction: param "handler" should be String'
     );
-    expect(() => new LibFunction('fooFunction', {})).toThrowError(
+    expect(() => new LibFunction(ant, 'fooFunction', {})).toThrowError(
       'Could not initialize LibFunction: param "handler" should be String'
     );
   });
 
   test('should fail if runtime is not String', () => {
-    expect(() => new LibFunction('fooFunction', 'fooHandler')).toThrowError(
-      'Could not initialize LibFunction: param "runtime" should be String'
+    expect(() => new LibFunction(ant, 'fooFunction', 'fooHandler')).toThrowError(
+      'Could not initialize LibFunction: param "runtime" should be Runtime'
     );
-    expect(() => new LibFunction('fooFunction', 'fooHandler', {})).toThrowError(
-      'Could not initialize LibFunction: param "runtime" should be String'
+    expect(() => new LibFunction(ant, 'fooFunction', 'fooHandler', {})).toThrowError(
+      'Could not initialize LibFunction: param "runtime" should be Runtime'
     );
   });
 
@@ -51,13 +56,18 @@ describe('lib/functions/LibFunction.js', () => {
     });
 
     test('should fail if runtime fails', () => {
-      const binFunction = new BinFunction('fooBinFunction', 'it/will/fail');
-      binFunction.run = () => { throw new Error('Some error'); };
+      const runtime = new Runtime(
+        ant,
+        'fooBinFunction',
+        'it/will/fail'
+      );
+      runtime.run = () => { throw new Error('Some error'); };
       expect(() => {
         (new LibFunction(
+          ant,
           'fooLibFunction',
           'it/will/fail',
-          binFunction
+          runtime
         )).run();
       }).toThrowError('Could not run lib function fooLibFunction');
     });

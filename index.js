@@ -4,9 +4,12 @@
  * following artifacts that can be used to extend the framework:
  * - The {@link AntFunction} class that can be used to create new functions.
  * - The {@link BinFunction} class that can be used to create new bin functions.
+ * - The {@link Runtime} class that can be used to create new runtime functions.
  * - The {@link LibFunction} class that can be used to create new lib functions.
  * - The {@link Plugin} class that can be used to create new plugins.
  * - The {@link Template} class that can be used to create new templates.
+ * - The {@link Provider} class that can be used to create new host providers to
+ * deploy the functions.
  * - The {@link Core} plugin that can be extended.
  * - The {@link GraphQL} plugin that can be extended.
  * - The [antframework/lib/util]{@link module:antframework/lib/util} module that can be used when extending
@@ -23,6 +26,7 @@ const GraphQL = require('./lib/plugins/graphQL');
 const AntFunction = require('./lib/functions/AntFunction');
 const BinFunction = require('./lib/functions/BinFunction');
 const LibFunction = require('./lib/functions/LibFunction');
+const Provider = require('./lib/hosts/providers/Provider');
 const util = require('./lib/util');
 
 module.exports.Ant = Ant;
@@ -34,4 +38,5 @@ module.exports.Plugin = Plugin;
 module.exports.Template = Template;
 module.exports.Core = Core;
 module.exports.GraphQL = GraphQL;
+module.exports.Provider = Provider;
 module.exports.util = util;

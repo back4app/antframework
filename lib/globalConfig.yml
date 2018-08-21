@@ -1,6 +1,6 @@
 basePath: ./
 plugins:
-  - ./plugins/core
+  - $GLOBAL/plugins/core
 templates:
   {}
 # Below is an example of how to load custom templates using this config file.
@@ -9,7 +9,7 @@ templates:
 # - The first one with name MyCustomTemplate, with path /path/to/my/custom
 # - The second one with name AnotherCustom, and path /path/to/another/foo
 #
-# The second category, Foo, will load only the Bar template, whose path is /whatever/foo/bar. 
+# The second category, Foo, will load only the Bar template, whose path is /whatever/foo/bar.
 #
 # templates:
 #   MyCustomCategory:

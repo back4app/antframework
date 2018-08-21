@@ -309,7 +309,7 @@ http://localhost:3000\n'
       ant,
       'fooDirective',
       'fooDefinitiion',
-      new AntFunction('fooFunction')
+      new AntFunction(ant, 'fooFunction')
     );
     const graphQL = new GraphQL(ant, { directives: [fooDirective] });
     expect(graphQL.directiveController.getDirective('fooDirective'))
