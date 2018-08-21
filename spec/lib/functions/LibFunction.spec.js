@@ -38,7 +38,7 @@ describe('lib/functions/LibFunction.js', () => {
     );
   });
 
-  test('should fail if runtime is not String', () => {
+  test('should fail if runtime is not Runtime', () => {
     expect(() => new LibFunction(ant, 'fooFunction', 'fooHandler')).toThrowError(
       'Could not initialize LibFunction: param "runtime" should be Runtime'
     );

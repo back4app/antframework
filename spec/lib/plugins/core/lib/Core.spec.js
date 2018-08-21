@@ -13,6 +13,9 @@ const Ant = require('../../../../../lib/Ant');
 const Plugin = require('../../../../../lib/plugins/Plugin');
 const Template = require('../../../../../lib/templates/Template');
 const AntFunction = require('../../../../../lib/functions/AntFunction');
+const BinFunction = require('../../../../../lib/functions/BinFunction');
+const LibFunction = require('../../../../../lib/functions/LibFunction');
+const Runtime = require('../../../../../lib/functions/runtimes/Runtime');
 const Provider = require('../../../../../lib/hosts/providers/Provider');
 const Host = require('../../../../../lib/hosts/Host');
 const Core = require('../../../../../lib/plugins/core/lib/Core');
@@ -795,5 +798,241 @@ describe('lib/plugins/core/lib/Core.js', () => {
         }
       }
     );
+  });
+
+  describe('function command', () => {
+    beforeEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    test('should show friendly error when no command is given', (done) => {
+      process.argv = ['function'];
+      console.error = jest.fn();
+      process.exit = jest.fn((code) => {
+        expect(console.error).toHaveBeenCalledWith(
+          expect.stringContaining('Function requires a command')
+        );
+        expect(code).toEqual(1);
+        done();
+      });
+      const core = new Core(ant);
+      core._yargsFailed('Not enough non-option arguments');
+    });
+
+    test('should not show friendly error when error is unknown', () => {
+      const handleErrorMessage = jest.spyOn(yargsHelper, 'handleErrorMessage');
+      process.argv = ['function'];
+      new Core(ant)._yargsFailed('Unknown error');
+      expect(handleErrorMessage).not.toHaveBeenCalled();
+    });
+
+    describe('function add command', () => {
+      test('should add BinFunction and save locally', async () => {
+        const name = 'myFunc';
+        const func = '/path/to/func';
+        const getLocalConfigPath = jest.spyOn(Config, 'GetLocalConfigPath');
+        jest.spyOn(Config.prototype, 'addFunction')
+          .mockImplementation(binFunc => {
+            expect(binFunc.name).toBe(name);
+            expect(binFunc.bin).toBe(func);
+          });
+        jest.spyOn(Config.prototype, 'save');
+        const core = new Core(ant);
+        await core.addFunction(name, func);
+        expect(getLocalConfigPath).toHaveBeenCalled();
+        expect(Config.prototype.save).toHaveBeenCalled();
+      });
+
+      test('should add BinFunction and save globally', async () => {
+        const name = 'myFunc';
+        const func = '/path/to/func';
+        const configMock = {
+          addFunction: jest.fn().mockImplementation(binFunc => {
+            expect(binFunc.name).toBe(name);
+            expect(binFunc.bin).toBe(func);
+          }),
+          save: jest.fn()
+        };
+        jest.spyOn(Core, '_getConfig').mockImplementation(() => configMock);
+        const core = new Core(ant);
+        await core.addFunction(name, func, null, true);
+        expect(Core._getConfig).toHaveBeenCalledWith(true);
+        expect(configMock.addFunction).toHaveBeenCalled();
+        expect(configMock.save).toHaveBeenCalled();
+      });
+
+      test('should add LibFunction', async () => {
+        const ant = new Ant();
+        const name = 'myFunc';
+        const func = '/path/to/func';
+        const runtime = new Runtime(ant, 'myRuntime', '/path/to/runtime');
+        const getLocalConfigPath = jest.spyOn(Config, 'GetLocalConfigPath');
+        jest.spyOn(Config.prototype, 'addFunction')
+          .mockImplementation(libFunc => {
+            expect(libFunc.name).toBe(name);
+            expect(libFunc.handler).toBe(func);
+            expect(libFunc.runtime).toBe(runtime);
+          });
+        const save = jest.spyOn(Config.prototype, 'save');
+        const core = new Core(ant);
+        await core.addFunction(name, func, runtime);
+        expect(getLocalConfigPath).toHaveBeenCalled();
+        expect(save).toHaveBeenCalled();
+      });
+
+      test('should show friendly error when name was not passed', (done) => {
+        const handleErrorMessage = jest.spyOn(yargsHelper, 'handleErrorMessage');
+        process.argv = ['function', 'add'];
+        process.exit = jest.fn((code) => {
+          expect(handleErrorMessage).toHaveBeenCalledWith(
+            'Function add command requires name and function arguments', null, 'function add'
+          );
+          expect(code).toEqual(1);
+          done();
+        });
+        new Core(ant)._yargsFailed('Not enough non-option arguments');
+      });
+
+      test('should show friendly error when function was not passed', (done) => {
+        const handleErrorMessage = jest.spyOn(yargsHelper, 'handleErrorMessage');
+        process.argv = ['function', 'add', 'myfunc'];
+        process.exit = jest.fn((code) => {
+          expect(handleErrorMessage).toHaveBeenCalledWith(
+            'Function add command requires name and function arguments', null, 'function add'
+          );
+          expect(code).toEqual(1);
+          done();
+        });
+        new Core(ant)._yargsFailed('Not enough non-option arguments');
+      });
+
+      test('should not show friendly error when error is unknown', () => {
+        const handleErrorMessage = jest.spyOn(yargsHelper, 'handleErrorMessage');
+        process.argv = ['function', 'add'];
+        new Core(ant)._yargsFailed('Unknown error');
+        expect(handleErrorMessage).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('function remove command', () => {
+      test('should remove function and save locally', async () => {
+        const name = 'myFunc';
+        const configMock = {
+          removeFunction: jest.fn().mockImplementation(funcName => {
+            expect(funcName).toBe(name);
+            return configMock;
+          }),
+          save: jest.fn()
+        };
+        jest.spyOn(Core, '_getConfig').mockImplementation(() => configMock);
+        const core = new Core(ant);
+        await core.removeFunction(name);
+        expect(Core._getConfig).toHaveBeenCalledWith(undefined);
+        expect(configMock.removeFunction).toHaveBeenCalled();
+        expect(configMock.save).toHaveBeenCalled();
+      });
+
+      test('should remove function and save globally', async () => {
+        const name = 'myFunc';
+        const configMock = {
+          removeFunction: jest.fn().mockImplementation(funcName => {
+            expect(funcName).toBe(name);
+            return configMock;
+          }),
+          save: jest.fn()
+        };
+        jest.spyOn(Core, '_getConfig').mockImplementation(() => configMock);
+        const core = new Core(ant);
+        await core.removeFunction(name, true);
+        expect(Core._getConfig).toHaveBeenCalledWith(true);
+        expect(configMock.removeFunction).toHaveBeenCalled();
+        expect(configMock.save).toHaveBeenCalled();
+      });
+
+      test('should show friendly error when name was not passed', async done => {
+        const handleErrorMessage = jest.spyOn(yargsHelper, 'handleErrorMessage');
+        process.argv = ['function', 'remove'];
+        process.exit = jest.fn((code) => {
+          expect(handleErrorMessage).toHaveBeenCalledWith(
+            'Function remove command requires name argument', null, 'function remove'
+          );
+          expect(code).toEqual(1);
+          done();
+        });
+        new Core(ant)._yargsFailed('Not enough non-option arguments');
+      });
+
+      test('should not show friendly error when error is unknown', () => {
+        const handleErrorMessage = jest.spyOn(yargsHelper, 'handleErrorMessage');
+        process.argv = ['function', 'remove'];
+        new Core(ant)._yargsFailed('Unknown error');
+        expect(handleErrorMessage).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('function ls command', () => {
+      test('should print templates', async () => {
+        console.log = jest.fn();
+        const functions = [
+          new AntFunction(ant, 'ant', () => {}),
+          new BinFunction(ant, 'foo', '/path/to/foo'),
+          new LibFunction(ant, 'bar', '/path/to/bar', new Runtime(ant, 'barRuntime', '/path/to/runtime'))
+        ];
+        ant.functionController.getAllFunctions = jest.fn().mockImplementation(() => functions);
+        const core = new Core(ant);
+        await core.listFunctions();
+        expect(console.log.mock.calls.length).toBe(4);
+        expect(console.log.mock.calls[0][0]).toBe('Listing all functions available \
+(<type> <name>[: (<bin>|<handler> <runtime>)]):');
+        expect(console.log.mock.calls[1][0]).toBe('AntFunction ant');
+        expect(console.log.mock.calls[2][0]).toBe('BinFunction foo: /path/to/foo');
+        expect(console.log.mock.calls[3][0]).toBe('LibFunction bar: /path/to/bar barRuntime');
+      });
+    });
+
+    describe('function exec command', () => {
+      test ('should throw error when function was not found', async () => {
+        const name = 'should not be found';
+        const core = new Core(ant);
+        expect(core.execFunction(name)).rejects.toBe(
+          `Function ${name} not found to be executed.`
+        );
+      });
+
+      test ('should execute function with args', async () => {
+        const runMock = jest.fn();
+        ant.functionController.getFunction = jest.fn().mockImplementation(() => {
+          return {
+            run: runMock
+          };
+        });
+        const name = 'funcName';
+        const args = ['foo', 'bar'];
+        const core = new Core(ant);
+        core.execFunction(name, args);
+        expect(ant.functionController.getFunction).toHaveBeenCalledWith(name);
+        expect(runMock).toHaveBeenCalledWith(args);
+      });
+
+      test('should show friendly error when name was not passed', async done => {
+        const handleErrorMessage = jest.spyOn(yargsHelper, 'handleErrorMessage');
+        process.argv = ['function', 'exec'];
+        process.exit = jest.fn((code) => {
+          expect(handleErrorMessage).toHaveBeenCalledWith(
+            'Function exec command requires name argument', null, 'function exec'
+          );
+          expect(code).toEqual(1);
+          done();
+        });
+        new Core(ant)._yargsFailed('Not enough non-option arguments');
+      });
+
+      test('should not show friendly error when error is unknown', () => {
+        const handleErrorMessage = jest.spyOn(yargsHelper, 'handleErrorMessage');
+        process.argv = ['function', 'exec'];
+        new Core(ant)._yargsFailed('Unknown error');
+        expect(handleErrorMessage).not.toHaveBeenCalled();
+      });
+    });
   });
 });

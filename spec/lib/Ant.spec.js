@@ -162,6 +162,24 @@ Template category value is not an object!'
       ant.functionController = null;
       expect(ant.functionController).toBeInstanceOf(FunctionController);
     });
+
+    test('should load functions from config', () => {
+      const ant = new Ant({
+        functions: [
+          {
+            name: 'Bin',
+            bin: '/path/to/bin'
+          },
+          {
+            name: 'Lib',
+            handler: '/path/to/handler',
+            runtime: 'Default'
+          }
+        ]
+      });
+      expect(ant.functionController.getFunction('Bin').bin).toBe('/path/to/bin');
+      expect(ant.functionController.getFunction('Lib').handler).toBe('/path/to/handler');
+    });
   });
 
   describe('Ant.runtime', () => {
@@ -345,7 +363,6 @@ Template category value is not an object!'
     test('should be async and call Core removeTemplate method', async () => {
       const ant = new Ant();
       const core = ant.pluginController.getPlugin('Core');
-      const originalRemoveTemplate = jest.fn();
       core.removeTemplate = jest.fn();
       const removeTemplateReturn = ant.removeTemplate(
         'MyCategory',
@@ -359,7 +376,60 @@ Template category value is not an object!'
         'MyTemplate',
         false
       );
-      core.removeTemplate = originalRemoveTemplate;
+    });
+  });
+
+  describe('Ant.addFunction', () => {
+    test('should be async and call Core addFunction method', async () => {
+      const ant = new Ant();
+      const core = ant.pluginController.getPlugin('Core');
+      core.addFunction = jest.fn();
+      const addFunctionReturn = ant.addFunction('myFunc', '/mypath', 'runtime', true);
+      expect(addFunctionReturn).toBeInstanceOf(Promise);
+      await addFunctionReturn;
+      expect(core.addFunction).toHaveBeenCalledWith('myFunc', '/mypath', 'runtime', true);
+    });
+  });
+
+  describe('Ant.removeFunction', () => {
+    test('should be async and call Core removeFunction method', async () => {
+      const ant = new Ant();
+      const core = ant.pluginController.getPlugin('Core');
+      core.removeFunction = jest.fn();
+      const removeFunctionReturn = ant.removeFunction('myFunc', true);
+      expect(removeFunctionReturn).toBeInstanceOf(Promise);
+      await removeFunctionReturn;
+      expect(core.removeFunction).toHaveBeenCalledWith('myFunc', true);
+    });
+  });
+
+  describe('Ant.listFunctions', () => {
+    test('should be async and call Core listFunctions method', async () => {
+      const ant = new Ant();
+      const core = ant.pluginController.getPlugin('Core');
+      core.listFunctions = jest.fn();
+      const listFunctionsReturn = ant.listFunctions();
+      expect(listFunctionsReturn).toBeInstanceOf(Promise);
+      await listFunctionsReturn;
+      expect(core.listFunctions).toHaveBeenCalled();
+    });
+  });
+
+  describe('Ant.execFunction', () => {
+    test('should be async and call Core execFunction method', async () => {
+      const ant = new Ant();
+      const core = ant.pluginController.getPlugin('Core');
+      core.execFunction = jest.fn();
+      const execFunctionReturn = ant.execFunction(
+        'MyFunc',
+        ['foo', 'bar']
+      );
+      expect(execFunctionReturn).toBeInstanceOf(Promise);
+      await execFunctionReturn;
+      expect(core.execFunction).toHaveBeenCalledWith(
+        'MyFunc',
+        ['foo', 'bar']
+      );
     });
   });
 });

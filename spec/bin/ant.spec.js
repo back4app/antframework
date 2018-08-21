@@ -11,6 +11,7 @@ const childProcess = require('child_process');
 const exec = util.promisify(childProcess.exec);
 const AntCli = require('../../lib/cli/AntCli');
 const yargsHelper = require('../../lib/util/yargsHelper');
+const rx = require('rxjs');
 
 const binPath = path.resolve(__dirname, '../../bin/ant.js');
 
@@ -749,6 +750,272 @@ ant.js --help plugin add`)
             throw Error('Mocked error');
           });
         antCli._yargs.parse('template ls');
+      });
+    });
+
+    describe('function add command', () => {
+      test('should work', done => {
+        const originalExit = process.exit;
+        process.exit = jest.fn(code => {
+          process.exit = originalExit;
+          expect.hasAssertions();
+          expect(code).toBe(0);
+          done();
+        });
+
+        const antCli = new AntCli();
+        antCli
+          ._ant
+          .pluginController
+          .getPlugin('Core')
+          .addFunction = jest.fn(async (name, path, runtime, isGlobal) => {
+            expect(name).toBe('myfunc');
+            expect(path).toBe('/path/to/myfunc');
+            expect(runtime).toBe('nodejs');
+            expect(isGlobal).toBe(false);
+          });
+        antCli._yargs.parse('function add myfunc /path/to/myfunc nodejs');
+      });
+
+      test('should work with global flag', done => {
+        const originalExit = process.exit;
+        process.exit = jest.fn(code => {
+          process.exit = originalExit;
+          expect.hasAssertions();
+          expect(code).toBe(0);
+          done();
+        });
+
+        const antCli = new AntCli();
+        antCli
+          ._ant
+          .pluginController
+          .getPlugin('Core')
+          .addFunction = jest.fn(async (name, path, runtime, isGlobal) => {
+            expect(name).toBe('myfunc');
+            expect(path).toBe('/path/to/myfunc');
+            expect(runtime).toBe('nodejs');
+            expect(isGlobal).toBe(true);
+          });
+        antCli._yargs.parse('function add myfunc /path/to/myfunc nodejs --global');
+      });
+
+      test('should handle any errors', done => {
+        const originalHandleErrorMessage = yargsHelper.handleErrorMessage;
+        yargsHelper.handleErrorMessage = jest.fn((message, e, command) => {
+          yargsHelper.handleErrorMessage = originalHandleErrorMessage;
+          expect(e).toBeInstanceOf(Error);
+          expect(message).toBe('Mocked error');
+          expect(command).toBe('function add');
+          done();
+        });
+
+        const antCli = new AntCli();
+        antCli
+          ._ant
+          .pluginController
+          .getPlugin('Core')
+          .addFunction = jest.fn(async () => {
+            throw new Error('Mocked error');
+          });
+        antCli._yargs.parse('function add myfunc /path/to/myfunc nodejs');
+      });
+    });
+
+    describe('function remove command', () => {
+      test('should work', done => {
+        const originalExit = process.exit;
+        process.exit = jest.fn(code => {
+          process.exit = originalExit;
+          expect.hasAssertions();
+          expect(code).toBe(0);
+          done();
+        });
+
+        const antCli = new AntCli();
+        antCli
+          ._ant
+          .pluginController
+          .getPlugin('Core')
+          .removeFunction = jest.fn(async (name, isGlobal) => {
+            expect(name).toBe('myfunc');
+            expect(isGlobal).toBe(false);
+          });
+        antCli._yargs.parse('function remove myfunc');
+      });
+
+      test('should work with global flag', done => {
+        const originalExit = process.exit;
+        process.exit = jest.fn(code => {
+          process.exit = originalExit;
+          expect.hasAssertions();
+          expect(code).toBe(0);
+          done();
+        });
+
+        const antCli = new AntCli();
+        antCli
+          ._ant
+          .pluginController
+          .getPlugin('Core')
+          .removeFunction = jest.fn(async (name, isGlobal) => {
+            expect(name).toBe('myfunc');
+            expect(isGlobal).toBe(true);
+          });
+        antCli._yargs.parse('function remove myfunc --global');
+      });
+
+      test('should handle any errors', done => {
+        const originalHandleErrorMessage = yargsHelper.handleErrorMessage;
+        yargsHelper.handleErrorMessage = jest.fn((message, e, command) => {
+          yargsHelper.handleErrorMessage = originalHandleErrorMessage;
+          expect(e).toBeInstanceOf(Error);
+          expect(message).toBe('Mocked error');
+          expect(command).toBe('function remove');
+          done();
+        });
+
+        const antCli = new AntCli();
+        antCli
+          ._ant
+          .pluginController
+          .getPlugin('Core')
+          .removeFunction = jest.fn(async () => {
+            throw new Error('Mocked error');
+          });
+        antCli._yargs.parse('function remove myfunc');
+      });
+    });
+
+    describe('function ls command', () => {
+      test('should work', done => {
+        const originalExit = process.exit;
+        process.exit = jest.fn(code => {
+          process.exit = originalExit;
+          expect.hasAssertions();
+          expect(code).toBe(0);
+          done();
+        });
+
+        const antCli = new AntCli();
+        antCli
+          ._ant
+          .pluginController
+          .getPlugin('Core')
+          .listFunctions = jest.fn(async (args) => {
+            expect(args).toBeUndefined();
+          });
+        antCli._yargs.parse('function ls');
+      });
+
+      test('should handle any errors', done => {
+        const originalHandleErrorMessage = yargsHelper.handleErrorMessage;
+        yargsHelper.handleErrorMessage = jest.fn((message, e, command) => {
+          yargsHelper.handleErrorMessage = originalHandleErrorMessage;
+          expect(e).toBeInstanceOf(Error);
+          expect(message).toBe('Mocked error');
+          expect(command).toBe('function ls');
+          done();
+        });
+
+        const antCli = new AntCli();
+        antCli
+          ._ant
+          .pluginController
+          .getPlugin('Core')
+          .listFunctions = jest.fn(async () => {
+            throw new Error('Mocked error');
+          });
+        antCli._yargs.parse('function ls');
+      });
+    });
+
+    describe('function exec command', () => {
+      test('should work', done => {
+        console.log = jest.fn();
+        jest.spyOn(process, 'exit').mockImplementation(code => {
+          expect.hasAssertions();
+          expect(console.log).toHaveBeenCalledWith('Function myfunc executed succesfully');
+          expect(code).toBe(0);
+          done();
+        });
+
+        const antCli = new AntCli();
+        antCli
+          ._ant
+          .pluginController
+          .getPlugin('Core')
+          .execFunction = jest.fn(async (func, params) => {
+            expect(func).toBe('myfunc');
+            expect(params).toBeUndefined();
+            return rx.of('mock');
+          });
+        antCli._yargs.parse('function exec myfunc');
+      });
+
+      test('should work with params', done => {
+        console.log = jest.fn();
+        jest.spyOn(process, 'exit').mockImplementation(code => {
+          expect.hasAssertions();
+          expect(console.log).toHaveBeenCalledWith('Function myfunc executed succesfully');
+          expect(code).toBe(0);
+          done();
+        });
+
+        const antCli = new AntCli();
+        antCli
+          ._ant
+          .pluginController
+          .getPlugin('Core')
+          .execFunction = jest.fn(async (func, params) => {
+            expect(func).toBe('myfunc');
+            expect(params).toEqual(['foo', 'bar']);
+            return rx.of('mock');
+          });
+        antCli._yargs.parse('function exec myfunc --params foo bar');
+      });
+
+      test('should print any execution error', done => {
+        console.log = jest.fn();
+        jest.spyOn(process, 'exit').mockImplementation(code => {
+          expect.hasAssertions();
+          expect(console.log).toHaveBeenCalledWith('Mocked error');
+          expect(code).toBe(1);
+          done();
+        });
+
+        const antCli = new AntCli();
+        antCli
+          ._ant
+          .pluginController
+          .getPlugin('Core')
+          .execFunction = jest.fn(async (func, params) => {
+            expect(func).toBe('mockederror');
+            expect(params).toBeUndefined();
+            return rx.throwError('Mocked error');
+          });
+        antCli._yargs.parse('function exec mockederror');
+      });
+
+      test('should handle any errors', done => {
+        const originalHandleErrorMessage = yargsHelper.handleErrorMessage;
+        yargsHelper.handleErrorMessage = jest.fn((message, e, command) => {
+          yargsHelper.handleErrorMessage = originalHandleErrorMessage;
+          expect(e).toBeInstanceOf(Error);
+          expect(message).toBe('Mocked error');
+          expect(command).toBe('function exec');
+          done();
+        });
+
+        const antCli = new AntCli();
+        antCli
+          ._ant
+          .pluginController
+          .getPlugin('Core')
+          .execFunction = jest.fn(async () => {
+            throw new Error('Mocked error');
+          });
+        antCli._yargs.parse('function exec error');
       });
     });
   });
