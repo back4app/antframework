@@ -256,7 +256,7 @@ describe('lib/plugins/core/lib/Core.js', () => {
         });
         const fooServicePath = path.resolve(
           __dirname,
-          '../../../../support/services/fooService'
+          '../../../../support/services/FooService'
         );
         process.chdir(fooServicePath);
         (new AntCli())._yargs.parse(

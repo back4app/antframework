@@ -181,7 +181,7 @@ Template category value is not an object!'
     test('should be readonly', () => {
       const ant = new Ant();
       expect(ant.host).toEqual(null);
-      ant.runtime = {};
+      ant.host = {};
       expect(ant.host).toEqual(null);
     });
   });
