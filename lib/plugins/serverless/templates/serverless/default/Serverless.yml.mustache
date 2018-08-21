@@ -1,0 +1,18 @@
+{{#ant.service}}
+service:
+  name: {{{ant.service}}}
+{{/ant.service}}
+
+provider:
+  name: aws
+  {{#config.profile}}
+  profile: {{{config.profile}}}
+  {{/config.profile}}
+
+{{#functions.length}}
+functions:
+{{#functions}}
+  {{{name}}}:
+    handler: {{{handler}}}{{^handler}}{{{bin}}}{{/handler}}
+{{/functions}}
+{{/functions.length}}
