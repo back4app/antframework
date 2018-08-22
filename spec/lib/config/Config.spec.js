@@ -755,6 +755,25 @@ Template category value is not an object!'
           expect(e.message).toContain('Could not parse AntFunction from configuration file');
         }
       });
+
+      test('should fail to parse LibFunction with unknown runtime', () => {
+        const runtimeController = {
+          getRuntime: jest.fn().mockImplementation(() => null)
+        };
+        const funcConfig = {
+          name: 'MyLib',
+          handler: '/my/handler',
+          runtime: 'unknown_runtime'
+        };
+        try {
+          Config.ParseConfigFunctions(
+            [ funcConfig ], runtimeController
+          );
+        } catch (e) {
+          expect(e).toBeInstanceOf(AntError);
+          expect(e.message).toContain('Could not parse AntFunction from configuration file');
+        }
+      });
     });
   });
 });
