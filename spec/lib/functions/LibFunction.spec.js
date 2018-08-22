@@ -24,6 +24,13 @@ const libFunction = new LibFunction(
   fooRuntime
 );
 
+const undefinedlibFunction = new LibFunction(
+  ant,
+  'undefinedLibFunction',
+  path.resolve(__dirname, '../../support/functions/undefinedLibFunction'),
+  fooRuntime
+);
+
 describe('lib/functions/LibFunction.js', () => {
   test('should export "LibFunction" class', () => {
     expect(libFunction.constructor.name).toEqual('LibFunction');
@@ -38,7 +45,7 @@ describe('lib/functions/LibFunction.js', () => {
     );
   });
 
-  test('should fail if runtime is not String', () => {
+  test('should fail if runtime is not Runtime', () => {
     expect(() => new LibFunction(ant, 'fooFunction', 'fooHandler')).toThrowError(
       'Could not initialize LibFunction: param "runtime" should be Runtime'
     );
@@ -53,6 +60,13 @@ describe('lib/functions/LibFunction.js', () => {
       expect(runReturn).toEqual(expect.any(Observable));
       expect(await runReturn.pipe(toArray()).toPromise())
         .toEqual([1, 2, 3]);
+    });
+
+    test('should run and handle undefined result', async () => {
+      const runReturn = undefinedlibFunction.run();
+      expect(runReturn).toEqual(expect.any(Observable));
+      expect(await runReturn.toPromise())
+        .toEqual(undefined);
     });
 
     test('should fail if runtime fails', () => {
