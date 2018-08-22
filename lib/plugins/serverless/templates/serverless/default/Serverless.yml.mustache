@@ -16,7 +16,10 @@ package:
 functions:
 {{#functions}}
   {{{name}}}:
-    handler: {{{handlerModule}}}
+    handler: libFunction.run
+    runtime: nodejs8.10
+    environment:
+      LIB: ./{{{handlerFileName}}}
     package:
       individually: true
       artifact: {{{name}}}.zip
