@@ -11,6 +11,7 @@ const PluginController = require('../../lib/plugins/PluginController');
 const Serverless = require('../../lib/plugins/serverless');
 const TemplateController = require('../../lib/templates/TemplateController');
 const Runtime = require('../../lib/functions/runtimes/Runtime');
+const RuntimeController = require('../../lib/functions/runtimes/RuntimeController');
 const FunctionController = require('../../lib/functions/FunctionController');
 const Core = require('../../lib/plugins/core');
 const yaml = require('yaml').default;
@@ -177,6 +178,39 @@ Template category value is not an object!'
       });
       expect(ant.functionController.getFunction('Bin').bin).toBe('/path/to/bin');
       expect(ant.functionController.getFunction('Lib').handler).toBe('/path/to/handler');
+    });
+  });
+
+  describe('Ant.runtimeController', () => {
+    test('should be readonly', () => {
+      const ant = new Ant();
+      expect(ant.runtimeController).toBeInstanceOf(RuntimeController);
+      ant.functionController = null;
+      expect(ant.runtimeController).toBeInstanceOf(RuntimeController);
+    });
+
+    test('should load runtimes from config', () => {
+      const runtimes = {
+        Bin: {
+          bin: '/path/to/bin',
+          extensions: ['js', 'py']
+        },
+        Lib: {
+          bin: '/path/to/lib',
+          extensions: ['cpp', 'c', 'h']
+        }
+      };
+      const ant = new Ant({ runtimes });
+      const binRuntime = ant.runtimeController.getRuntime('Bin');
+      expect(binRuntime).toBeInstanceOf(Runtime);
+      expect(binRuntime.name).toBe('Bin');
+      expect(binRuntime.bin).toBe(runtimes.Bin.bin);
+      expect(binRuntime.extensions).toBe(runtimes.Bin.extensions);
+
+      const libRuntime = ant.runtimeController.getRuntime('Lib');
+      expect(libRuntime.name).toBe('Lib');
+      expect(libRuntime.bin).toBe(runtimes.Lib.bin);
+      expect(libRuntime.extensions).toBe(runtimes.Lib.extensions);
     });
   });
 
