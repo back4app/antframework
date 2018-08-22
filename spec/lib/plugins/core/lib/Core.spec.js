@@ -1016,7 +1016,7 @@ describe('lib/plugins/core/lib/Core.js', () => {
         const core = new Core(ant);
         core.execFunction(name, args);
         expect(ant.functionController.getFunction).toHaveBeenCalledWith(name);
-        expect(runMock).toHaveBeenCalledWith(args);
+        expect(runMock).toHaveBeenCalledWith(...args);
       });
 
       test('should show friendly error when name was not passed', async done => {

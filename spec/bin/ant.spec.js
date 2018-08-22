@@ -945,9 +945,9 @@ ant.js --help plugin add`)
           ._ant
           .pluginController
           .getPlugin('Core')
-          .execFunction = jest.fn(async (func, params) => {
+          .execFunction = jest.fn(async (func, args) => {
             expect(func).toBe('myfunc');
-            expect(params).toBeUndefined();
+            expect(args).toEqual([]);
             return rx.of('mock');
           });
         antCli._yargs.parse('function exec myfunc');
@@ -972,7 +972,7 @@ ant.js --help plugin add`)
             expect(params).toEqual(['foo', 'bar']);
             return rx.of('mock');
           });
-        antCli._yargs.parse('function exec myfunc --params foo bar');
+        antCli._yargs.parse('function exec myfunc foo bar');
       });
 
       test('should print any execution error', done => {
@@ -991,7 +991,7 @@ ant.js --help plugin add`)
           .getPlugin('Core')
           .execFunction = jest.fn(async (func, params) => {
             expect(func).toBe('mockederror');
-            expect(params).toBeUndefined();
+            expect(params).toEqual([]);
             return rx.throwError('Mocked error');
           });
         antCli._yargs.parse('function exec mockederror');
