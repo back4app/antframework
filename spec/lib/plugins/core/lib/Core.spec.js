@@ -865,18 +865,23 @@ describe('lib/plugins/core/lib/Core.js', () => {
         const ant = new Ant();
         const name = 'myFunc';
         const func = '/path/to/func';
-        const runtime = new Runtime(ant, 'myRuntime', '/path/to/runtime');
+        const runtimeInstance = new Runtime(ant, 'myRuntime', '/path/to/runtime');
         const getLocalConfigPath = jest.spyOn(Config, 'GetLocalConfigPath');
+        const getRuntime = jest.spyOn(ant.runtimeController, 'getRuntime')
+          .mockImplementation(() => {
+            return runtimeInstance;
+          });
         jest.spyOn(Config.prototype, 'addFunction')
           .mockImplementation(libFunc => {
             expect(libFunc.name).toBe(name);
             expect(libFunc.handler).toBe(func);
-            expect(libFunc.runtime).toBe(runtime);
+            expect(libFunc.runtime).toBe(runtimeInstance);
           });
         const save = jest.spyOn(Config.prototype, 'save');
         const core = new Core(ant);
-        await core.addFunction(name, func, runtime);
+        await core.addFunction(name, func, runtimeInstance.name);
         expect(getLocalConfigPath).toHaveBeenCalled();
+        expect(getRuntime).toHaveBeenCalledWith(runtimeInstance.name);
         expect(save).toHaveBeenCalled();
       });
 
