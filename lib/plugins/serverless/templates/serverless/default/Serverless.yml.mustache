@@ -9,10 +9,16 @@ provider:
   profile: {{{config.profile}}}
   {{/config.profile}}
 
+package:
+  individually: true
+
 {{#functions.length}}
 functions:
 {{#functions}}
   {{{name}}}:
-    handler: {{{handler}}}{{^handler}}{{{bin}}}{{/handler}}
+    handler: {{{handlerModule}}}
+    package:
+      individually: true
+      artifact: {{{name}}}.zip
 {{/functions}}
 {{/functions.length}}
