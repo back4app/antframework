@@ -7,7 +7,10 @@ const logger = require('../../../lib/util/logger');
 const Ant = require('../../../lib/Ant');
 const Plugin = require('../../../lib/plugins/Plugin');
 const AntFunction = require('../../../lib/functions/AntFunction');
+const BinFunction = require('../../../lib/functions/BinFunction');
+const LibFunction = require('../../../lib/functions/LibFunction');
 const FunctionController = require('../../../lib/functions/FunctionController');
+const Runtime = require('../../../lib/functions/runtimes/Runtime');
 
 const ant = new Ant();
 const functionController = new FunctionController(ant);
@@ -103,6 +106,23 @@ describe('lib/functions/FunctionController.js', () => {
     test('should return null if function not found', () => {
       expect(functionController.getFunction('NotExistent'))
         .toEqual(null);
+    });
+  });
+
+  describe('FunctionController.getAllFunctions', () => {
+    test('should return all functions', () => {
+      const antWithFunctions = new Ant();
+      const function1 = new AntFunction(antWithFunctions, 'ant');
+      const function2 = new BinFunction(antWithFunctions, 'bin', '/path/to/bin');
+      const function3 = new LibFunction(antWithFunctions, 'lib', '/path/to/lib',
+        new Runtime(antWithFunctions, 'runtime', '/path/to/runtime')
+      );
+
+      antWithFunctions.functionController.loadFunctions([function1, function2, function3]);
+      const allFunctions = antWithFunctions.functionController.getAllFunctions();
+      expect(allFunctions.includes(function1)).toBeTruthy();
+      expect(allFunctions.includes(function2)).toBeTruthy();
+      expect(allFunctions.includes(function3)).toBeTruthy();
     });
   });
 });

@@ -9,6 +9,11 @@ const fsExtra = require('fs-extra');
 const path = require('path');
 const process = require('process');
 const yaml = require('yaml').default;
+const Ant = require('../../../lib/Ant');
+const BinFunction = require('../../../lib/functions/BinFunction');
+const LibFunction = require('../../../lib/functions/LibFunction');
+const Runtime = require('../../../lib/functions/runtimes/Runtime');
+const { AssertionError } = require('assert');
 
 describe('lib/config/Config.js', () => {
   const originalCwd = process.cwd();
@@ -499,78 +504,280 @@ configuration. template remove command should do nothing');
     });
   });
 
+  describe('add function', () => {
+    test('should add Bin and Lib functions', () => {
+      const ant = new Ant();
+      const config = new Config({});
+      config.addFunction(new BinFunction(ant, 'BinFunc', '/my/bin'));
+      let { functions } = config.config;
+      expect(functions).toEqual({
+        BinFunc: {
+          bin: '/my/bin'
+        }
+      });
+
+      config.addFunction(
+        new LibFunction(ant, 'LibFunc', '/myhandler',
+          new Runtime(ant, 'MyRuntime', '/my/runtime')
+        )
+      );
+      functions = config.config.functions;
+      expect(functions).toEqual({
+        BinFunc: {
+          bin: '/my/bin'
+        },
+        LibFunc: {
+          handler: '/myhandler',
+          runtime: 'MyRuntime'
+        }
+      });
+    });
+
+    test('should override if function already exists', () => {
+      const ant = new Ant();
+      console.log = jest.fn();
+      const config = new Config({
+        functions: {
+          BinFunc: {
+            bin: '/my/bin'
+          }
+        }
+      });
+      config.addFunction(new BinFunction(ant, 'BinFunc', '/alternative/bin'));
+      const { functions } = config.config;
+      expect(functions).toEqual({
+        BinFunc: {
+          bin: '/alternative/bin'
+        }
+      });
+      expect(console.log.mock.calls.length).toBe(2);
+      expect(console.log.mock.calls[0][0]).toBe('Function "BinFunc" already \
+found on the configuration file. function add command will OVERRIDE the current function');
+    });
+
+    test('should throw error if function is an unsupported type', () => {
+      const config = new Config({});
+      try {
+        config.addFunction({});
+      } catch (e) {
+        expect(e).toBeInstanceOf(AssertionError);
+      }
+    });
+  });
+
+  describe('remove function', () => {
+    test('should remove a function', () => {
+      const ant = new Ant();
+      const config = new Config({});
+      config.addFunction(new BinFunction(ant, 'BinFunc', '/my/bin'));
+      config.addFunction(new LibFunction(ant, 'LibFunc', '/myhandler',
+        new Runtime(ant, 'MyRuntime', 'my/runtime')
+      ));
+      config.removeFunction('BinFunc');
+      const { functions } = config.config;
+      expect(functions).toEqual({
+        LibFunc: {
+          handler: '/myhandler',
+          runtime: 'MyRuntime'
+        }
+      });
+    });
+
+    test('should do nothing if there is no functions installed', () => {
+      const config = new Config({});
+      config.removeFunction('LibFunc');
+      const { functions } = config.config;
+      expect(functions).toBeUndefined();
+    });
+
+    test('should do nothing if function was not found', () => {
+      const ant = new Ant();
+      const config = new Config({});
+      config.addFunction(new BinFunction(ant, 'BinFunc', '/my/bin'));
+      config.removeFunction('LibFunc');
+      const { functions } = config.config;
+      expect(functions).toEqual({
+        BinFunc: {
+          bin: '/my/bin'
+        }
+      });
+    });
+  });
+
   describe('static utils', () => {
-    test('should load templates from config', () => {
-      const customTemplatePath = '/path/to/my/custom';
-      const fooPath = '/path/to/foo';
-      const barPath = '/path/to/bar';
-      const templatesConfig = {
-        CustomCategory: {
-          CustomTemplate: customTemplatePath,
-          Foo: fooPath
-        },
-        Custom_2: {
-          Bar: barPath
-        }
-      };
-      const parsedTemplates = Config.ParseConfigTemplates(templatesConfig);
-      expect(parsedTemplates.length).toBe(3);
+    describe('ParseConfigTemplates', () => {
+      test('should load templates from config', () => {
+        const customTemplatePath = '/path/to/my/custom';
+        const fooPath = '/path/to/foo';
+        const barPath = '/path/to/bar';
+        const templatesConfig = {
+          CustomCategory: {
+            CustomTemplate: customTemplatePath,
+            Foo: fooPath
+          },
+          Custom_2: {
+            Bar: barPath
+          }
+        };
+        const parsedTemplates = Config.ParseConfigTemplates(templatesConfig);
+        expect(parsedTemplates.length).toBe(3);
 
-      expect(parsedTemplates[0].category).toEqual('CustomCategory');
-      expect(parsedTemplates[0].name).toEqual('CustomTemplate');
-      expect(parsedTemplates[0].path).toEqual(customTemplatePath);
+        expect(parsedTemplates[0].category).toEqual('CustomCategory');
+        expect(parsedTemplates[0].name).toEqual('CustomTemplate');
+        expect(parsedTemplates[0].path).toEqual(customTemplatePath);
 
-      expect(parsedTemplates[1].category).toEqual('CustomCategory');
-      expect(parsedTemplates[1].name).toEqual('Foo');
-      expect(parsedTemplates[1].path).toEqual(fooPath);
+        expect(parsedTemplates[1].category).toEqual('CustomCategory');
+        expect(parsedTemplates[1].name).toEqual('Foo');
+        expect(parsedTemplates[1].path).toEqual(fooPath);
 
-      expect(parsedTemplates[2].category).toEqual('Custom_2');
-      expect(parsedTemplates[2].name).toEqual('Bar');
-      expect(parsedTemplates[2].path).toEqual(barPath);
-    });
+        expect(parsedTemplates[2].category).toEqual('Custom_2');
+        expect(parsedTemplates[2].name).toEqual('Bar');
+        expect(parsedTemplates[2].path).toEqual(barPath);
+      });
 
-    test('should load templates from config with basePath', () => {
-      const customTemplatePath = './path/to/my/custom';
-      const fooPath = 'path/to/foo';
-      const barPath = '../../../path/to/bar';
-      const absolutePath = '/absolute/path';
-      const templatesConfig = {
-        CustomCategory: {
-          CustomTemplate: customTemplatePath,
-          Foo: fooPath
-        },
-        Custom_2: {
-          Bar: barPath,
-          Absolute: absolutePath
-        }
-      };
-      const basePath = '/home/user/myworkspace/';
-      const parsedTemplates = Config.ParseConfigTemplates(templatesConfig, basePath);
-      expect(parsedTemplates.length).toBe(4);
+      test('should load templates from config with basePath', () => {
+        const customTemplatePath = './path/to/my/custom';
+        const fooPath = 'path/to/foo';
+        const barPath = '../../../path/to/bar';
+        const absolutePath = '/absolute/path';
+        const templatesConfig = {
+          CustomCategory: {
+            CustomTemplate: customTemplatePath,
+            Foo: fooPath
+          },
+          Custom_2: {
+            Bar: barPath,
+            Absolute: absolutePath
+          }
+        };
+        const basePath = '/home/user/myworkspace/';
+        const parsedTemplates = Config.ParseConfigTemplates(templatesConfig, basePath);
+        expect(parsedTemplates.length).toBe(4);
 
-      expect(parsedTemplates[0].path).toEqual('/home/user/myworkspace/path/to/my/custom');
-      expect(parsedTemplates[1].path).toEqual('/home/user/myworkspace/path/to/foo');
-      expect(parsedTemplates[2].path).toEqual('/path/to/bar');
-      expect(parsedTemplates[3].path).toEqual(absolutePath);
-    });
+        expect(parsedTemplates[0].path).toEqual('/home/user/myworkspace/path/to/my/custom');
+        expect(parsedTemplates[1].path).toEqual('/home/user/myworkspace/path/to/foo');
+        expect(parsedTemplates[2].path).toEqual('/path/to/bar');
+        expect(parsedTemplates[3].path).toEqual(absolutePath);
+      });
 
-    test('should throw error with invalid templates config', () => {
-      expect(() => Config.ParseConfigTemplates('this should\'ve been an object'))
-        .toThrowError(
-          'Error while loading templates from Ant\'s config file. \
+      test('should throw error with invalid templates config', () => {
+        expect(() => Config.ParseConfigTemplates('this should\'ve been an object'))
+          .toThrowError(
+            'Error while loading templates from Ant\'s config file. \
 The "template" configuration should be an object!'
-        );
+          );
+      });
+
+      test('should throw error with invalid template category value', () => {
+        const templatesConfig = {
+          CustomCategory: 'this should\'ve been an object!'
+        };
+        expect(() => Config.ParseConfigTemplates(templatesConfig))
+          .toThrowError(
+            'Error while loading templates from Ant\'s config file: \
+Template category value is not an object!'
+          );
+      });
     });
 
-    test('should throw error with invalid template category value', () => {
-      const templatesConfig = {
-        CustomCategory: 'this should\'ve been an object!'
-      };
-      expect(() => Config.ParseConfigTemplates(templatesConfig))
-        .toThrowError(
-          'Error while loading templates from Ant\'s config file: \
-Template category value is not an object!'
+    describe('ParseConfigFunctions', () => {
+      test('should parse BinFunctions from config', () => {
+        const runtimeController = {
+          ant: new Ant()
+        };
+        const functions = {
+          MyBin: {
+            bin: '/my/bin'
+          },
+          Foo: {
+            bin: '/foo/bar'
+          }
+        };
+        const binFunctions = Config.ParseConfigFunctions(
+          functions, runtimeController
         );
+        expect(binFunctions.length).toBe(2);
+        let func = binFunctions[0];
+        expect(func).toBeInstanceOf(BinFunction);
+        expect(func.name).toBe('MyBin');
+        expect(func.bin).toBe(functions.MyBin.bin);
+
+        func = binFunctions[1];
+        expect(func).toBeInstanceOf(BinFunction);
+        expect(func.name).toBe('Foo');
+        expect(func.bin).toBe(functions.Foo.bin);
+      });
+
+      test('should parse LibFunctions from config', () => {
+        const ant = new Ant();
+        const functions = {
+          MyLib: {
+            handler: '/my/lib',
+            runtime: 'nodejs'
+          },
+          Foo: {
+            handler: '/foo/bar',
+            runtime: 'python'
+          }
+        };
+        const runtimeController = {
+          getRuntime: jest.fn().mockImplementation(
+            runtime => new Runtime(ant, runtime, 'foo')
+          ),
+          ant: new Ant()
+        };
+        const libFunctions = Config.ParseConfigFunctions(
+          functions, runtimeController
+        );
+        expect(libFunctions.length).toBe(2);
+        let func = libFunctions[0];
+        expect(func).toBeInstanceOf(LibFunction);
+        expect(func.name).toBe('MyLib');
+        expect(func.handler).toBe(functions.MyLib.handler);
+
+        func = libFunctions[1];
+        expect(func).toBeInstanceOf(LibFunction);
+        expect(func.name).toBe('Foo');
+        expect(func.handler).toBe(functions.Foo.handler);
+
+        expect(runtimeController.getRuntime.mock.calls.length).toBe(2);
+        expect(runtimeController.getRuntime.mock.calls[0][0]).toBe(functions.MyLib.runtime);
+        expect(runtimeController.getRuntime.mock.calls[1][0]).toBe(functions.Foo.runtime);
+      });
+
+      test('should fail to parse unknown AntFunction type from config', () => {
+        const funcConfig = {
+          name: 'MyBin',
+          foo: 'bar'
+        };
+        try {
+          Config.ParseConfigFunctions(
+            [ funcConfig ]
+          );
+        } catch (e) {
+          expect(e).toBeInstanceOf(AntError);
+          expect(e.message).toContain('Could not parse AntFunction from configuration file');
+        }
+      });
+
+      test('should fail to parse LibFunction with unknown runtime', () => {
+        const runtimeController = {
+          getRuntime: jest.fn().mockImplementation(() => null)
+        };
+        const funcConfig = {
+          name: 'MyLib',
+          handler: '/my/handler',
+          runtime: 'unknown_runtime'
+        };
+        try {
+          Config.ParseConfigFunctions(
+            [ funcConfig ], runtimeController
+          );
+        } catch (e) {
+          expect(e).toBeInstanceOf(AntError);
+          expect(e.message).toContain('Could not parse AntFunction from configuration file');
+        }
+      });
     });
   });
 });
