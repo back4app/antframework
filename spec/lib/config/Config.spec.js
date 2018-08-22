@@ -779,5 +779,33 @@ Template category value is not an object!'
         }
       });
     });
+
+    describe('ParseConfigRuntimes', () => {
+      test('should parse runtimes from config', () => {
+        const runtimes = {
+          Runtime: {
+            bin: '/my/runtime',
+            extensions: ['py']
+          },
+          Node: {
+            bin: '/node',
+            extensions: ['js']
+          },
+        };
+        const ant = new Ant();
+        const results = Config.ParseConfigRuntimes(runtimes, ant);
+        expect(results.length).toBe(2);
+
+        expect(results[0]).toBeInstanceOf(Runtime);
+        expect(results[0].name).toBe('Runtime');
+        expect(results[0].bin).toBe(runtimes.Runtime.bin);
+        expect(results[0].extensions).toBe(runtimes.Runtime.extensions);
+
+        expect(results[1]).toBeInstanceOf(Runtime);
+        expect(results[1].name).toBe('Node');
+        expect(results[1].bin).toBe(runtimes.Node.bin);
+        expect(results[1].extensions).toBe(runtimes.Node.extensions);
+      });
+    });
   });
 });
