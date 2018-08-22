@@ -165,17 +165,15 @@ Template category value is not an object!'
 
     test('should load functions from config', () => {
       const ant = new Ant({
-        functions: [
-          {
-            name: 'Bin',
+        functions: {
+          Bin: {
             bin: '/path/to/bin'
           },
-          {
-            name: 'Lib',
+          Lib: {
             handler: '/path/to/handler',
             runtime: 'Default'
           }
-        ]
+        }
       });
       expect(ant.functionController.getFunction('Bin').bin).toBe('/path/to/bin');
       expect(ant.functionController.getFunction('Lib').handler).toBe('/path/to/handler');

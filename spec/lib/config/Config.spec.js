@@ -510,10 +510,11 @@ configuration. template remove command should do nothing');
       const config = new Config({});
       config.addFunction(new BinFunction(ant, 'BinFunc', '/my/bin'));
       let { functions } = config.config;
-      expect(functions).toEqual([{
-        name: 'BinFunc',
-        bin: '/my/bin'
-      }]);
+      expect(functions).toEqual({
+        BinFunc: {
+          bin: '/my/bin'
+        }
+      });
 
       config.addFunction(
         new LibFunction(ant, 'LibFunc', '/myhandler',
@@ -521,35 +522,37 @@ configuration. template remove command should do nothing');
         )
       );
       functions = config.config.functions;
-      expect(functions).toEqual([
-        {
-          name: 'BinFunc',
+      expect(functions).toEqual({
+        BinFunc: {
           bin: '/my/bin'
         },
-        {
-          name: 'LibFunc',
+        LibFunc: {
           handler: '/myhandler',
           runtime: 'MyRuntime'
         }
-      ]);
+      });
     });
 
-    test('should do nothing if function already exists', () => {
+    test('should override if function already exists', () => {
       const ant = new Ant();
       console.log = jest.fn();
-      const config = new Config({ functions: [{
-        name: 'BinFunc',
-        bin: '/my/bin'
-      }]});
-      config.addFunction(new BinFunction(ant, 'BinFunc', '/my/bin'));
+      const config = new Config({
+        functions: {
+          BinFunc: {
+            bin: '/my/bin'
+          }
+        }
+      });
+      config.addFunction(new BinFunction(ant, 'BinFunc', '/alternative/bin'));
       const { functions } = config.config;
-      expect(functions).toEqual([{
-        name: 'BinFunc',
-        bin: '/my/bin'
-      }]);
-      expect(console.log.mock.calls.length).toBe(1);
+      expect(functions).toEqual({
+        BinFunc: {
+          bin: '/alternative/bin'
+        }
+      });
+      expect(console.log.mock.calls.length).toBe(2);
       expect(console.log.mock.calls[0][0]).toBe('Function "BinFunc" already \
-found on current config. function add command should do nothing');
+found on the configuration file. function add command will OVERRIDE the current function');
     });
 
     test('should throw error if function is an unsupported type', () => {
@@ -572,11 +575,12 @@ found on current config. function add command should do nothing');
       ));
       config.removeFunction('BinFunc');
       const { functions } = config.config;
-      expect(functions).toEqual([{
-        name: 'LibFunc',
-        handler: '/myhandler',
-        runtime: 'MyRuntime'
-      }]);
+      expect(functions).toEqual({
+        LibFunc: {
+          handler: '/myhandler',
+          runtime: 'MyRuntime'
+        }
+      });
     });
 
     test('should do nothing if there is no functions installed', () => {
@@ -592,10 +596,11 @@ found on current config. function add command should do nothing');
       config.addFunction(new BinFunction(ant, 'BinFunc', '/my/bin'));
       config.removeFunction('LibFunc');
       const { functions } = config.config;
-      expect(functions).toEqual([{
-        name: 'BinFunc',
-        bin: '/my/bin'
-      }]);
+      expect(functions).toEqual({
+        BinFunc: {
+          bin: '/my/bin'
+        }
+      });
     });
   });
 
@@ -680,40 +685,40 @@ Template category value is not an object!'
         const runtimeController = {
           ant: new Ant()
         };
-        const binConfig = {
-          name: 'MyBin',
-          bin: '/my/bin'
-        };
-        const binConfig2 = {
-          name: 'Foo',
-          bin: '/foo/bar'
+        const functions = {
+          MyBin: {
+            bin: '/my/bin'
+          },
+          Foo: {
+            bin: '/foo/bar'
+          }
         };
         const binFunctions = Config.ParseConfigFunctions(
-          [ binConfig, binConfig2 ], runtimeController
+          functions, runtimeController
         );
         expect(binFunctions.length).toBe(2);
         let func = binFunctions[0];
         expect(func).toBeInstanceOf(BinFunction);
-        expect(func.name).toBe(binConfig.name);
-        expect(func.bin).toBe(binConfig.bin);
+        expect(func.name).toBe('MyBin');
+        expect(func.bin).toBe(functions.MyBin.bin);
 
         func = binFunctions[1];
         expect(func).toBeInstanceOf(BinFunction);
-        expect(func.name).toBe(binConfig2.name);
-        expect(func.bin).toBe(binConfig2.bin);
+        expect(func.name).toBe('Foo');
+        expect(func.bin).toBe(functions.Foo.bin);
       });
 
       test('should parse LibFunctions from config', () => {
         const ant = new Ant();
-        const libConfig = {
-          name: 'MyLib',
-          handler: '/my/lib',
-          runtime: 'nodejs'
-        };
-        const libConfig2 = {
-          name: 'Foo',
-          handler: '/foo/bar',
-          runtime: 'python'
+        const functions = {
+          MyLib: {
+            handler: '/my/lib',
+            runtime: 'nodejs'
+          },
+          Foo: {
+            handler: '/foo/bar',
+            runtime: 'python'
+          }
         };
         const runtimeController = {
           getRuntime: jest.fn().mockImplementation(
@@ -722,23 +727,22 @@ Template category value is not an object!'
           ant: new Ant()
         };
         const libFunctions = Config.ParseConfigFunctions(
-          [ libConfig, libConfig2 ],
-          runtimeController
+          functions, runtimeController
         );
         expect(libFunctions.length).toBe(2);
         let func = libFunctions[0];
         expect(func).toBeInstanceOf(LibFunction);
-        expect(func.name).toBe(libConfig.name);
-        expect(func.handler).toBe(libConfig.handler);
+        expect(func.name).toBe('MyLib');
+        expect(func.handler).toBe(functions.MyLib.handler);
 
         func = libFunctions[1];
         expect(func).toBeInstanceOf(LibFunction);
-        expect(func.name).toBe(libConfig2.name);
-        expect(func.handler).toBe(libConfig2.handler);
+        expect(func.name).toBe('Foo');
+        expect(func.handler).toBe(functions.Foo.handler);
 
         expect(runtimeController.getRuntime.mock.calls.length).toBe(2);
-        expect(runtimeController.getRuntime.mock.calls[0][0]).toBe(libConfig.runtime);
-        expect(runtimeController.getRuntime.mock.calls[1][0]).toBe(libConfig2.runtime);
+        expect(runtimeController.getRuntime.mock.calls[0][0]).toBe(functions.MyLib.runtime);
+        expect(runtimeController.getRuntime.mock.calls[1][0]).toBe(functions.Foo.runtime);
       });
 
       test('should fail to parse unknown AntFunction type from config', () => {
