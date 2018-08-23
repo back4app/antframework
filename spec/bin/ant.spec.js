@@ -1018,6 +1018,141 @@ ant.js --help plugin add`)
         antCli._yargs.parse('function exec error');
       });
     });
+
+    describe('runtime add command', () => {
+      test('should work', done => {
+        const originalExit = process.exit;
+        process.exit = jest.fn(code => {
+          process.exit = originalExit;
+          expect.hasAssertions();
+          expect(code).toBe(0);
+          done();
+        });
+
+        const antCli = new AntCli();
+        antCli
+          ._ant
+          .pluginController
+          .getPlugin('Core')
+          .addRuntime = jest.fn(async (name, bin, extensions, isGlobal) => {
+            expect(name).toBe('myruntime');
+            expect(bin).toBe('/path/to/myruntime');
+            expect(extensions).toEqual(['nodejs', 'python']);
+            expect(isGlobal).toBe(false);
+          });
+        antCli._yargs.parse('runtime add myruntime /path/to/myruntime nodejs python');
+      });
+
+      test('should work with global flag', done => {
+        const originalExit = process.exit;
+        process.exit = jest.fn(code => {
+          process.exit = originalExit;
+          expect.hasAssertions();
+          expect(code).toBe(0);
+          done();
+        });
+
+        const antCli = new AntCli();
+        antCli
+          ._ant
+          .pluginController
+          .getPlugin('Core')
+          .addRuntime = jest.fn(async (name, bin, extensions, isGlobal) => {
+            expect(name).toBe('myruntime');
+            expect(bin).toBe('/path/to/myruntime');
+            console.log(extensions);
+            expect(extensions).toEqual(['nodejs', 'python']);
+            expect(isGlobal).toBe(true);
+          });
+        antCli._yargs.parse('runtime add myruntime /path/to/myruntime nodejs python --global');
+      });
+
+      test('should handle any errors', done => {
+        const originalHandleErrorMessage = yargsHelper.handleErrorMessage;
+        yargsHelper.handleErrorMessage = jest.fn((message, e, command) => {
+          yargsHelper.handleErrorMessage = originalHandleErrorMessage;
+          expect(e).toBeInstanceOf(Error);
+          expect(message).toBe('Mocked error');
+          expect(command).toBe('runtime add');
+          done();
+        });
+
+        const antCli = new AntCli();
+        antCli
+          ._ant
+          .pluginController
+          .getPlugin('Core')
+          .addRuntime = jest.fn(async () => {
+            throw new Error('Mocked error');
+          });
+        antCli._yargs.parse('runtime add myruntime /path/to/myruntime nodejs python');
+      });
+    });
+
+    describe('runtime remove command', () => {
+      test('should work', done => {
+        const originalExit = process.exit;
+        process.exit = jest.fn(code => {
+          process.exit = originalExit;
+          expect.hasAssertions();
+          expect(code).toBe(0);
+          done();
+        });
+
+        const antCli = new AntCli();
+        antCli
+          ._ant
+          .pluginController
+          .getPlugin('Core')
+          .removeRuntime = jest.fn(async (name, isGlobal) => {
+            expect(name).toBe('myruntime');
+            expect(isGlobal).toBe(false);
+          });
+        antCli._yargs.parse('runtime remove myruntime');
+      });
+
+      test('should work with global flag', done => {
+        const originalExit = process.exit;
+        process.exit = jest.fn(code => {
+          process.exit = originalExit;
+          expect.hasAssertions();
+          expect(code).toBe(0);
+          done();
+        });
+
+        const antCli = new AntCli();
+        antCli
+          ._ant
+          .pluginController
+          .getPlugin('Core')
+          .removeRuntime = jest.fn(async (name, isGlobal) => {
+            expect(name).toBe('myruntime');
+            expect(isGlobal).toBe(true);
+          });
+        antCli._yargs.parse('runtime remove myruntime --global');
+      });
+
+      test('should handle any errors', done => {
+        const originalHandleErrorMessage = yargsHelper.handleErrorMessage;
+        yargsHelper.handleErrorMessage = jest.fn((message, e, command) => {
+          yargsHelper.handleErrorMessage = originalHandleErrorMessage;
+          expect(e).toBeInstanceOf(Error);
+          expect(message).toBe('Mocked error');
+          expect(command).toBe('runtime remove');
+          done();
+        });
+
+        const antCli = new AntCli();
+        antCli
+          ._ant
+          .pluginController
+          .getPlugin('Core')
+          .removeRuntime = jest.fn(async () => {
+            throw new Error('Mocked error');
+          });
+        antCli._yargs.parse('runtime remove myruntime');
+      });
+    });
   });
 
   describe('GraphQL plugin', () => {

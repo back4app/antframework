@@ -1040,4 +1040,184 @@ describe('lib/plugins/core/lib/Core.js', () => {
       });
     });
   });
+
+  describe('runtime command', () => {
+    beforeEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    test('should show friendly error when command was not passed', done => {
+      const handleErrorMessage = jest.spyOn(yargsHelper, 'handleErrorMessage');
+      process.argv = ['runtime'];
+      process.exit = jest.fn(code => {
+        expect(handleErrorMessage).toHaveBeenCalledWith(
+          'Runtime requires a command', null, 'runtime'
+        );
+        expect(code).toEqual(1);
+        done();
+      });
+      new Core(ant)._yargsFailed('Not enough non-option arguments');
+    });
+
+    test('should not show friendly error when unknown error is thrown', () => {
+      const handleErrorMessage = jest.spyOn(yargsHelper, 'handleErrorMessage');
+      process.argv = ['runtime'];
+      new Core(ant)._yargsFailed('Unknown error');
+      expect(handleErrorMessage).not.toHaveBeenCalled();
+    });
+
+    describe('runtime add command', () => {
+      test('should add runtime and save locally', async () => {
+        const name = 'runtime';
+        const bin = '/my/runtime';
+        const extensions = [ 'js' ];
+        const getLocalConfigPath = jest.spyOn(Config, 'GetLocalConfigPath');
+        const configMock = {
+          save: jest.fn()
+        };
+        jest.spyOn(Config.prototype, 'addRuntime')
+          .mockImplementation(runtime => {
+            expect(runtime.name).toBe(name);
+            expect(runtime.bin).toBe(bin);
+            expect(runtime.extensions).toBe(extensions);
+            return configMock;
+          });
+        const core = new Core(ant);
+        await core.addRuntime(name, bin, extensions);
+        expect(getLocalConfigPath).toHaveBeenCalled();
+        expect(configMock.save).toHaveBeenCalled();
+      });
+
+      test('should add runtime and save globally', async () => {
+        const name = 'runtime';
+        const bin = '/my/runtime';
+        const extensions = [ 'js' ];
+        const configMock = {
+          addRuntime: jest.fn(runtime => {
+            expect(runtime.name).toBe(name);
+            expect(runtime.bin).toBe(bin);
+            expect(runtime.extensions).toBe(extensions);
+            return configMock;
+          }),
+          save: jest.fn()
+        };
+        jest.spyOn(Core, '_getConfig').mockImplementation(() => configMock);
+        const core = new Core(ant);
+        await core.addRuntime(name, bin, extensions, true);
+        expect(Core._getConfig).toHaveBeenCalledWith(true);
+        expect(configMock.addRuntime).toHaveBeenCalled();
+        expect(configMock.save).toHaveBeenCalled();
+      });
+
+      test('should show friendly error when name was not passed', done => {
+        const handleErrorMessage = jest.spyOn(yargsHelper, 'handleErrorMessage');
+        process.argv = ['runtime', 'add'];
+        process.exit = jest.fn(code => {
+          expect(handleErrorMessage).toHaveBeenCalledWith(
+            'Runtime add command requires name and bin arguments', null, 'runtime add'
+          );
+          expect(code).toEqual(1);
+          done();
+        });
+        new Core(ant)._yargsFailed('Not enough non-option arguments');
+      });
+
+      test('should show friendly error when bin was not passed', done => {
+        const handleErrorMessage = jest.spyOn(yargsHelper, 'handleErrorMessage');
+        process.argv = ['runtime', 'add', 'myruntime'];
+        process.exit = jest.fn((code) => {
+          expect(handleErrorMessage).toHaveBeenCalledWith(
+            'Runtime add command requires name and bin arguments', null, 'runtime add'
+          );
+          expect(code).toEqual(1);
+          done();
+        });
+        new Core(ant)._yargsFailed('Not enough non-option arguments');
+      });
+
+      test('should not show friendly error when error is unknown', () => {
+        const handleErrorMessage = jest.spyOn(yargsHelper, 'handleErrorMessage');
+        process.argv = ['runtime', 'add'];
+        new Core(ant)._yargsFailed('Unknown error');
+        expect(handleErrorMessage).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('runtime remove command', () => {
+      test('should remove runtime and save locally', async () => {
+        const name = 'myRuntime';
+        const configMock = {
+          removeRuntime: jest.fn().mockImplementation(runtimeName => {
+            expect(runtimeName).toBe(name);
+            return configMock;
+          }),
+          save: jest.fn()
+        };
+        jest.spyOn(Core, '_getConfig').mockImplementation(() => configMock);
+        const core = new Core(ant);
+        await core.removeRuntime(name);
+        expect(Core._getConfig).toHaveBeenCalledWith(undefined);
+        expect(configMock.removeRuntime).toHaveBeenCalled();
+        expect(configMock.save).toHaveBeenCalled();
+      });
+
+      test('should remove runtime and save globally', async () => {
+        const name = 'myRuntime';
+        const configMock = {
+          removeRuntime: jest.fn().mockImplementation(runtimeName => {
+            expect(runtimeName).toBe(name);
+            return configMock;
+          }),
+          save: jest.fn()
+        };
+        jest.spyOn(Core, '_getConfig').mockImplementation(() => configMock);
+        const core = new Core(ant);
+        await core.removeRuntime(name, true);
+        expect(Core._getConfig).toHaveBeenCalledWith(true);
+        expect(configMock.removeRuntime).toHaveBeenCalled();
+        expect(configMock.save).toHaveBeenCalled();
+      });
+
+      test('should show friendly error when name was not passed', async done => {
+        const handleErrorMessage = jest.spyOn(yargsHelper, 'handleErrorMessage');
+        process.argv = ['runtime', 'remove'];
+        process.exit = jest.fn((code) => {
+          expect(handleErrorMessage).toHaveBeenCalledWith(
+            'Runtime remove command requires name argument', null, 'runtime remove'
+          );
+          expect(code).toEqual(1);
+          done();
+        });
+        new Core(ant)._yargsFailed('Not enough non-option arguments');
+      });
+
+      test('should not show friendly error when error is unknown', () => {
+        const handleErrorMessage = jest.spyOn(yargsHelper, 'handleErrorMessage');
+        process.argv = ['runtime', 'remove'];
+        new Core(ant)._yargsFailed('Unknown error');
+        expect(handleErrorMessage).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('runtime ls command', () => {
+      test('should print runtimes', async () => {
+        console.log = jest.fn();
+        const runtimes = [
+          new Runtime(ant, 'foo', '/path/to/foo', ['foo', 'js']),
+          new Runtime(ant, 'bar', '/path/to/bar', ['bar']),
+          new Runtime(ant, 'lorem', '/ipsum')
+        ];
+        ant.runtimeController._runtimes = new Map();
+        ant.runtimeController.loadRuntimes(runtimes);
+        const core = new Core(ant);
+        await core.listRuntimes();
+        expect(console.log.mock.calls.length).toBe(4);
+        expect(console.log.mock.calls[0][0]).toBe('Listing all runtimes available \
+(<name> <bin> [extensions]):');
+        expect(console.log.mock.calls[1][0]).toBe('foo /path/to/foo foo js');
+        expect(console.log.mock.calls[2][0]).toBe('bar /path/to/bar bar');
+        expect(console.log.mock.calls[3][0]).toBe('lorem /ipsum');
+      });
+    });
+  });
 });
