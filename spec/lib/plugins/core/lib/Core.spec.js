@@ -263,7 +263,7 @@ describe('lib/plugins/core/lib/Core.js', () => {
         );
         process.chdir(fooServicePath);
         const antCli = new AntCli();
-        antCli._ant.pluginController.getPlugin('Serverless')._deploy = () => {};
+        antCli._ant.pluginController.getPlugin('Serverless').deploy = () => {};
         (antCli)._yargs.parse(
           `deploy --config ${fooServicePath}/ant.yml`
         );

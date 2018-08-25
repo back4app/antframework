@@ -64,6 +64,12 @@ describe('lib/templates/Template.js', () => {
       try {
         fs.removeSync(outPath);
       } finally {
+        if (!fs.existsSync(path.resolve(__dirname, '../../support/templates/fooTemplate/bar/cfg/cfg.txt'))) {
+          fs.symlinkSync(
+            path.resolve(__dirname, '../../support/templates/fooTemplate/bar/bar.txt'),
+            path.resolve(__dirname, '../../support/templates/fooTemplate/bar/cfg/cfg.txt')
+          );
+        }
         const template = new Template(
           'FooCategory',
           'FooTemplate',
