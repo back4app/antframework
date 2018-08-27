@@ -14,6 +14,10 @@ const BinFunction = require('../../../lib/functions/BinFunction');
 const LibFunction = require('../../../lib/functions/LibFunction');
 const Runtime = require('../../../lib/functions/runtimes/Runtime');
 const { AssertionError } = require('assert');
+const Map = require('yaml/map').default;
+const Pair = require('yaml/pair').default;
+const Scalar = require('yaml/scalar').default;
+const Seq = require('yaml/seq').default;
 
 describe('lib/config/Config.js', () => {
   const originalCwd = process.cwd();
@@ -57,6 +61,123 @@ describe('lib/config/Config.js', () => {
     const filePath = path.resolve(outPath, 'ant.yml');
     const config = new Config(filePath);
     expect(config.path).toBe(filePath);
+  });
+
+  test('should ensure a root collection node', () => {
+    const config = new Config({});
+    const collectionNode = config._ensureRootCollectionNode('foo', Map);
+    expect(collectionNode).toBeInstanceOf(Map);
+    expect(collectionNode.items.length).toBe(0);
+    expect(config._config.contents.items.length).toBe(1);
+    expect(config._config.contents.items[0]).toBeInstanceOf(Pair);
+    expect(config._config.contents.items[0].key).toBeInstanceOf(Scalar);
+    expect(config._config.contents.items[0].key.value).toBe('foo');
+    expect(config._config.contents.items[0].value).toBe(collectionNode);
+  });
+
+  test('should not modify the root collection node if already exists', () => {
+    const config = new Config({});
+    config._config.contents.items.push(new Pair(
+      new Scalar('foo'),
+      new Map()
+    ));
+    const collectionNode = config._ensureRootCollectionNode('foo', Map);
+    expect(collectionNode).toBeInstanceOf(Map);
+    expect(collectionNode.items.length).toBe(0);
+    expect(config._config.contents.items.length).toBe(1);
+    expect(config._config.contents.items[0]).toBeInstanceOf(Pair);
+    expect(config._config.contents.items[0].key).toBeInstanceOf(Scalar);
+    expect(config._config.contents.items[0].key.value).toBe('foo');
+    expect(config._config.contents.items[0].value).toBe(collectionNode);
+  });
+
+  test('should remove an unexpected root node', () => {
+    const config = new Config({});
+    config._config.contents.items.push(new Pair(
+      new Scalar('foo'),
+      new Scalar('this/should/be/a/collection')
+    ));
+    const collectionNode = config._ensureRootCollectionNode('foo', Map);
+    expect(collectionNode).toBeInstanceOf(Map);
+    expect(collectionNode.items.length).toBe(0);
+    expect(config._config.contents.items.length).toBe(1);
+    expect(config._config.contents.items[0]).toBeInstanceOf(Pair);
+    expect(config._config.contents.items[0].key).toBeInstanceOf(Scalar);
+    expect(config._config.contents.items[0].key.value).toBe('foo');
+    expect(config._config.contents.items[0].value).toBe(collectionNode);
+  });
+
+  test('should find a root collection node by key', () => {
+    const config = new Config({});
+    const fooNode = new Pair(
+      new Scalar('foo'),
+      new Seq()
+    );
+    const barNode = new Pair(
+      new Scalar('bar'),
+      new Map()
+    );
+    const loremNode = new Pair(
+      new Scalar('lorem'),
+      new Pair()
+    );
+    config._config.contents.items.push(fooNode);
+    config._config.contents.items.push(barNode);
+    config._config.contents.items.push(loremNode);
+    expect(config._findRootCollectionNode('foo', Seq)).toBe(fooNode.value);
+    expect(config._findRootCollectionNode('bar', Map)).toBe(barNode.value);
+    expect(config._findRootCollectionNode('lorem', Map)).toBe(null);
+  });
+
+  test('should filter yaml document node by key', () => {
+    const config = new Config({});
+    const fooNode = new Pair(
+      new Scalar('foo'),
+      new Scalar('/my/foo')
+    );
+    const barNode = new Pair(
+      new Scalar('bar'),
+      new Scalar('/my/bar')
+    );
+    const loremNode = new Pair(
+      new Scalar('lorem'),
+      new Scalar('/lorem/ipsum')
+    );
+    const map = new Map();
+    map.items.push(fooNode);
+    map.items.push(barNode);
+    map.items.push(loremNode);
+    const filtered = config._filterNodeFromCollectionByKey(map, 'bar');
+    expect(filtered).toBe(true);
+    expect(map.items.length).toBe(2);
+    expect(map.items.includes(fooNode));
+    expect(map.items.includes(loremNode));
+  });
+
+  test('should create attributes Map', () => {
+    const config = new Config({});
+    const map = config._createAttributeMap({
+      foo: 'a',
+      bar: 'b',
+      abc: 1,
+      err: undefined // should be ignored
+    });
+    expect(map).toBeInstanceOf(Map);
+    expect(map.items.length).toBe(3);
+    expect(map.items[0].key).toBeInstanceOf(Scalar);
+    expect(map.items[0].key.value).toBe('foo');
+    expect(map.items[0].value).toBeInstanceOf(Scalar);
+    expect(map.items[0].value.value).toBe('a');
+
+    expect(map.items[1].key).toBeInstanceOf(Scalar);
+    expect(map.items[1].key.value).toBe('bar');
+    expect(map.items[1].value).toBeInstanceOf(Scalar);
+    expect(map.items[1].value.value).toBe('b');
+
+    expect(map.items[2].key).toBeInstanceOf(Scalar);
+    expect(map.items[2].key.value).toBe('abc');
+    expect(map.items[2].value).toBeInstanceOf(Scalar);
+    expect(map.items[2].value.value).toBe(1);
   });
 
   test('should return config JSON representation', () => {
@@ -601,6 +722,69 @@ found on the configuration file. function add command will OVERRIDE the current 
           bin: '/my/bin'
         }
       });
+    });
+  });
+
+  describe('add runtime', () => {
+    test('should add a runtime', () => {
+      const ant = new Ant();
+      const config = new Config({});
+      const runtime = new Runtime(ant, 'runtime', '/my/bin', [ 'js' ]);
+      expect(config.addRuntime(runtime)).toBe(config);
+      expect(config.config.runtimes).toEqual({
+        runtime: {
+          bin: '/my/bin',
+          extensions: ['js']
+        }
+      }
+      );
+    });
+
+    test('should override a runtime', () => {
+      console.log = jest.fn();
+      const ant = new Ant();
+      const config = new Config({});
+      const runtime = new Runtime(ant, 'runtime', '/my/bin', [ 'js' ]);
+      config.addRuntime(runtime);
+      config.addRuntime(new Runtime(ant, 'runtime', '/alternative/bin', [ 'py' ]));
+      expect(console.log).toHaveBeenCalledWith('Runtime "runtime" already \
+found on the configuration file. runtime add command will OVERRIDE the current runtime');
+      expect(config.config.runtimes).toEqual({
+        runtime: {
+          bin: '/alternative/bin',
+          extensions: [ 'py' ]
+        }
+      });
+    });
+  });
+
+  describe('remove runtime', () => {
+    test('should remove a runtime', () => {
+      const ant = new Ant();
+      const config = new Config({});
+      const runtime = new Runtime(ant, 'runtime', '/my/bin', [ 'js' ]);
+      config.addRuntime(runtime);
+      config.removeRuntime('runtime');
+      expect(config.config.runtimes).toEqual({});
+    });
+
+    test('should do nothing because "runtimes" does not exists', () => {
+      console.log = jest.fn();
+      const config = new Config({});
+      config.removeRuntime('runtime');
+      expect(console.log).toHaveBeenCalledWith('No "runtimes" was found \
+on configuration file. runtime remove command should do nothing');
+    });
+
+    test('should do nothing because runtime was not found', () => {
+      console.log = jest.fn();
+      const ant = new Ant();
+      const config = new Config({});
+      const runtime = new Runtime(ant, 'runtime', '/my/bin', [ 'js' ]);
+      config.addRuntime(runtime);
+      config.removeRuntime('foo');
+      expect(console.log).toHaveBeenCalledWith('Runtime "foo" was not \
+found on configuration file. runtime remove command should do nothing');
     });
   });
 
