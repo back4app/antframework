@@ -1153,6 +1153,48 @@ ant.js --help plugin add`)
         antCli._yargs.parse('runtime remove myruntime');
       });
     });
+
+    describe('runtime ls command', () => {
+      test('runtime ls should invoke Core listRuntime function', done => {
+        const listRuntimesMock = jest.fn();
+        const originalExit = process.exit;
+        process.exit = jest.fn(code => {
+          process.exit = originalExit;
+          expect(listRuntimesMock).toHaveBeenCalledWith();
+          expect(code).toBe(0);
+          done();
+        });
+
+        const antCli = new AntCli();
+        antCli
+          ._ant
+          .pluginController
+          .getPlugin('Core')
+          .listRuntimes = listRuntimesMock;
+        antCli._yargs.parse('runtime ls');
+      });
+
+      test('should handle any runtime ls errors', done => {
+        const originalHandleErrorMessage = yargsHelper.handleErrorMessage;
+        yargsHelper.handleErrorMessage = jest.fn((message, e, command) => {
+          yargsHelper.handleErrorMessage = originalHandleErrorMessage;
+          expect(e).toBeInstanceOf(Error);
+          expect(message).toBe('Mocked error');
+          expect(command).toBe('runtime ls');
+          done();
+        });
+
+        const antCli = new AntCli();
+        antCli
+          ._ant
+          .pluginController
+          .getPlugin('Core')
+          .listRuntimes = jest.fn(async () => {
+            throw new Error('Mocked error');
+          });
+        antCli._yargs.parse('runtime ls');
+      });
+    });
   });
 
   describe('GraphQL plugin', () => {
