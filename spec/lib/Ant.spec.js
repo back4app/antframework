@@ -481,4 +481,49 @@ Template category value is not an object!'
       );
     });
   });
+
+  describe('Ant.addRuntime', () => {
+    test('should be async and call Core addRuntime method', async () => {
+      const params = ['myRuntime', '/my/runtime/path', ['nodejs', 'python'], true];
+      await _assertCoreAsyncCall('addRuntime', params, params);
+    });
+  });
+
+  describe('Ant.removeRuntime', () => {
+    test('should be async and call Core removeRuntime method', async () => {
+      const params = ['myRuntime', true ];
+      await _assertCoreAsyncCall('removeRuntime', params, params);
+    });
+  });
+
+  describe('Ant.listRuntimes', () => {
+    test('should be async and call Core listRuntimes method', async () => {
+      await _assertCoreAsyncCall('listRuntimes');
+    });
+  });
 });
+
+/**
+ * Asserts a Core function call though an Ant function.
+ * Invokes the Ant function given an array of parameters, and asserts the parameters
+ * used to invoke the internal Core function.
+ *
+ * @param {!String} coreFunction The Core function to be invoked
+ * @param {Array} params The parameters to be provided to Ant
+ * @param {Array} expectedCoreFunctionParams The parameters expected to reach the Core function
+ */
+const _assertCoreAsyncCall = async (coreFunction, params = [], expectedCoreFunctionParams = []) => {
+  const ant = new Ant();
+
+  // Mocks the Core function
+  const core = ant.pluginController.getPlugin('Core');
+  core[coreFunction] = jest.fn();
+
+  // Invokes the Ant function with "params"
+  const antFunctionReturn = ant[coreFunction](...params);
+  expect(antFunctionReturn).toBeInstanceOf(Promise);
+  await antFunctionReturn;
+
+  // Asserts Core function parameters with "expectedCoreFunctionParams"
+  expect(core[coreFunction]).toHaveBeenCalledWith(...expectedCoreFunctionParams);
+};
