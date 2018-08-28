@@ -171,8 +171,7 @@ Template category value is not an object!'
             bin: '/path/to/bin'
           },
           Lib: {
-            handler: '/path/to/handler',
-            runtime: 'Default'
+            handler: '/path/to/handler'
           }
         }
       });
@@ -212,6 +211,55 @@ Template category value is not an object!'
       expect(libRuntime.bin).toBe(runtimes.Lib.bin);
       expect(libRuntime.extensions).toBe(runtimes.Lib.extensions);
     });
+
+    test('should load defaultRuntime from config', () => {
+      const runtimes = {
+        Bin: {
+          bin: '/path/to/bin',
+          extensions: ['js', 'py']
+        },
+        Lib: {
+          bin: '/path/to/lib',
+          extensions: ['cpp', 'c', 'h']
+        }
+      };
+      const defaultRuntime = 'Bin';
+      const ant = new Ant({ runtimes, defaultRuntime });
+      const fooRuntime = ant.runtimeController.defaultRuntime;
+      expect(fooRuntime).toBeInstanceOf(Runtime);
+      expect(fooRuntime.name).toBe('Bin');
+      expect(fooRuntime.bin).toBe(runtimes.Bin.bin);
+      expect(fooRuntime.extensions).toBe(runtimes.Bin.extensions);
+    });
+
+    test('should load defaultRuntime from global config', () => {
+      const runtimes = {
+        Bin: {
+          bin: '/path/to/bin',
+          extensions: ['js', 'py']
+        },
+        Lib: {
+          bin: '/path/to/lib',
+          extensions: ['cpp', 'c', 'h']
+        }
+      };
+      const defaultRuntimeName = 'Bin';
+      jest.spyOn(Ant.prototype, '_getGlobalConfig').mockImplementation(() => {
+        return {
+          runtimes,
+          defaultRuntime: defaultRuntimeName
+        };
+      });
+      try {
+        const ant = new Ant();
+        const defaultRuntime = ant.runtimeController.defaultRuntime;
+        expect(defaultRuntime.name).toBe('Bin');
+        expect(defaultRuntime.bin).toBe('/path/to/bin');
+        expect(defaultRuntime.extensions).toEqual([ 'js', 'py' ]);
+      } finally {
+        jest.restoreAllMocks();
+      }
+    });
   });
 
   describe('Ant.runtime', () => {
@@ -219,11 +267,11 @@ Template category value is not an object!'
       const ant = new Ant();
       expect(ant.runtime).toBeInstanceOf(Runtime);
       expect(ant.runtime.name)
-        .toEqual('Default');
+        .toEqual('Node');
       ant.runtime = null;
       expect(ant.runtime).toBeInstanceOf(Runtime);
       expect(ant.runtime.name)
-        .toEqual('Default');
+        .toEqual('Node');
     });
   });
 
