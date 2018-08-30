@@ -1,20 +1,64 @@
 # Ant Framework
-Microservices made simple
+Ant is an open-source and unopinionated framework to make microservices development easy.
 
-## Getting Started
-Clone this package from the [github repository](https://github.com/back4app/antframework) and install:
+## Quickstart
+### 1. Install the Ant CLI via npm
 ```sh
-$ git clone https://github.com/back4app/antframework.git
-$ cd antframework
-$ npm install
-```
-or install it via NPM:
-```sh
-$ npm install @back4app/antframework -g
+npm install -g https://ant.back4app.com/antframework-1.0.0.tar.gz
 ```
 
+### 2. Create a new microservice
+```sh
+ant create MyService
+```
+Ant Framework will use the default template to create a brand new GraphQL service. Use --template option to select from many different templates and create other kind of services such as RESTful or SOAP. [Learn more](#using-different-templates)
+
+### 3. Start the microservice in your localhost
+```sh
+cd MyService
+ant start
+```
+
+### 4. Play with your brand new GraphQL API
+![GraphiQL](https://ant.back4app.com/ant-sequence-01.gif)
+
+Learn more about GraphQL at [GraphQL official web-site](https://graphql.org/).
+
+The default template brings to you an example query called "hello". By customizing the GraphQL model and creating Ant Functions, you can develop your own GraphQL queries, mutations and subscriptions. [Learn more](#your-first-ant-function)
+
+### 5. Deploy to AWS Lambda via Serverless
+```sh
+aws configure
+ant deploy
+```
+Learn more about how to setup the AWS CLI at [AWS official guide](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html).
+
+Ant Framework will use the default template to deploy the new service to your own AWS account Lambda via Serverless framework. Other templates can be used for choosing from many different providers and deploying to a wide range of scenarios of public and private clouds. [Learn more](#deploying-your-microservice)
+
+## Your first Ant Function
+Edit the `model.graphql` file and use the following code:
+```
+schema {
+  query: Query
+}
+
+type Query {
+  hello(name: String = "World"): String @resolve(to: "queryHello")
+}
+```
+
+Create a file called queryHello.js and use the following code:
+```
+module.exports = ({ name }) => `Hello ${name} from function!!!`;
+```
+
+It's done! Run and play with your brand new GraphQL API!
+
+You can create any kind of query, mutation or subscription. You can use different runtimes to write code using your preferred programming language such as Node.js, Python, Java or C#. Learn more about [customizing your GraphQL model](#customizing-your-graphql-model) and [creating Ant Functions](#creating-ant-functions).
+
+## Overview
 ### Using the CLI tools
-After installed, you can use the framework core functionalities by running `ant` if you've installed globally, or `bin/ant.js`. To find out all core commands available, type `ant --help`.
+After installed, you can use the framework core functionalities by running the `ant` command. To find out all core commands available, type `ant --help`.
 
 ### Creating a new microservice
 In order to create a new microservice, we can use the following command:
@@ -23,13 +67,58 @@ ant create <service> [(--template|-t) (<template_name>|<template_path>)]
 ```
 It creates a new microservice based on the template provided, otherwise it will use the template located at the `lib/plugins/core/templates/services/default` directory by default. The default service template will include a GraphQL model and a plugin that allows you to start a GraphiQL server and test your service's endpoints.
 ```sh
-$ ant create MyService # will create a MyService directory at the current working directory
-$ cd MyService
-$ ant start # will run the GraphiQL server
+ant create MyService # will create a MyService directory at the current working directory
+cd MyService
+ant start # will run the GraphiQL server
 ```
 
 ##### Customizing your GraphQL model
 Within your microservice directory will be the file `model.graphql`, which is be responsable for defining the model of your GraphQL server (it includes a query for testing purposes). There you can befine own your GraphQL schemas to be parsed by the GraphQL API.
+
+###### Using directives
+WIP
+
+1. @mock
+WIP
+
+2. @resolve
+WIP
+
+3. @sql
+WIP
+
+4. @mongo
+WIP
+
+5. @graphql
+WIP
+
+6. @parse
+WIP
+
+7. others
+WIP
+
+##### Creating Ant Functions
+WIP
+
+###### Using different runtimes
+WIP
+
+1. Node
+WIP
+
+2. Python
+WIP
+
+3. Java
+WIP
+
+4. C#
+WIP
+
+5. Others
+WIP
 
 ##### Customizing your GraphQL server
 You can fully customize your GraphQL server by changing the graphQL plugin configuration in your microservice configuration file under the key `server`. By default, the server initialized by the Ant framework is located at `lib/plugins/graphQL/templates/default/bin/server.js`, at port `3000`. To change the default model file (`model.graphql`), you will need to change the `model` parameter.
@@ -46,6 +135,18 @@ You can fully customize your GraphQL server by changing the graphQL plugin confi
   #   port: 3000
 ```
 
+##### Using different templates
+WIP
+
+### Deploying your microservice
+WIP
+
+#### Working with Serverless framework
+WIP
+
+### Plugins
+WIP
+
 ### Ant configuration files
 There are two types of configuration file, the **Local** and the **Global**. The **Global** configuration file is located at `lib/globalConfig.yml`, and always will be used when your Ant instance is running. The **Local** configuration file is located at the current working directory, and will be created when any configuration file operation is done, such as adding new plugins or templates. The commands below can be used to make it easier to manipulate the configuration files:
 - `ant plugin add <plugin> [-g|--global]`: Adds a plugin into a configuration file. Can use the option -g to install into the global configuration file.
@@ -58,5 +159,29 @@ Ant framework uses the YAML format on its configuration files. For more, check t
 [Official YAML page](http://yaml.org/)
 [YAML Live Demo](http://nodeca.github.io/js-yaml/)
 
-### License
+## Extending the Ant Framework
+WIP
+
+### Creating your own templates
+WIP
+
+### Creating your own directives
+WIP
+
+### Creating new runtimes
+WIP
+
+### Customizing providers
+WIP
+
+### Packaging new plugins
+WIP
+
+#### Customizing the CLI
+WIP
+
+## Contributing
+WIP
+
+## License
 The Ant framework is licensed under the [MIT](https://opensource.org/licenses/MIT) license.
