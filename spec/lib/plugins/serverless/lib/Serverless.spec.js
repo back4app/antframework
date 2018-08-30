@@ -123,7 +123,7 @@ describe('lib/plugins/serverless/lib/Serverless.js', () => {
                 'libFunction.js',
                 'package-lock.json',
                 'package.json',
-                'Serverless.yml',
+                'serverless.yml',
                 'node_modules',
                 'fooLibFunction.zip'
               ]));
@@ -237,7 +237,7 @@ describe('lib/plugins/serverless/lib/Serverless.js', () => {
           'libFunction.js',
           'package-lock.json',
           'package.json',
-          'Serverless.yml',
+          'serverless.yml',
           'node_modules',
           'fooLibFunction.zip'
         ]));
