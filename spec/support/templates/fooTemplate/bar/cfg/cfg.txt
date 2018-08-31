@@ -1,1 +1,0 @@
-/Users/davimacedo/Projects/back4app/antframework/spec/support/templates/fooTemplate/bar/bar.txt
