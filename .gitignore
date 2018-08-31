@@ -10,5 +10,8 @@ coverage
 # tests output
 spec/support/out
 
+# some test support files
+spec/support/templates/fooTemplate/bar/cfg/cfg.txt
+
 # logs
 *.log
