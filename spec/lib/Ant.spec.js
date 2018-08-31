@@ -214,6 +214,23 @@ Template category value is not an object!'
     });
   });
 
+  describe('Ant.service', () => {
+    test('should be readonly', () => {
+      let ant = new Ant({ service: 'FooService' });
+      expect(ant.service).toEqual('FooService');
+      ant.service = 'AnotherService';
+      expect(ant.service).toEqual('FooService');
+      ant = new Ant();
+      expect(ant.service).toEqual(null);
+      ant.service = 'FooService';
+      expect(ant.service).toEqual(null);
+      ant = new Ant({});
+      expect(ant.service).toEqual(null);
+      ant.service = 'FooService';
+      expect(ant.service).toEqual(null);
+    });
+  });
+
   describe('Ant.runtime', () => {
     test('should be readonly', () => {
       const ant = new Ant();

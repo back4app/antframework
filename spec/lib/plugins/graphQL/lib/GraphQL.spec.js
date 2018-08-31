@@ -444,4 +444,19 @@ http://localhost:3000\n'
       expect(directiveController).toEqual(graphQL.directiveController);
     });
   });
+
+  describe(GraphQL.getModel, () => {
+    const graphQL = new GraphQL(
+      ant,
+      {
+        basePath: path.resolve(
+          __dirname,
+          '../../../../support/services/FooService')
+      }
+    );
+    it('should returns the model in the base path', () => {
+      expect(graphQL.getModel()).toEqual(expect.stringContaining('schema'));
+      expect(graphQL.getModel()).toEqual(expect.stringContaining('helloQuery'));
+    });
+  });
 });

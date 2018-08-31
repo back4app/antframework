@@ -6,6 +6,10 @@ service: {{service}}
 hosts:
   Default:
     provider: Serverless
+    # config:
+    #   template: Default
+    #   profile: default
+    #   keepConfig: false
 plugins: # Plugins should be listed below
   # This plugin enables the Ant Framework for building and starting GraphQL API services
   - $GLOBAL/plugins/graphQL:

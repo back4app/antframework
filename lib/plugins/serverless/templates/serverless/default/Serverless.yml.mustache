@@ -1,0 +1,65 @@
+{{#ant.service}}
+service:
+  name: {{{ant.service}}}
+{{/ant.service}}
+
+provider:
+  name: aws
+  {{#config.profile}}
+  profile: {{{config.profile}}}
+  {{/config.profile}}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - lambda:InvokeFunction
+      Resource: "*"
+
+package:
+  individually: true
+
+functions:
+  graphQL:
+    handler: graphQL.run
+    runtime: nodejs8.10
+    package:
+      individually: true
+      exclude:
+        - ./**
+      include:
+        - node_modules/**
+        - ant.yml
+        - model.graphql
+        - graphQL.js
+    events:
+      - http:
+          path: graphql
+          method: get
+      - http:
+          path: graphql
+          method: post
+  graphiQL:
+    handler: graphiQL.run
+    runtime: nodejs8.10
+    package:
+      individually: true
+      exclude:
+        - ./**
+      include:
+        - node_modules/**
+        - graphiQL.js
+    events:
+      - http:
+          path: graphiql
+          method: get
+{{#functions.length}}
+{{#functions}}
+  {{{name}}}:
+    handler: libFunction.run
+    runtime: nodejs8.10
+    environment:
+      LIB: ./{{{handlerFileName}}}
+    package:
+      individually: true
+      artifact: {{{name}}}.zip
+{{/functions}}
+{{/functions.length}}
