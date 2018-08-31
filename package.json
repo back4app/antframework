@@ -22,6 +22,7 @@
   ],
   "main": "index.js",
   "scripts": {
+    "install": "cd ./lib/plugins/graphQL/templates/server/default && npm install && cd ../../../../serverless && npm install && cd ./templates/serverless/default && npm install && cd ../../../../../../",
     "lint": "eslint ./",
     "pretest": "npm run lint",
     "test": "jest",
