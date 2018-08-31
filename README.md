@@ -47,9 +47,14 @@ type Query {
 }
 ```
 
-Create a file called queryHello.js and use the following code:
+Create a file called `queryHello.js` and use the following code:
 ```
 module.exports = ({ name }) => `Hello ${name} from function!!!`;
+```
+
+Run the following command:
+```sh
+ant function add queryHello ./queryHello.js Default
 ```
 
 It's done! Run and play with your brand new GraphQL API!
