@@ -205,8 +205,8 @@ describe('lib/plugins/graphQL/lib/GraphQL.js', () => {
     const graphQL = new GraphQL(ant);
     console.log = jest.fn((msg) => {
       expect(msg).toEqual(
-        'Server => GraphQL API server listening for requests on \
-http://localhost:3000\n'
+        expect.stringContaining('GraphQL API server listening \
+for requests on http://localhost:3000')
       );
     });
     childProcess.exec = jest.fn((command) => {
@@ -242,8 +242,8 @@ http://localhost:3000\n'
     const graphQL = new GraphQL(ant);
     console.log = jest.fn((msg) => {
       expect(msg).toEqual(
-        'Server => GraphQL API server listening for requests on \
-http://localhost:3000\n'
+        expect.stringContaining('Server => GraphQL API server \
+listening for requests on http://localhost:3000\n')
       );
     });
     childProcess.exec = jest.fn((command) => {
@@ -280,8 +280,8 @@ http://localhost:3000\n'
     const graphQL = new GraphQL(ant);
     console.log = jest.fn((msg) => {
       expect(msg).toEqual(
-        'Server => GraphQL API server listening for requests on \
-http://localhost:3000\n'
+        expect.stringContaining('Server => GraphQL API server \
+listening for requests on http://localhost:3000\n')
       );
     });
     childProcess.exec = jest.fn((command) => {
@@ -320,11 +320,13 @@ http://localhost:3000\n'
     test('should be readonly and return the default directives', () => {
       const graphQL = new GraphQL(ant);
       expect(graphQL.directives).toEqual(expect.any(Array));
-      expect(graphQL.directives).toHaveLength(2);
+      expect(graphQL.directives).toHaveLength(3);
       expect(graphQL.directives[0]).toEqual(expect.any(Directive));
       expect(graphQL.directives[0].name).toEqual('mock');
       expect(graphQL.directives[1]).toEqual(expect.any(Directive));
       expect(graphQL.directives[1].name).toEqual('resolve');
+      expect(graphQL.directives[2]).toEqual(expect.any(Directive));
+      expect(graphQL.directives[2].name).toEqual('subscribe');
     });
   });
 
