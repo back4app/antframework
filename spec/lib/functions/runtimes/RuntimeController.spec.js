@@ -40,7 +40,7 @@ describe('lib/functions/runtimes/RuntimeController.js', () => {
       .toEqual(expect.any(Array));
     expect(
       antWithRuntimes.runtimeController.runtimes[0].name
-    ).toEqual('Default');
+    ).toEqual('Node');
     expect(
       antWithRuntimes.runtimeController.runtimes[1]
     ).toEqual(runtime1);

@@ -991,5 +991,38 @@ Template category value is not an object!'
         expect(results[1].extensions).toBe(runtimes.Node.extensions);
       });
     });
+
+    describe('ParseConfigDefaultRuntime', () => {
+      test('should parse default runtime from config', () => {
+        const myDefaultRuntime = 'myDefaultRuntime';
+        const runtimeStub = new Runtime(new Ant(), 'runtimeStub', '/my/runtime/stub', ['foo', 'bar']);
+        const getRuntimeMock = jest.fn(name => {
+          expect(name).toBe(myDefaultRuntime);
+          return runtimeStub;
+        });
+        const runtimeControllerMock = {
+          getRuntime: getRuntimeMock
+        };
+        const result = Config.ParseConfigDefaultRuntime(myDefaultRuntime, runtimeControllerMock);
+        expect(result).toEqual(runtimeStub);
+      });
+
+      test('should return null if default runtime name was not provided', () => {
+        expect(Config.ParseConfigDefaultRuntime(null)).toBe(null);
+      });
+
+      test('should throw error if default runtime was not found', () => {
+        const runtimeControllerMock = {
+          getRuntime: () => null
+        };
+        try {
+          Config.ParseConfigDefaultRuntime('foo', runtimeControllerMock);
+          throw new Error('should have thrown an error');
+        } catch (e) {
+          expect(e).toBeInstanceOf(AntError);
+          expect(e.message).toBe('Could not set default runtime: Runtime "foo" was not found');
+        }
+      });
+    });
   });
 });

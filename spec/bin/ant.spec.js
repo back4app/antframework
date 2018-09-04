@@ -768,10 +768,11 @@ ant.js --help plugin add`)
           ._ant
           .pluginController
           .getPlugin('Core')
-          .addFunction = jest.fn(async (name, path, runtime, isGlobal) => {
+          .addFunction = jest.fn(async (name, path, runtime, type, isGlobal) => {
             expect(name).toBe('myfunc');
             expect(path).toBe('/path/to/myfunc');
             expect(runtime).toBe('nodejs');
+            expect(type).toBe('lib');
             expect(isGlobal).toBe(false);
           });
         antCli._yargs.parse('function add myfunc /path/to/myfunc nodejs');
@@ -791,10 +792,11 @@ ant.js --help plugin add`)
           ._ant
           .pluginController
           .getPlugin('Core')
-          .addFunction = jest.fn(async (name, path, runtime, isGlobal) => {
+          .addFunction = jest.fn(async (name, path, runtime, type, isGlobal) => {
             expect(name).toBe('myfunc');
             expect(path).toBe('/path/to/myfunc');
             expect(runtime).toBe('nodejs');
+            expect(type).toBe('lib');
             expect(isGlobal).toBe(true);
           });
         antCli._yargs.parse('function add myfunc /path/to/myfunc nodejs --global');
