@@ -212,7 +212,7 @@ Template category value is not an object!'
       expect(libRuntime.extensions).toBe(runtimes.Lib.extensions);
     });
 
-    test('should load defaultRuntime from config', () => {
+    test('should load default runtime from config', () => {
       const runtimes = {
         Bin: {
           bin: '/path/to/bin',
@@ -223,8 +223,8 @@ Template category value is not an object!'
           extensions: ['cpp', 'c', 'h']
         }
       };
-      const defaultRuntime = 'Bin';
-      const ant = new Ant({ runtimes, defaultRuntime });
+      const runtime = 'Bin';
+      const ant = new Ant({ runtimes, runtime });
       const fooRuntime = ant.runtimeController.defaultRuntime;
       expect(fooRuntime).toBeInstanceOf(Runtime);
       expect(fooRuntime.name).toBe('Bin');
@@ -232,7 +232,7 @@ Template category value is not an object!'
       expect(fooRuntime.extensions).toBe(runtimes.Bin.extensions);
     });
 
-    test('should load defaultRuntime from global config', () => {
+    test('should load default runtime from global config', () => {
       const runtimes = {
         Bin: {
           bin: '/path/to/bin',
@@ -247,7 +247,7 @@ Template category value is not an object!'
       jest.spyOn(Ant.prototype, '_getGlobalConfig').mockImplementation(() => {
         return {
           runtimes,
-          defaultRuntime: defaultRuntimeName
+          runtime: defaultRuntimeName
         };
       });
       try {
