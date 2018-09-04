@@ -907,6 +907,29 @@ describe('lib/plugins/core/lib/Core.js', () => {
         expect(save).toHaveBeenCalled();
       });
 
+      test('should add LibFunction with default runtime and no defined path', async () => {
+        const ant = new Ant();
+        const name = 'myFunc';
+        const runtimeInstance = new Runtime(ant, 'myRuntime', '/path/to/runtime', ['foo']);
+        const getLocalConfigPath = jest.spyOn(Config, 'GetLocalConfigPath');
+        const getRuntime = jest.spyOn(ant.runtimeController, 'getRuntime');
+        ant.runtimeController.defaultRuntime = runtimeInstance;
+        jest.spyOn(Config.prototype, 'addFunction')
+          .mockImplementation(libFunc => {
+            expect(libFunc.name).toBe(name);
+            expect(libFunc.handler).toBe(
+              path.resolve(process.cwd(), `${name}.foo`)
+            );
+            expect(libFunc.runtime).toBe(runtimeInstance);
+          });
+        const save = jest.spyOn(Config.prototype, 'save');
+        const core = new Core(ant);
+        await core.addFunction(name);
+        expect(getLocalConfigPath).toHaveBeenCalled();
+        expect(getRuntime).not.toHaveBeenCalled();
+        expect(save).toHaveBeenCalled();
+      });
+
       test('should not add due to unknown type', async () => {
         const ant = new Ant();
         const name = 'myFunc';
