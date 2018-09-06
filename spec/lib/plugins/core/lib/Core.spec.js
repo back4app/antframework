@@ -932,6 +932,25 @@ describe('lib/plugins/core/lib/Core.js', () => {
         expect(save).toHaveBeenCalled();
       });
 
+      test('should add LibFunction and use runtime template to render function file', async () => {
+        const ant = new Ant();
+        const name = 'myFunc';
+        const core = new Core(ant);
+        const originalEnsureFileSync = fs.ensureFileSync;
+        const originalWriteFileSync = fs.writeFileSync;
+        fs.ensureFileSync = jest.fn();
+        fs.writeFileSync = jest.fn();
+        try {
+          const funcPath = '/foo/bar/myFunc.js';
+          await core.addFunction(name, funcPath);
+          expect(fs.ensureFileSync).toHaveBeenCalledWith(funcPath);
+          expect(fs.writeFileSync).toHaveBeenCalledWith(funcPath, expect.stringContaining('myFunc'));
+        } finally {
+          fs.ensureFileSync = originalEnsureFileSync;
+          fs.writeFileSync = originalWriteFileSync;
+        }
+      });
+
       test('should not add due to unknown type', async () => {
         const ant = new Ant();
         const name = 'myFunc';
