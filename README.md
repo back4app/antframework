@@ -171,7 +171,42 @@ WIP
 WIP
 
 ### Creating your own directives
-WIP
+It is possible to define your own directives by configuring them on the Ant's configuration file, under the GraphQL plugin configuration entry.
+This configuration should respect the following format:
+respect the following format, under the "directives" key:
+```
+{
+  <name>: {
+    resolver: {
+      handler: <handler>,
+      runtime: <runtime>
+    },
+    definition: <definition>
+  }
+}
+```
+Where:
+`<name>` is the Directive name;
+`<handler>` is the path to the function to resolve the Directive;
+`<runtime>` the runtime name to run the handler;
+`<definition>` the GraphQL definition of the directive, to be injected into the GraphQL schema.
+
+If you wish to add your "foo" and "bar" directives, It could use the example below:
+```
+plugins:
+  - $GLOBAL/plugins/graphQL: # Under the plugin entry goes our directives configuration
+      directives:
+        foo:
+          resolver:
+            handler: /my/foo.js # This file is going to be our directive resolver.
+            runtime: Node # This is name of the runtime to run our handler (it should be already configured on Ant)
+          definition: "directive @foo(myParam: String, myOtherParam: Int) on FIELD_DEFINITION" # This is what we inject into the GraphQL schema. Nothing more, nothing less.
+        bar:
+          resolver:
+            handler: /path/to/bar.py
+            runtime: Python
+          definition: "directive @bar on FIELD_DEFINITION" # In this case, we chose not to provide any parameters to the directive, and It is totally fine.
+```
 
 ### Creating new runtimes
 WIP
