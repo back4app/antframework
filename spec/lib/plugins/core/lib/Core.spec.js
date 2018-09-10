@@ -936,18 +936,17 @@ describe('lib/plugins/core/lib/Core.js', () => {
         const ant = new Ant();
         const name = 'myFunc';
         const core = new Core(ant);
-        const originalEnsureFileSync = fs.ensureFileSync;
-        const originalWriteFileSync = fs.writeFileSync;
-        fs.ensureFileSync = jest.fn();
-        fs.writeFileSync = jest.fn();
+        const originalRender = Template.prototype.render;
+        const render = Template.prototype.render = jest.fn();
+        const funcPath = '/foo/bar/myFunc.js';
         try {
-          const funcPath = '/foo/bar/myFunc.js';
           await core.addFunction(name, funcPath);
-          expect(fs.ensureFileSync).toHaveBeenCalledWith(funcPath);
-          expect(fs.writeFileSync).toHaveBeenCalledWith(funcPath, expect.stringContaining('myFunc'));
+          expect(render).toHaveBeenCalledWith(
+            funcPath,
+            expect.any(Object)
+          );
         } finally {
-          fs.ensureFileSync = originalEnsureFileSync;
-          fs.writeFileSync = originalWriteFileSync;
+          Template.prototype.render = originalRender;
         }
       });
 
