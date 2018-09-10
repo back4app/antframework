@@ -1296,4 +1296,16 @@ describe('lib/plugins/core/lib/Core.js', () => {
       });
     });
   });
+
+  describe('static methods', () => {
+    describe('_getConfig', () => {
+      test('should return an instance of Config', () => {
+        const configFilePath = path.resolve(outPath, 'ant.yml');
+        fs.ensureFileSync(configFilePath);
+        const config = Core._getConfig(configFilePath);
+        expect(config).toBeInstanceOf(Config);
+        expect(config._path).toBe(configFilePath);
+      });
+    });
+  });
 });
