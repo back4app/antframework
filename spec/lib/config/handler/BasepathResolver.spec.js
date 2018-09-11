@@ -11,6 +11,17 @@ const assertBasePath = (filePath, basePath, expectedBasePath) => {
   resolver.handle(json, filePath ? { filePath } : {});
   expect(json.basePath).toBe(expectedBasePath);
 };
+const assertPluginBasePath = (basePath, expectedBasePath) => {
+  const json = { basePath: '/assert', plugins: [
+    {
+      myPlugin: {
+        basePath
+      }
+    }
+  ]};
+  resolver.handle(json, {});
+  expect(json.plugins[0].myPlugin.basePath).toBe(expectedBasePath);
+};
 describe('lib/config/handler/BasepathResolver.js', () => {
   test('should set basePath with absolute filePath and relative basePath', () => {
     assertBasePath(
@@ -82,5 +93,13 @@ describe('lib/config/handler/BasepathResolver.js', () => {
       null,
       process.cwd()
     );
+  });
+
+  test('should set plugin basePath', () => {
+    assertPluginBasePath('./myBasePath', '/assert/myBasePath');
+  });
+
+  test('should not set plugin basePath', () => {
+    assertPluginBasePath('/myBasePath', '/myBasePath');
   });
 });
