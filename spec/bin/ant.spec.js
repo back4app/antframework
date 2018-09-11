@@ -527,7 +527,7 @@ ant.js --help plugin add`)
             .addTemplate = jest.fn(async (category, template, templatePath, isGlobal) => {
               expect(category).toEqual('MyCategory');
               expect(template).toEqual('MyTemplate');
-              expect(templatePath).toEqual('my/template/path');
+              expect(templatePath).toEqual(path.resolve(process.cwd(), 'my/template/path'));
               expect(isGlobal).toEqual(false);
             });
           antCli._yargs.parse('template add MyCategory MyTemplate my/template/path');
@@ -573,10 +573,10 @@ ant.js --help plugin add`)
             .addTemplate = jest.fn(async (category, template, templatePath, isGlobal) => {
               expect(category).toEqual('MyCategory');
               expect(template).toEqual('MyTemplate');
-              expect(templatePath).toEqual('path/to/my/template');
+              expect(templatePath).toEqual('/path/to/my/template');
               expect(isGlobal).toEqual(true);
             });
-          antCli._yargs.parse('template add MyCategory MyTemplate path/to/my/template --global');
+          antCli._yargs.parse('template add MyCategory MyTemplate /path/to/my/template --global');
         }
       );
 
@@ -768,14 +768,14 @@ ant.js --help plugin add`)
           ._ant
           .pluginController
           .getPlugin('Core')
-          .addFunction = jest.fn(async (name, path, runtime, type, isGlobal) => {
+          .addFunction = jest.fn(async (name, func, runtime, type, isGlobal) => {
             expect(name).toBe('myfunc');
-            expect(path).toBe('/path/to/myfunc');
+            expect(func).toBe(path.resolve(process.cwd(), func));
             expect(runtime).toBe('nodejs');
             expect(type).toBe('lib');
             expect(isGlobal).toBe(false);
           });
-        antCli._yargs.parse('function add myfunc /path/to/myfunc nodejs');
+        antCli._yargs.parse('function add myfunc path/to/myfunc nodejs');
       });
 
       test('should work with global flag', done => {
@@ -1059,11 +1059,11 @@ ant.js --help plugin add`)
           .getPlugin('Core')
           .addRuntime = jest.fn(async (name, bin, extensions, isGlobal) => {
             expect(name).toBe('myruntime');
-            expect(bin).toBe('/path/to/myruntime');
+            expect(bin).toBe(path.resolve(process.cwd(), bin));
             expect(extensions).toEqual(['nodejs', 'python']);
             expect(isGlobal).toBe(false);
           });
-        antCli._yargs.parse('runtime add myruntime /path/to/myruntime nodejs python');
+        antCli._yargs.parse('runtime add myruntime path/to/myruntime nodejs python');
       });
 
       test('should work with global flag', done => {
