@@ -802,6 +802,27 @@ ant.js --help plugin add`)
         antCli._yargs.parse('function add myfunc /path/to/myfunc nodejs --global');
       });
 
+      test('should work with template', done => {
+        const originalExit = process.exit;
+        process.exit = jest.fn(code => {
+          process.exit = originalExit;
+          expect.hasAssertions();
+          expect(code).toBe(0);
+          done();
+        });
+
+        const antCli = new AntCli();
+        antCli
+          ._ant
+          .pluginController
+          .getPlugin('Core')
+          .addFunction = jest.fn(async (name, path, runtime, type, isGlobal, template) => {
+            expect(name).toBe('myfunc');
+            expect(template).toBe('/path/to/my/template');
+          });
+        antCli._yargs.parse('function add myfunc --template /path/to/my/template');
+      });
+
       test('should handle any errors', done => {
         const originalHandleErrorMessage = yargsHelper.handleErrorMessage;
         yargsHelper.handleErrorMessage = jest.fn((message, e, command) => {

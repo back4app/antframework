@@ -960,26 +960,95 @@ describe('lib/plugins/core/lib/Core.js', () => {
         const ant = new Ant();
         const name = 'myFunc';
         const core = new Core(ant);
-        const configFilePath = path.resolve(outPath, 'ant.yml');
-        fs.ensureFileSync(configFilePath);
-        jest.spyOn(Config, 'GetLocalConfigPath')
-          .mockImplementation(() => configFilePath);
-        const originalEnsureFileSync = fs.ensureFileSync;
-        const originalWriteFileSync = fs.writeFileSync;
-        fs.ensureFileSync = jest.fn();
-        fs.writeFileSync = jest.fn();
+        fs.ensureFileSync(path.resolve(outPath, 'ant.yml'));
+        const originalRender = Template.prototype.render;
+        const render = Template.prototype.render = jest.fn();
+        const funcPath = '/foo/bar/myFunc.js';
         try {
-          const funcPath = '/foo/bar/myFunc.js';
           await core.addFunction(name, funcPath);
-          expect(fs.ensureFileSync).toHaveBeenCalledWith(funcPath);
-          expect(fs.writeFileSync).toHaveBeenCalledWith(funcPath, expect.stringContaining('myFunc'));
+          expect(render).toHaveBeenCalledWith(
+            funcPath,
+            expect.any(Object)
+          );
         } finally {
-          fs.ensureFileSync = originalEnsureFileSync;
-          fs.writeFileSync = originalWriteFileSync;
+          Template.prototype.render = originalRender;
         }
       });
 
-      test('should not add due to unknown type', () => {
+      test('should add LibFunction and use custom template to render function file', async () => {
+        const ant = new Ant();
+        const name = 'myFunc';
+        const core = new Core(ant);
+        fs.ensureFileSync(path.resolve(outPath, 'ant.yml'));
+        const fooRuntime = new Runtime(ant, 'Foo', '/bin/foo', ['js']);
+        ant.runtimeController.loadRuntimes([fooRuntime]);
+        const originalRender = Template.prototype.render;
+        const render = Template.prototype.render = jest.fn();
+        const funcPath = path.resolve(outPath, 'foo/bar/myFunc.js');
+        const getTemplate = jest.spyOn(ant.templateController, 'getTemplate').mockImplementation((category, template) => {
+          expect(category).toBe('Function');
+          expect(template).toBe('Foo');
+          return new Template('Function', 'Foo', '/foo/template/path');
+        });
+        try {
+          await core.addFunction(name, funcPath, 'Foo');
+          expect(getTemplate).toHaveBeenCalledWith('Function', 'Foo');
+          expect(render).toHaveBeenCalledWith(
+            funcPath,
+            expect.any(Object)
+          );
+        } catch (err){
+          throw err;
+        } finally {
+          Template.prototype.render = originalRender;
+        }
+      });
+
+      test('should add LibFunction and use template arg to render function file', async () => {
+        const ant = new Ant();
+        const name = 'myFunc';
+        const core = new Core(ant);
+        fs.ensureFileSync(path.resolve(outPath, 'ant.yml'));
+        const fooRuntime = new Runtime(ant, 'Foo', '/bin/foo', ['js']);
+        ant.runtimeController.loadRuntimes([fooRuntime]);
+
+        const templateMocked = new Template('Function', 'myTemplate', '/myTemplate/path');
+        templateMocked.render = jest.fn();
+        ant.templateController.loadTemplates([templateMocked]);
+        jest.spyOn(fs, 'existsSync').mockImplementation(() => false);
+        const funcPath = path.resolve(outPath, 'foo/bar/myFunc.js');
+        await core.addFunction(name, funcPath, 'Foo', undefined, undefined, 'myTemplate');
+        expect(templateMocked.render).toHaveBeenCalledWith(
+          funcPath,
+          expect.any(Object)
+        );
+      });
+
+      test('should fail to render LibFunction source file due to inexistent template path', async () => {
+        const ant = new Ant();
+        const name = 'myFunc';
+        const core = new Core(ant);
+        fs.ensureFileSync(path.resolve(outPath, 'ant.yml'));
+        jest.spyOn(fs, 'existsSync').mockImplementation(() => false);
+        try {
+          await core.addFunction(name, null, null, undefined, undefined, '/my/invalid/path');
+        } catch (err) {
+          expect(err.message).toBe('Param "template" is not a valid path: /my/invalid/path');
+        }
+      });
+
+      test('should fail to add LibFunction due to inexistent runtime', async () => {
+        const ant = new Ant();
+        const core = new Core(ant);
+        fs.ensureFileSync(path.resolve(outPath, 'ant.yml'));
+        try {
+          await core.addFunction(null, null, 'should not find me');
+        } catch (err) {
+          expect(err.message).toBe('Runtime "should not find me" was not found');
+        }
+      });
+
+      test('should not add due to unknown type', async () => {
         const configFilePath = path.resolve(outPath, 'ant.yml');
         fs.ensureFileSync(configFilePath);
         const ant = new Ant();

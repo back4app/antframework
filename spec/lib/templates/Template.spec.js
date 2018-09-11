@@ -120,6 +120,41 @@ describe('lib/templates/Template.js', () => {
       }
     });
 
+    test('should render a single file template', async () => {
+      const outPath = path.resolve(
+        __dirname,
+        '../../support/out/lib/templates/Template.js',
+        'out' + Math.floor(Math.random() * 1000)
+      );
+      fs.ensureDirSync(path.resolve(__dirname, '../../support/out/lib/templates/Template.js'));
+      try {
+        fs.removeSync(outPath);
+      } finally {
+        const template = new Template(
+          'FooCategory',
+          'SingleFileTemplate',
+          path.resolve(
+            __dirname,
+            '../../support/templates/singleFileTemplate/singleFileTemplate.js.mustache'
+          )
+        );
+        try {
+          const outputFileName = 'singleFileTemplateOutput.js';
+          await template.render(
+            path.resolve(outPath, outputFileName),
+            { name: 'My single file template rendered' }
+          );
+          // Checks if the file is rendered and with the right content
+          const outDir = fs.readdirSync(outPath);
+          expect(outDir).toContain(outputFileName);
+          expect(fs.readFileSync(path.resolve(outPath, outputFileName), 'utf8'))
+            .toEqual('My single file template rendered');
+        } finally {
+          fs.removeSync(outPath);
+        }
+      }
+    });
+
     test('should fail if outPath param is not a string', () => {
       expect(template.render()).rejects.toThrowError(
         'Could not render template: param "outPath" should be String'

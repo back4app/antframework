@@ -481,10 +481,10 @@ Template category value is not an object!'
       const ant = new Ant();
       const core = ant.pluginController.getPlugin('Core');
       core.addFunction = jest.fn();
-      const addFunctionReturn = ant.addFunction('myFunc', '/mypath', 'runtime', true);
+      const addFunctionReturn = ant.addFunction('myFunc', '/mypath', 'runtime', true, '/path/to/my/template');
       expect(addFunctionReturn).toBeInstanceOf(Promise);
       await addFunctionReturn;
-      expect(core.addFunction).toHaveBeenCalledWith('myFunc', '/mypath', 'runtime', true);
+      expect(core.addFunction).toHaveBeenCalledWith('myFunc', '/mypath', 'runtime', true, '/path/to/my/template');
     });
   });
 
