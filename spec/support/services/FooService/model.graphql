@@ -3,8 +3,7 @@ schema {
   query: Query
   # Uncomment the line below to start designing mutations
   # mutation: Mutation
-  # Uncomment the line below to start designing subscriptions
-  # subscription: Subscription
+  subscription: Subscription
 }
 
 # Design your queries in the Query type below
@@ -17,5 +16,6 @@ type Query {
 # }
 
 # Design your subscriptions in the Subscription type below
-# type Subscription {
-# }
+type Subscription {
+  mySubs: String @subscribe(to: "mySubsResolver")
+}

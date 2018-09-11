@@ -956,6 +956,29 @@ describe('lib/plugins/core/lib/Core.js', () => {
         expect(save).toHaveBeenCalled();
       });
 
+      test('should add LibFunction and use runtime template to render function file', async () => {
+        const ant = new Ant();
+        const name = 'myFunc';
+        const core = new Core(ant);
+        const configFilePath = path.resolve(outPath, 'ant.yml');
+        fs.ensureFileSync(configFilePath);
+        jest.spyOn(Config, 'GetLocalConfigPath')
+          .mockImplementation(() => configFilePath);
+        const originalEnsureFileSync = fs.ensureFileSync;
+        const originalWriteFileSync = fs.writeFileSync;
+        fs.ensureFileSync = jest.fn();
+        fs.writeFileSync = jest.fn();
+        try {
+          const funcPath = '/foo/bar/myFunc.js';
+          await core.addFunction(name, funcPath);
+          expect(fs.ensureFileSync).toHaveBeenCalledWith(funcPath);
+          expect(fs.writeFileSync).toHaveBeenCalledWith(funcPath, expect.stringContaining('myFunc'));
+        } finally {
+          fs.ensureFileSync = originalEnsureFileSync;
+          fs.writeFileSync = originalWriteFileSync;
+        }
+      });
+
       test('should not add due to unknown type', () => {
         const configFilePath = path.resolve(outPath, 'ant.yml');
         fs.ensureFileSync(configFilePath);
@@ -1301,6 +1324,18 @@ describe('lib/plugins/core/lib/Core.js', () => {
         expect(console.log.mock.calls[1][0]).toBe('foo /path/to/foo foo js');
         expect(console.log.mock.calls[2][0]).toBe('bar /path/to/bar bar');
         expect(console.log.mock.calls[3][0]).toBe('lorem /ipsum');
+      });
+    });
+  });
+
+  describe('static methods', () => {
+    describe('_getConfig', () => {
+      test('should return an instance of Config', () => {
+        const configFilePath = path.resolve(outPath, 'ant.yml');
+        fs.ensureFileSync(configFilePath);
+        const config = Core._getConfig(configFilePath);
+        expect(config).toBeInstanceOf(Config);
+        expect(config._path).toBe(configFilePath);
       });
     });
   });

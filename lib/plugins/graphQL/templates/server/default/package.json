@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "express": "^4.16.3",
-    "express-graphql": "^0.6.12"
+    "express-graphql": "^0.6.12",
+    "subscriptions-transport-ws": "^0.9.14"
   }
 }
