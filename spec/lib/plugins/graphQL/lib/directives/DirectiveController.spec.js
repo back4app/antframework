@@ -197,6 +197,7 @@ describe('lib/plugins/graphQL/lib/directives/DirectiveController.js', () => {
     test(
       'should load new directives and override existent ones with same name',
       () => {
+        // The lazy loading directives should override the "fooDirective"
         const directiveController = new DirectiveController(
           ant,
           {
@@ -209,14 +210,21 @@ describe('lib/plugins/graphQL/lib/directives/DirectiveController.js', () => {
             }
           }
         );
-        const newFooDirective = new Directive(
+        const fooDirective = new Directive(
           ant,
           'fooDirective',
           'fooDefinition',
           barFunction
         );
-        directiveController.loadDirectives([newFooDirective]);
-        expect(directiveController.directives).toEqual([newFooDirective]);
+        // Initial directives array
+        directiveController.loadDirectives([fooDirective]);
+
+        // When DirectiveController#directives is invoked, the lazy directives
+        // should've been loaded
+        expect(directiveController.directives.length).toBe(1);
+        expect(directiveController.directives[0].name).toBe('fooDirective');
+        expect(directiveController.directives[0].definition).toBe('newFooDef');
+        expect(directiveController.directives[0].resolver.handler).toEqual('/new/foo');
       }
     );
   });
