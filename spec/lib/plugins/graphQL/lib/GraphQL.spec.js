@@ -9,7 +9,6 @@ const fs = require('fs-extra');
 const childProcess = require('child_process');
 const Ant = require('../../../../../lib/Ant');
 const AntCli = require('../../../../../lib/cli/AntCli');
-const AntFunction = require('../../../../../lib/functions/AntFunction');
 const Plugin = require('../../../../../lib/plugins/Plugin');
 const GraphQL = require('../../../../../lib/plugins/graphQL/lib/GraphQL');
 const Directive = require(
@@ -305,15 +304,25 @@ listening for requests on http://localhost:3000\n')
   });
 
   test('should load directives', () => {
-    const fooDirective = new Directive(
-      ant,
-      'fooDirective',
-      'fooDefinitiion',
-      new AntFunction(ant, 'fooFunction')
-    );
-    const graphQL = new GraphQL(ant, { directives: [fooDirective] });
-    expect(graphQL.directiveController.getDirective('fooDirective'))
-      .toEqual(fooDirective);
+    const handler = '/path/to/foo';
+    const runtime = 'Node';
+    const definition = 'directive @fooDirective(param: String) on FIELD_DEFINITION';
+    const graphQL = new GraphQL(ant, {
+      directives: {
+        fooDirective: {
+          resolver: {
+            handler,
+            runtime
+          },
+          definition
+        }
+      }
+    });
+    const foo = graphQL.directiveController.getDirective('fooDirective');
+    expect(foo.name).toBe('fooDirective');
+    expect(foo.resolver.handler).toBe(handler);
+    expect(foo.resolver.runtime.name).toBe(runtime);
+    expect(foo.definition).toBe(definition);
   });
 
   describe('GraphQL.directives', () => {

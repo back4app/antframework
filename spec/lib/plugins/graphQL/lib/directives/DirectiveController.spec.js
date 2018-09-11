@@ -5,6 +5,8 @@
 
 const Ant = require('../../../../../../lib/Ant');
 const AntFunction = require('../../../../../../lib/functions/AntFunction');
+const LibFunction = require('../../../../../../lib/functions/LibFunction');
+const Runtime = require('../../../../../../lib/functions/runtimes/Runtime');
 const Plugin = require('../../../../../../lib/plugins/Plugin');
 const Directive = require(
   '../../../../../../lib/plugins/graphQL/lib/directives/Directive'
@@ -15,13 +17,27 @@ const DirectiveController = require(
 
 const ant = new Ant();
 const fooFunction = new AntFunction(ant, 'fooFunction');
+const barFunction = new LibFunction(ant, 'barFunction', '/my/handler',
+  new Runtime(ant, 'libRuntime', '/lib/runtime', ['js'])
+);
+const handler = '/foo/handler';
+const runtime = 'Node';
+const definition = 'directive @foo on FIELD_DEFINITION';
 const fooDirective = new Directive(
   ant,
   'fooDirective',
-  'fooDefinition',
+  definition,
   fooFunction
 );
-const directiveController = new DirectiveController(ant, [fooDirective]);
+const directiveController = new DirectiveController(ant, {
+  fooDirective: {
+    resolver: {
+      handler,
+      runtime
+    },
+    definition
+  }
+});
 
 /**
  * Represents a {@link Directive} that overrides the "name" member and throws an
@@ -125,24 +141,17 @@ describe('lib/plugins/graphQL/lib/directives/DirectiveController.js', () => {
   });
 
   test('should fail to load directives if not valid', () => {
-    expect(() => new DirectiveController(ant, {})).toThrowError(
-      'Could not load directives: param "directives" should be Array'
-    );
-    expect(() => new DirectiveController(ant, [{}])).toThrowError(
-      'Directive "Object" should be an instance of Directive'
-    );
-    expect(() => new DirectiveController(
-      ant,
-      [new Directive(new Ant(), 'fooDirective', 'fooDefinition', fooFunction)]
-    )).toThrowError(
-      'The framework used to initialize the directive "fooDirective" is \
-different of this controller\'s'
+    expect(() => new DirectiveController(ant, {test: []})._loadLazyDirectives()).toThrowError(
+      'Could not load directive "test". "resolver" should be an object'
     );
   });
 
   test('should load directives', () => {
-    expect(directiveController._directives.get('fooDirective'))
-      .toEqual(fooDirective);
+    const directive = directiveController.getDirective('fooDirective');
+    expect(directive.name).toEqual('fooDirective');
+    expect(directive.resolver.handler).toEqual(handler);
+    expect(directive.resolver.runtime.name).toEqual(runtime);
+    expect(directive.definition).toEqual(definition);
   });
 
   describe('DirectiveController.ant', () => {
@@ -155,9 +164,32 @@ different of this controller\'s'
 
   describe('DirectiveController.directives', () => {
     test('should be readonly', () => {
-      expect(directiveController.directives).toEqual([fooDirective]);
+      const directive = directiveController.directives[0];
+      expect(directive.name).toBe('fooDirective');
+      expect(directive.resolver.handler).toBe(handler);
+      expect(directive.resolver.runtime.name).toBe(runtime);
+      expect(directive.definition).toBe(definition);
       directiveController.directives = [];
-      expect(directiveController.directives).toEqual([fooDirective]);
+      expect(directiveController.directives).toHaveLength(1);
+    });
+
+    test('should load lazy directives', () => {
+      const directiveController = new DirectiveController(ant, {
+        lazy: {
+          resolver: {
+            handler: '/lazy/lib',
+            runtime: 'Node'
+          },
+          definition: 'lazy-def'
+        }
+      });
+      expect(directiveController._directives.size).toBe(0);
+
+      // this should trigger the lazy directives loading
+      directiveController.directives;
+
+      expect(directiveController._directives.size).toBe(1);
+      expect(directiveController.getDirective('lazy')).toBeDefined();
     });
   });
 
@@ -165,18 +197,34 @@ different of this controller\'s'
     test(
       'should load new directives and override existent ones with same name',
       () => {
-        const newFooDirective = new Directive(
+        // The lazy loading directives should override the "fooDirective"
+        const directiveController = new DirectiveController(
+          ant,
+          {
+            fooDirective: {
+              resolver: {
+                handler: '/new/foo',
+                runtime
+              },
+              definition: 'newFooDef'
+            }
+          }
+        );
+        const fooDirective = new Directive(
           ant,
           'fooDirective',
           'fooDefinition',
-          fooFunction
+          barFunction
         );
-        const directiveController = new DirectiveController(
-          ant,
-          [fooDirective]
-        );
-        directiveController.loadDirectives([newFooDirective]);
-        expect(directiveController.directives).toEqual([newFooDirective]);
+        // Initial directives array
+        directiveController.loadDirectives([fooDirective]);
+
+        // When DirectiveController#directives is invoked, the lazy directives
+        // should've been loaded
+        expect(directiveController.directives.length).toBe(1);
+        expect(directiveController.directives[0].name).toBe('fooDirective');
+        expect(directiveController.directives[0].definition).toBe('newFooDef');
+        expect(directiveController.directives[0].resolver.handler).toEqual('/new/foo');
       }
     );
   });
@@ -188,9 +236,7 @@ different of this controller\'s'
         expect(directiveController.getDirective('inexistentDirective')).toEqual(
           null
         );
-        expect(directiveController.getDirective('fooDirective')).toEqual(
-          fooDirective
-        );
+        expect(directiveController.getDirective('fooDirective')).toBeDefined();
       });
   });
 
@@ -250,6 +296,16 @@ different of this controller\'s'
         'Could not get directive definition: param "directive" should be \
 Directive'
       );
+    });
+  });
+
+  describe('DirectiveController._assertDirective', () => {
+    test('should throw error if "directive" is not a Directive', () => {
+      try {
+        directiveController._assertDirective(new Array());
+      } catch (err) {
+        expect(err.message).toBe('Directive "Array" should be an instance of Directive');
+      }
     });
   });
 });
