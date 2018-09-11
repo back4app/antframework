@@ -48,19 +48,34 @@ describe('lib/config/Config.js', () => {
   });
 
   test('should export "Config" class', () => {
-    const config = new Config(path.resolve(outPath, 'ant.yml'));
+    const configFilePath = path.resolve(outPath, 'ant.yml');
+    fsExtra.ensureFileSync(configFilePath);
+    const config = new Config(configFilePath);
     expect(config.constructor.name).toEqual('Config');
   });
 
   test('should create an instance of Config', () => {
-    const config = new Config(path.resolve(outPath, 'ant.yml'));
+    const configFilePath = path.resolve(outPath, 'ant.yml');
+    fsExtra.ensureFileSync(configFilePath);
+    const config = new Config(configFilePath);
     expect(config).toBeDefined();
   });
 
   test('should return config file path', () => {
     const filePath = path.resolve(outPath, 'ant.yml');
+    fsExtra.ensureFileSync(filePath);
     const config = new Config(filePath);
     expect(config.path).toBe(filePath);
+  });
+
+  test('should throw an error due to file not found', () => {
+    const filePath = path.resolve(outPath, 'must.not.find.me.yml');
+    try {
+      new Config(filePath);
+    } catch (err) {
+      expect(err).toBeInstanceOf(AntError);
+      expect(err.message).toBe(`Could not load config at "${filePath}".`);
+    }
   });
 
   test('should ensure a root collection node', () => {
@@ -264,20 +279,9 @@ save the file.');
     test(
       'should add plugin locally',
       () => {
-        const configPath = path.resolve(outPath, 'ant.yml');
-        const config = new Config(configPath);
+        const config = new Config({});
         config.addPlugin('/foo/bar/myplugin');
         expect(config.config.plugins).toEqual([ '/foo/bar/myplugin' ]);
-      }
-    );
-
-    test(
-      'should add plugin locally',
-      () => {
-        let configPath = path.resolve(outPath, 'ant.yml');
-        const config = new Config(configPath);
-        configPath = config.addPlugin('/test/save').save();
-        expect(fs.readFileSync(configPath, 'utf-8')).toBe('plugins:\n  - /test/save\n');
       }
     );
 
@@ -394,7 +398,9 @@ save the file.');
       test(
         'should remove plugin locally',
         async () => {
-          const config = new Config(path.resolve(outPath, 'ant.yml'));
+          const configFilePath = path.resolve(outPath, 'ant.yml');
+          fsExtra.ensureFileSync(configFilePath);
+          const config = new Config(configFilePath);
           const localConfigFilePath = config.addPlugin('/foo/bar/myplugin').save();
           const configPath = config.removePlugin('/foo/bar/myplugin').save();
           expect(configPath).toBe(localConfigFilePath);
@@ -405,7 +411,9 @@ save the file.');
       test(
         'should remove plugin locally after reading from file',
         async () => {
-          let config = new Config(path.resolve(outPath, 'ant.yml'));
+          const configFilePath = path.resolve(outPath, 'ant.yml');
+          fsExtra.ensureFileSync(configFilePath);
+          let config = new Config(configFilePath);
           const localConfigFilePath = config.addPlugin('/reading/from/file').save();
 
           config = new Config(localConfigFilePath);
@@ -420,6 +428,7 @@ save the file.');
         async () => {
           const log = jest.spyOn(console, 'log');
           const configFilePath = path.resolve(outPath, 'emptyConfigRemovalTest.yml');
+          fsExtra.ensureFileSync(configFilePath);
           const config = new Config(configFilePath);
 
           const json = config.removePlugin('/foo/bar/myplugin').config;
@@ -463,7 +472,9 @@ not found on configuration file. plugin remove command should do nothing');
 
   describe('addTemplate', () => {
     test('should add template', () => {
-      const config = new Config(path.resolve(outPath, 'templateAdd1.yml'));
+      const configFilePath = path.resolve(outPath, 'templateAdd1.yml');
+      fsExtra.ensureFileSync(configFilePath);
+      const config = new Config(configFilePath);
       expect(config.config.templates).toBeUndefined();
 
       const templatePath = '/path/to/my/template';
@@ -541,7 +552,9 @@ not found on configuration file. plugin remove command should do nothing');
     });
 
     test('should remove template', () => {
-      const config = new Config(path.resolve(outPath, 'templateRemoval1.yml'));
+      const configFilePath = path.resolve(outPath, 'templateRemoval1.yml');
+      fsExtra.ensureFileSync(configFilePath);
+      const config = new Config(configFilePath);
       expect(config.config.templates).toBeUndefined();
 
       const templatePath = '/path/to/my/template';
@@ -563,7 +576,8 @@ not found on configuration file. plugin remove command should do nothing');
     });
 
     test('should remove template on an existing file', () => {
-      const configFilePath = path.resolve(outPath, 'templateRemoval1.yml');
+      const configFilePath = path.resolve(outPath, 'templateRemoval2.yml');
+      fsExtra.ensureFileSync(configFilePath);
       fs.writeFileSync(configFilePath, 'templates:\n  myCategory:\n    myTemplate: /path/to/my/template');
       const config = new Config(configFilePath);
       expect(config.config.templates).toEqual({
@@ -583,7 +597,9 @@ not found on configuration file. plugin remove command should do nothing');
     });
 
     test('should do nothing because templates entry was not found', () => {
-      const config = new Config(path.resolve(outPath, 'templateRemoval2.yml'));
+      const configFilePath = path.resolve(outPath, 'templateRemoval3.yml');
+      fsExtra.ensureFileSync(configFilePath);
+      const config = new Config(configFilePath);
       expect(config.config.templates).toBeUndefined();
 
       config.removeTemplate('myCategory', 'myTemplate');

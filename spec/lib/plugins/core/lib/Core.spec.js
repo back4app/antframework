@@ -330,7 +330,10 @@ describe('lib/plugins/core/lib/Core.js', () => {
 
       describe('plugin add command', () => {
         test('should add and save locally', async () => {
-          const getLocalConfigPath = jest.spyOn(Config, 'GetLocalConfigPath');
+          const configFilePath = path.resolve(outPath, 'ant.yml');
+          fs.ensureFileSync(configFilePath);
+          const getLocalConfigPath = jest.spyOn(Config, 'GetLocalConfigPath')
+            .mockImplementation(() => configFilePath);
           const addPlugin = jest.spyOn(Config.prototype, 'addPlugin');
           const save = jest.spyOn(Config.prototype, 'save');
           const myPlugin = 'myplugin';
@@ -372,7 +375,10 @@ describe('lib/plugins/core/lib/Core.js', () => {
 
       describe('plugin remove command', () => {
         test('should remove and save locally', async () => {
-          const getLocalConfigPath = jest.spyOn(Config, 'GetLocalConfigPath');
+          const configFilePath = path.resolve(outPath, 'ant.yml');
+          fs.ensureFileSync(configFilePath);
+          const getLocalConfigPath = jest.spyOn(Config, 'GetLocalConfigPath')
+            .mockImplementation(() => configFilePath);
           const removePlugin = jest.spyOn(Config.prototype, 'removePlugin');
           const save = jest.spyOn(Config.prototype, 'save');
           const myPlugin = 'myplugin';
@@ -453,7 +459,10 @@ describe('lib/plugins/core/lib/Core.js', () => {
 
       describe('template add command', () => {
         test('should add and save locally', async () => {
-          const getLocalConfigPath = jest.spyOn(Config, 'GetLocalConfigPath');
+          const configFilePath = path.resolve(outPath, 'ant.yml');
+          fs.ensureFileSync(configFilePath);
+          const getLocalConfigPath = jest.spyOn(Config, 'GetLocalConfigPath')
+            .mockImplementation(() => configFilePath);
           const addTemplate = jest.spyOn(Config.prototype, 'addTemplate');
           const myTemplate = 'myTemplate';
           const templatePath = 'path/to/my/template';
@@ -527,7 +536,10 @@ describe('lib/plugins/core/lib/Core.js', () => {
 
       describe('template remove command', () => {
         test('should remove and save locally', async () => {
-          const getLocalConfigPath = jest.spyOn(Config, 'GetLocalConfigPath');
+          const configFilePath = path.resolve(outPath, 'ant.yml');
+          fs.ensureFileSync(configFilePath);
+          const getLocalConfigPath = jest.spyOn(Config, 'GetLocalConfigPath')
+            .mockImplementation(() => configFilePath);
           const removeTemplate = jest.spyOn(Config.prototype, 'removeTemplate');
           const myTemplate = 'myTemplate';
           const category = 'myCategory';
@@ -832,7 +844,10 @@ describe('lib/plugins/core/lib/Core.js', () => {
       test('should add BinFunction and save locally', async () => {
         const name = 'myFunc';
         const func = '/path/to/func';
-        const getLocalConfigPath = jest.spyOn(Config, 'GetLocalConfigPath');
+        const configFilePath = path.resolve(outPath, 'ant.yml');
+        fs.ensureFileSync(configFilePath);
+        const getLocalConfigPath = jest.spyOn(Config, 'GetLocalConfigPath')
+          .mockImplementation(() => configFilePath);
         jest.spyOn(Config.prototype, 'addFunction')
           .mockImplementation(binFunc => {
             expect(binFunc.name).toBe(name);
@@ -868,7 +883,10 @@ describe('lib/plugins/core/lib/Core.js', () => {
         const name = 'myFunc';
         const func = '/path/to/func';
         const runtimeInstance = new Runtime(ant, 'myRuntime', '/path/to/runtime');
-        const getLocalConfigPath = jest.spyOn(Config, 'GetLocalConfigPath');
+        const configFilePath = path.resolve(outPath, 'ant.yml');
+        fs.ensureFileSync(configFilePath);
+        const getLocalConfigPath = jest.spyOn(Config, 'GetLocalConfigPath')
+          .mockImplementation(() => configFilePath);
         const getRuntime = jest.spyOn(ant.runtimeController, 'getRuntime')
           .mockImplementation(() => {
             return runtimeInstance;
@@ -892,7 +910,10 @@ describe('lib/plugins/core/lib/Core.js', () => {
         const name = 'myFunc';
         const func = '/path/to/func';
         const runtimeInstance = new Runtime(ant, 'myRuntime', '/path/to/runtime');
-        const getLocalConfigPath = jest.spyOn(Config, 'GetLocalConfigPath');
+        const configFilePath = path.resolve(outPath, 'ant.yml');
+        fs.ensureFileSync(configFilePath);
+        const getLocalConfigPath = jest.spyOn(Config, 'GetLocalConfigPath')
+          .mockImplementation(() => configFilePath);
         const getRuntime = jest.spyOn(ant.runtimeController, 'getRuntime');
         ant.runtimeController.defaultRuntime = runtimeInstance;
         jest.spyOn(Config.prototype, 'addFunction')
@@ -913,7 +934,10 @@ describe('lib/plugins/core/lib/Core.js', () => {
         const ant = new Ant();
         const name = 'myFunc';
         const runtimeInstance = new Runtime(ant, 'myRuntime', '/path/to/runtime', ['foo']);
-        const getLocalConfigPath = jest.spyOn(Config, 'GetLocalConfigPath');
+        const configFilePath = path.resolve(outPath, 'ant.yml');
+        fs.ensureFileSync(configFilePath);
+        const getLocalConfigPath = jest.spyOn(Config, 'GetLocalConfigPath')
+          .mockImplementation(() => configFilePath);
         const getRuntime = jest.spyOn(ant.runtimeController, 'getRuntime');
         ant.runtimeController.defaultRuntime = runtimeInstance;
         jest.spyOn(Config.prototype, 'addFunction')
@@ -936,6 +960,7 @@ describe('lib/plugins/core/lib/Core.js', () => {
         const ant = new Ant();
         const name = 'myFunc';
         const core = new Core(ant);
+        fs.ensureFileSync(path.resolve(outPath, 'ant.yml'));
         const originalRender = Template.prototype.render;
         const render = Template.prototype.render = jest.fn();
         const funcPath = '/foo/bar/myFunc.js';
@@ -954,6 +979,7 @@ describe('lib/plugins/core/lib/Core.js', () => {
         const ant = new Ant();
         const name = 'myFunc';
         const core = new Core(ant);
+        fs.ensureFileSync(path.resolve(outPath, 'ant.yml'));
         const fooRuntime = new Runtime(ant, 'Foo', '/bin/foo', ['js']);
         ant.runtimeController.loadRuntimes([fooRuntime]);
         const originalRender = Template.prototype.render;
@@ -982,6 +1008,7 @@ describe('lib/plugins/core/lib/Core.js', () => {
         const ant = new Ant();
         const name = 'myFunc';
         const core = new Core(ant);
+        fs.ensureFileSync(path.resolve(outPath, 'ant.yml'));
         const fooRuntime = new Runtime(ant, 'Foo', '/bin/foo', ['js']);
         ant.runtimeController.loadRuntimes([fooRuntime]);
 
@@ -1001,6 +1028,7 @@ describe('lib/plugins/core/lib/Core.js', () => {
         const ant = new Ant();
         const name = 'myFunc';
         const core = new Core(ant);
+        fs.ensureFileSync(path.resolve(outPath, 'ant.yml'));
         jest.spyOn(fs, 'existsSync').mockImplementation(() => false);
         try {
           await core.addFunction(name, null, null, undefined, undefined, '/my/invalid/path');
@@ -1012,6 +1040,7 @@ describe('lib/plugins/core/lib/Core.js', () => {
       test('should fail to add LibFunction due to inexistent runtime', async () => {
         const ant = new Ant();
         const core = new Core(ant);
+        fs.ensureFileSync(path.resolve(outPath, 'ant.yml'));
         try {
           await core.addFunction(null, null, 'should not find me');
         } catch (err) {
@@ -1020,6 +1049,8 @@ describe('lib/plugins/core/lib/Core.js', () => {
       });
 
       test('should not add due to unknown type', async () => {
+        const configFilePath = path.resolve(outPath, 'ant.yml');
+        fs.ensureFileSync(configFilePath);
         const ant = new Ant();
         const name = 'myFunc';
         const func = '/path/to/func';
@@ -1215,7 +1246,10 @@ describe('lib/plugins/core/lib/Core.js', () => {
         const name = 'runtime';
         const bin = '/my/runtime';
         const extensions = [ 'js' ];
-        const getLocalConfigPath = jest.spyOn(Config, 'GetLocalConfigPath');
+        const configFilePath = path.resolve(outPath, 'ant.yml');
+        fs.ensureFileSync(configFilePath);
+        const getLocalConfigPath = jest.spyOn(Config, 'GetLocalConfigPath')
+          .mockImplementation(() => configFilePath);
         const configMock = {
           save: jest.fn()
         };
@@ -1290,19 +1324,17 @@ describe('lib/plugins/core/lib/Core.js', () => {
     describe('runtime remove command', () => {
       test('should remove runtime and save locally', async () => {
         const name = 'myRuntime';
-        const configMock = {
-          removeRuntime: jest.fn().mockImplementation(runtimeName => {
-            expect(runtimeName).toBe(name);
-            return configMock;
-          }),
-          save: jest.fn()
-        };
-        jest.spyOn(Core, '_getConfig').mockImplementation(() => configMock);
+        const configFilePath = path.resolve(outPath, 'ant.yml');
+        fs.ensureFileSync(configFilePath);
+        const getLocalConfigPath = jest.spyOn(Config, 'GetLocalConfigPath')
+          .mockImplementation(() => configFilePath);
+        const removeRuntime = jest.spyOn(Config.prototype, 'removeRuntime');
+        const save = jest.spyOn(Config.prototype, 'save');
         const core = new Core(ant);
         await core.removeRuntime(name);
-        expect(Core._getConfig).toHaveBeenCalledWith(undefined);
-        expect(configMock.removeRuntime).toHaveBeenCalled();
-        expect(configMock.save).toHaveBeenCalled();
+        expect(getLocalConfigPath).toHaveBeenCalled();
+        expect(removeRuntime).toHaveBeenCalled();
+        expect(save).toHaveBeenCalled();
       });
 
       test('should remove runtime and save globally', async () => {
