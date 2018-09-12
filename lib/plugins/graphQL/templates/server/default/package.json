@@ -4,10 +4,10 @@
   "description": "GraphQL API server for Ant Framework projects",
   "main": "index.js",
   "scripts": {
-    "install": "npm link @back4app/antframework --local",
     "start": "./bin/server.js"
   },
   "dependencies": {
+    "@back4app/antframework": "file:../../../../../../",
     "express": "^4.16.3",
     "express-graphql": "^0.6.12",
     "subscriptions-transport-ws": "^0.9.14"
