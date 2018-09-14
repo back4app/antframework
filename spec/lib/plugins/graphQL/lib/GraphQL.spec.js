@@ -8,6 +8,10 @@ const path = require('path');
 const fs = require('fs-extra');
 const childProcess = require('child_process');
 const Ant = require('../../../../../lib/Ant');
+const Config = require('../../../../../lib/config/Config');
+const AntFunction = require('../../../../../lib/functions/AntFunction');
+const LibFunction = require('../../../../../lib/functions/LibFunction');
+const Runtime = require('../../../../../lib/functions/runtimes/Runtime');
 const AntCli = require('../../../../../lib/cli/AntCli');
 const Plugin = require('../../../../../lib/plugins/Plugin');
 const GraphQL = require('../../../../../lib/plugins/graphQL/lib/GraphQL');
@@ -17,6 +21,7 @@ const Directive = require(
 const DirectiveController = require(
   '../../../../../lib/plugins/graphQL/lib/directives/DirectiveController'
 );
+const yargsHelper = require('../../../../../lib/util/yargsHelper');
 
 const ant = new Ant();
 
@@ -444,6 +449,86 @@ listening for requests on http://localhost:3000\n')
       console.error = originalError;
       process.exit = originalExit;
     });
+
+    test('should do nothing if no message if provided', () => {
+      const originalError = console.error;
+      console.error = jest.fn();
+      const originalExit = process.exit;
+      process.exit = jest.fn();
+
+      const handleErrorMessage = jest.spyOn(yargsHelper, 'handleErrorMessage');
+      new GraphQL(ant)._yargsFailed();
+      expect(handleErrorMessage).not.toBeCalled();
+      expect(console.error).not.toHaveBeenCalled();
+      expect(process.exit).not.toHaveBeenCalled();
+
+      console.error = originalError;
+      process.exit = originalExit;
+    });
+
+    test('should show friendly error when no directive command is provided', async done => {
+      const handleErrorMessage = jest.spyOn(yargsHelper, 'handleErrorMessage');
+      process.argv = ['directive'];
+      process.exit = jest.fn((code) => {
+        expect(handleErrorMessage).toHaveBeenCalledWith(
+          'Directive requires a command', null, 'directive'
+        );
+        expect(code).toEqual(1);
+        done();
+      });
+      new GraphQL(ant)._yargsFailed('Not enough non-option arguments');
+    });
+
+    test('should not show friendly error message when directive command throws unknown error', () => {
+      const handleErrorMessage = jest.spyOn(yargsHelper, 'handleErrorMessage');
+      process.argv = ['directive'];
+      new GraphQL(ant)._yargsFailed('Unknown error');
+      expect(handleErrorMessage).not.toHaveBeenCalled();
+    });
+
+    test('should show friendly error when directive add needs more args', async done => {
+      const handleErrorMessage = jest.spyOn(yargsHelper, 'handleErrorMessage');
+      process.argv = ['directive', 'add'];
+      process.exit = jest.fn((code) => {
+        expect(handleErrorMessage).toHaveBeenCalledWith(
+          'Directive add command requires name, definition and handler arguments',
+          null,
+          'directive add'
+        );
+        expect(code).toEqual(1);
+        done();
+      });
+      new GraphQL(ant)._yargsFailed('Not enough non-option arguments');
+    });
+
+    test('should not show friendly error message when directive add command throws unknown error', () => {
+      const handleErrorMessage = jest.spyOn(yargsHelper, 'handleErrorMessage');
+      process.argv = ['directive', 'add'];
+      new GraphQL(ant)._yargsFailed('Unknown error');
+      expect(handleErrorMessage).not.toHaveBeenCalled();
+    });
+
+    test('should show friendly error when directive remove needs name arg', async done => {
+      const handleErrorMessage = jest.spyOn(yargsHelper, 'handleErrorMessage');
+      process.argv = ['directive', 'remove'];
+      process.exit = jest.fn((code) => {
+        expect(handleErrorMessage).toHaveBeenCalledWith(
+          'Directive remove command requires name argument',
+          null,
+          'directive remove'
+        );
+        expect(code).toEqual(1);
+        done();
+      });
+      new GraphQL(ant)._yargsFailed('Not enough non-option arguments');
+    });
+
+    test('should not show friendly error message when directive remove command throws unknown error', () => {
+      const handleErrorMessage = jest.spyOn(yargsHelper, 'handleErrorMessage');
+      process.argv = ['directive', 'remove'];
+      new GraphQL(ant)._yargsFailed('Unknown error');
+      expect(handleErrorMessage).not.toHaveBeenCalled();
+    });
   });
 
   describe('GraphQL.directiveController', () => {
@@ -468,6 +553,296 @@ listening for requests on http://localhost:3000\n')
     it('should returns the model in the base path', () => {
       expect(graphQL.getModel()).toEqual(expect.stringContaining('schema'));
       expect(graphQL.getModel()).toEqual(expect.stringContaining('helloQuery'));
+    });
+  });
+
+  describe('static methods', () => {
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    describe('GraphQL._getConfig', () => {
+      test('should return local configuration instance', () => {
+        const configPath = path.resolve(outPath, 'ant.yml');
+        fs.ensureFileSync(configPath);
+        const getLocalConfigPath = jest.spyOn(Config, 'GetLocalConfigPath')
+          .mockImplementation(() => configPath);
+        const config = GraphQL._getConfig();
+        expect(getLocalConfigPath).toHaveBeenCalledWith();
+        expect(config).toBeInstanceOf(Config);
+      });
+
+      test('should return provided configuration instance', () => {
+        const configPath = path.resolve(outPath, 'ant.yml');
+        fs.ensureFileSync(configPath);
+        fs.writeFileSync(configPath, 'basePath: /foo/bar');
+        const config = GraphQL._getConfig(configPath);
+        expect(config).toBeInstanceOf(Config);
+        expect(config.toString()).toEqual(
+          expect.stringContaining('basePath: /foo/bar')
+        );
+      });
+    });
+  });
+
+  describe('GraphQL directive commands', () => {
+    describe('CLI', () => {
+      const originalCwd = process.cwd();
+      let antCli;
+      let graphQL;
+
+      beforeEach(() => {
+        process.chdir(path.resolve(
+          __dirname,
+          '../../../../support/configs/graphQLPluginConfig'
+        ));
+        antCli = new AntCli();
+        graphQL = antCli
+          ._ant
+          .pluginController
+          .getPlugin('GraphQL');
+      });
+
+      afterEach(() => {
+        process.chdir(originalCwd);
+      });
+
+      test('should invoke addDirective', done => {
+        const originalExit = process.exit;
+        process.exit = jest.fn(code => {
+          process.exit = originalExit;
+          expect.hasAssertions();
+          expect(code).toBe(0);
+          done();
+        });
+        graphQL.addDirective = jest.fn(async (name, definition, handler, runtime, config) => {
+          expect(name).toBe('myDir');
+          expect(definition).toBe('myDefinition');
+          expect(handler).toBe('myHandler');
+          expect(runtime).toBe('myRuntime');
+          expect(config).toBe('myConf');
+        });
+        antCli._yargs.parse('directive add myDir myDefinition myHandler myRuntime --config myConf');
+      });
+
+      test('should invoke removeDirective', done => {
+        const originalExit = process.exit;
+        process.exit = jest.fn(code => {
+          process.exit = originalExit;
+          expect.hasAssertions();
+          expect(code).toBe(0);
+          done();
+        });
+        graphQL.removeDirective = jest.fn(async (name, config) => {
+          expect(name).toBe('myDir');
+          expect(config).toBe('myConf');
+        });
+        antCli._yargs.parse('directive remove myDir --config myConf');
+      });
+
+      test('should invoke listDirectives', done => {
+        const originalExit = process.exit;
+        process.exit = jest.fn(code => {
+          process.exit = originalExit;
+          expect.hasAssertions();
+          expect(code).toBe(0);
+          done();
+        });
+        graphQL.listDirectives = jest.fn();
+        antCli._yargs.parse('directive ls');
+        expect(graphQL.listDirectives).toHaveBeenCalledWith();
+      });
+    });
+
+    describe('directive add', () => {
+      const configPath = path.resolve(outPath, 'ant.yml');
+
+      beforeEach(() => {
+        fs.ensureFileSync(configPath);
+      });
+
+      test('should add a directive', () => {
+        const graphQL = new GraphQL(ant);
+        graphQL.addDirective('myDir', 'myDef', 'myHandler', 'myRuntime', configPath);
+        const config = fs.readFileSync(configPath, 'utf-8');
+        expect(config).toBe(`plugins:
+  - $GLOBAL/plugins/graphQL:
+      directives:
+        myDir:
+          resolver:
+            handler: myHandler
+            runtime: myRuntime
+          definition: myDef
+`);
+      });
+
+      test('should add a directive into a populated file', () => {
+        fs.writeFileSync(configPath, `plugins:
+  - myPlugin:
+      {}`);
+        const graphQL = new GraphQL(ant);
+        graphQL.addDirective('myDir', 'myDef', 'myHandler', 'myRuntime', configPath);
+        const config = fs.readFileSync(configPath, 'utf-8');
+        expect(config).toBe(`plugins:
+  - myPlugin:
+      {}
+  - $GLOBAL/plugins/graphQL:
+      directives:
+        myDir:
+          resolver:
+            handler: myHandler
+            runtime: myRuntime
+          definition: myDef
+`);
+      });
+
+      test('should add a directive into a populated file and override plugin config', () => {
+        fs.writeFileSync(configPath, `plugins:
+  - $GLOBAL/plugins/graphQL`);
+        const graphQL = new GraphQL(ant);
+        graphQL.addDirective('myDir', 'myDef', 'myHandler', 'myRuntime', configPath);
+        const config = fs.readFileSync(configPath, 'utf-8');
+        expect(config).toBe(`plugins:
+  - $GLOBAL/plugins/graphQL:
+      directives:
+        myDir:
+          resolver:
+            handler: myHandler
+            runtime: myRuntime
+          definition: myDef
+`);
+      });
+
+      test('should override a directive', () => {
+        fs.writeFileSync(configPath,`plugins:
+  - test
+  - $GLOBAL/plugins/graphQL:
+      directives:
+        myDir:
+          resolver:
+            handler: /foo/test.js
+            runtime: Node
+          definition: "directive @test(param: String) on FIELD_DEFINITION"`);
+        const graphQL = new GraphQL(ant);
+        graphQL.addDirective('myDir', 'myDef', 'myHandler', 'myRuntime', configPath);
+        const config = fs.readFileSync(configPath, 'utf-8');
+        expect(config).toBe(`plugins:
+  - test
+  - $GLOBAL/plugins/graphQL:
+      directives:
+        myDir:
+          resolver:
+            handler: myHandler
+            runtime: myRuntime
+          definition: myDef
+`);
+      });
+    });
+
+    describe('directive remove', () => {
+      const configPath = path.resolve(outPath, 'ant.yml');
+
+      beforeEach(() => {
+        fs.ensureFileSync(configPath);
+      });
+
+      test('should remove a directive', () => {
+        const graphQL = new GraphQL(ant);
+        graphQL.addDirective('myDir', 'myDef', 'myHandler', 'myRuntime', configPath);
+        graphQL.removeDirective('myDir', configPath);
+        const config = fs.readFileSync(configPath, 'utf-8');
+        expect(config).toBe(`plugins:
+  - $GLOBAL/plugins/graphQL:
+      directives:
+        {}
+`);
+      });
+
+      test('should remove a directive with additional directives', () => {
+        fs.writeFileSync(configPath,`
+plugins:
+  - $GLOBAL/plugins/graphQL:
+      directives:
+        test:
+          resolver:
+            handler: /foo/test.js
+            runtime: Node
+          definition: "directive @test(param: String) on FIELD_DEFINITION"`);
+        const graphQL = new GraphQL(ant);
+        graphQL.addDirective('myDir', 'myDef', 'myHandler', 'myRuntime', configPath);
+        graphQL.removeDirective('myDir', configPath);
+        const config = fs.readFileSync(configPath, 'utf-8');
+        expect(config).toBe(`plugins:
+  - $GLOBAL/plugins/graphQL:
+      directives:
+        test:
+          resolver:
+            handler: /foo/test.js
+            runtime: Node
+          definition: "directive @test(param: String) on FIELD_DEFINITION"
+`);
+      });
+
+      test('should do nothing because directive does not exists', () => {
+        fs.writeFileSync(configPath,`
+plugins:
+  - $GLOBAL/plugins/graphQL:
+      directives:
+        test:
+          resolver:
+            handler: /foo/test.js
+            runtime: Node
+          definition: "directive @test(param: String) on FIELD_DEFINITION"
+`);
+        const graphQL = new GraphQL(ant);
+        graphQL.removeDirective('myDir', configPath);
+      });
+
+      test('should do nothing because GraphQL node does not exists', () => {
+        const configFileContent = `plugins:
+  - otherPlugin
+`;
+        fs.writeFileSync(configPath, configFileContent);
+        const graphQL = new GraphQL(ant);
+        graphQL.removeDirective('myDir', configPath);
+        const config = fs.readFileSync(configPath, 'utf-8');
+        expect(config).toBe(configFileContent);
+      });
+
+      test('should do nothing because plugins node does not exists', () => {
+        const configFileContent = `templates:
+  {}`;
+        fs.writeFileSync(configPath, configFileContent);
+        const graphQL = new GraphQL(ant);
+        graphQL.removeDirective('myDir', configPath);
+        const config = fs.readFileSync(configPath, 'utf-8');
+        expect(config).toBe(configFileContent);
+      });
+    });
+
+    describe('directive ls', () => {
+      const originalConsoleLog = console.log;
+
+      beforeEach(() => {
+        console.log = jest.fn();
+      });
+
+      afterEach(() => {
+        console.log = originalConsoleLog;
+      });
+
+      test('should list all directives', () => {
+        const graphQL = new GraphQL(ant);
+        graphQL.directiveController.loadDirectives([
+          new Directive(ant, 'myDir1', 'myDef1', new AntFunction(ant, 'myFunc1', () => {})),
+          new Directive(ant, 'myDir2', 'myDef2', new LibFunction(ant, 'myFunc2', 'myHandler2', new Runtime(ant, 'myRuntime2', 'myBin2', ['foo'])))
+        ]);
+        graphQL.listDirectives();
+        expect(console.log).toHaveBeenCalledTimes(3);
+        expect(console.log.mock.calls[0][0]).toBe('Listing all directives available (<name> <definition> [resolver]):');
+        expect(console.log.mock.calls[1][0]).toBe('myDir1 myDef1');
+        expect(console.log.mock.calls[2][0]).toBe('myDir2 myDef2 myHandler2');
+      });
     });
   });
 });
