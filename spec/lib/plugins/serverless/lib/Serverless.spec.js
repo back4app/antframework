@@ -272,7 +272,7 @@ describe('lib/plugins/serverless/lib/Serverless.js', () => {
           try {
             fs.ensureDirSync(basePath);
           } finally {
-            (new Template(
+            await (new Template(
               'service',
               'FooService',
               path.resolve(
