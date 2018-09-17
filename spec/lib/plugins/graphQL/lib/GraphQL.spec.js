@@ -676,6 +676,21 @@ listening for requests on http://localhost:3000\n')
 `);
       });
 
+      test('should add a directive with default runtime', () => {
+        const graphQL = new GraphQL(ant);
+        graphQL.addDirective('myDir', 'myDef', 'myHandler', undefined, configPath);
+        const config = fs.readFileSync(configPath, 'utf-8');
+        expect(config).toBe(`plugins:
+  - $GLOBAL/plugins/graphQL:
+      directives:
+        myDir:
+          resolver:
+            handler: myHandler
+            runtime: Node
+          definition: myDef
+`);
+      });
+
       test('should add a directive into a populated file', () => {
         fs.writeFileSync(configPath, `plugins:
   - myPlugin:
