@@ -1,4 +1,5 @@
-# Dependency directory
+# Dependencies
+package-lock.json
 node_modules
 
 # jsdoc output
