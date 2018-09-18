@@ -325,6 +325,43 @@ listening for requests on http://localhost:3000\n')
     expect(foo.definition).toBe(definition);
   });
 
+  describe('GraphQL.getModel', () => {
+    test('should get model from plugin config.basePath', () => {
+      const modelFile = 'myModel.graphql';
+      const modelPath = path.resolve(outPath, modelFile);
+      const graphQL = new GraphQL(new Ant(), { basePath: outPath, model: modelFile });
+      fs.ensureFileSync(modelPath);
+      fs.writeFileSync(modelPath, 'from ant.config.basePath');
+      const model = graphQL.getModel();
+      expect(model).toBe('from ant.config.basePath');
+    });
+
+    test('should get model from ant config.basePath', () => {
+      const modelFile = 'myModel.graphql';
+      const modelPath = path.resolve(outPath, modelFile);
+      fs.ensureFileSync(modelPath);
+      fs.writeFileSync(modelPath, 'from config.basePath');
+      const graphQL = new GraphQL(new Ant({ basePath: outPath }), { model: modelFile });
+      const model = graphQL.getModel();
+      expect(model).toBe('from config.basePath');
+    });
+
+    test('should get model from process.cwd', () => {
+      const originalCwd = process.cwd();
+      process.chdir(outPath);
+      const modelFile = 'myModel.graphql';
+      const modelPath = path.resolve(process.cwd(), modelFile);
+      fs.writeFileSync(modelPath, 'from process.cwd');
+      try {
+        const graphQL = new GraphQL(new Ant(), { model: modelFile });
+        const model = graphQL.getModel();
+        expect(model).toBe('from process.cwd');
+      } finally {
+        process.chdir(originalCwd);
+      }
+    });
+  });
+
   describe('GraphQL.directives', () => {
     test('should be readonly and return the default directives', () => {
       const graphQL = new GraphQL(ant);
