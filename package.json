@@ -22,6 +22,7 @@
   ],
   "main": "index.js",
   "scripts": {
+    "clean": "find . -name \"node_modules\" -exec rm -rf '{}' +",
     "install": "cd ./lib/plugins/graphQL/templates/server/default && npm install && cd ../../../../serverless && npm install && cd ./templates/serverless/default && npm install && cd ../../../../../../",
     "lint": "eslint ./",
     "pretest": "npm run lint",
