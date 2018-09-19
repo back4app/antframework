@@ -1,37 +1,39 @@
 {
-  "name": "@back4app/antframework",
-  "version": "1.0.3",
+  "name": "@back4app/ant",
+  "version": "0.0.0",
   "engines": {
-    "node": ">=10.8"
+    "node": ">=10.10"
   },
   "preferGlobal": true,
   "description": "Ant Framework - Serverless microservices made easy",
   "keywords": [
     "microservices",
-    "serverless",
     "api",
-    "graphql"
+    "functions",
+    "graphql",
+    "serverless"
   ],
   "files": [
     "bin",
     "lib",
     "index.js",
     "LICENSE",
-    "package-lock.json",
     "package.json"
   ],
+  "directories": {
+    "bin": "bin",
+    "lib": "lib",
+    "doc": "docs",
+    "test": "spec"
+  },
   "main": "index.js",
   "scripts": {
-    "install": "cd ./lib/plugins/graphQL/templates/server/default && npm install && cd ../../../../serverless && npm install && cd ./templates/serverless/default && npm install && cd ../../../../../../",
     "lint": "eslint ./",
     "pretest": "npm run lint",
     "test": "jest",
     "posttest": "rm -r ./spec/support/out",
     "apidocs": "jsdoc -c ./jsdoc.json",
     "docs": "npm run apidocs"
-  },
-  "bin": {
-    "ant": "./bin/ant.js"
   },
   "repository": {
     "type": "git",
