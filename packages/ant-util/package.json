@@ -1,0 +1,48 @@
+{
+  "name": "@back4app/ant-util",
+  "version": "0.0.0",
+  "engines": {
+    "node": ">=10.10"
+  },
+  "description": "Library of utility classes for leading with Ant Framework - Serverless microservices made easy",
+  "keywords": [
+    "ant",
+    "util",
+    "microservices",
+    "api",
+    "functions",
+    "graphql",
+    "reactive",
+    "serverless"
+  ],
+  "directories": {
+    "lib": "lib",
+    "doc": "docs",
+    "test": "spec"
+  },
+  "files": [
+    "lib",
+    "index.js",
+    "LICENSE",
+    "package.json"
+  ],
+  "main": "index.js",
+  "scripts": {
+    "lint": "eslint ./",
+    "pretest": "npm run lint",
+    "test": "jest",
+    "posttest": "rm -r ./spec/support/out",
+    "apidocs": "jsdoc -c ./jsdoc.json",
+    "docs": "npm run apidocs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/back4app/antframework/tree/master/packages/ant-util"
+  },
+  "author": "Back4App Inc.",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/back4app/antframework/issues"
+  },
+  "homepage": "https://github.com/back4app/antframework/tree/master/packages/ant-util#readme"
+}
