@@ -1,0 +1,53 @@
+{
+  "name": "@back4app/ant-cli",
+  "version": "0.0.0",
+  "engines": {
+    "node": ">=10.10"
+  },
+  "preferGlobal": true,
+  "description": "CLI (Command Line Interface) for Ant Framework - Serverless microservices made easy",
+  "keywords": [
+    "ant",
+    "cli",
+    "microservices",
+    "api",
+    "functions",
+    "graphql",
+    "serverless"
+  ],
+  "directories": {
+    "bin": "bin",
+    "lib": "lib",
+    "doc": "docs",
+    "test": "spec"
+  },
+  "files": [
+    "bin",
+    "lib",
+    "index.js",
+    "LICENSE",
+    "package.json"
+  ],
+  "main": "index.js",
+  "scripts": {
+    "lint": "eslint ./",
+    "pretest": "npm run lint",
+    "test": "jest",
+    "posttest": "rm -r ./spec/support/out",
+    "apidocs": "jsdoc -c ./jsdoc.json",
+    "docs": "npm run apidocs"
+  },
+  "bin": {
+    "ant": "./bin/ant.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/back4app/antframework/tree/master/packages/ant-cli"
+  },
+  "author": "Back4App Inc.",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/back4app/antframework/issues"
+  },
+  "homepage": "https://github.com/back4app/antframework/tree/master/packages/ant-cli#readme"
+}
