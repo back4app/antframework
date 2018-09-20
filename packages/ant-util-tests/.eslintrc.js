@@ -34,5 +34,13 @@ module.exports = {
             "error",
             "always"
         ]
-    }
+    },
+    "overrides": [
+        {
+            "files": ["*.spec.js"],
+            "env": {
+              "jest": true
+            }
+        }
+    ]
 };

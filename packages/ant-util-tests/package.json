@@ -1,0 +1,41 @@
+{
+  "name": "@back4app/ant-util-tests",
+  "version": "0.0.0",
+  "engines": {
+    "node": ">=10.10"
+  },
+  "description": "Library of utility configuration files for leading with test tools in the context of Ant Framework - Serverless microservices made easy",
+  "keywords": [
+    "ant",
+    "tests",
+    "eslint",
+    "jest",
+    "microservices",
+    "api",
+    "functions",
+    "graphql",
+    "reactive",
+    "serverless"
+  ],
+  "directories": {
+    "doc": "docs"
+  },
+  "files": [
+    "LICENSE",
+    "package.json"
+  ],
+  "scripts": {
+    "apidocs": "jsdoc -c ./jsdoc.json",
+    "docs": "npm run apidocs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/back4app/antframework.git"
+  },
+  "author": "Back4App Inc.",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/back4app/antframework/issues"
+  },
+  "homepage": "https://github.com/back4app/antframework/tree/master/packages/ant-util-tests#readme"
+}
