@@ -1,15 +1,14 @@
 {
-  "name": "@back4app/ant-util-tests",
+  "name": "@back4app/ant-util-docs",
   "version": "0.0.0",
   "engines": {
     "node": ">=10.10"
   },
-  "description": "Library of utility configuration files for leading with test tools in the context of Ant Framework - Serverless microservices made easy",
+  "description": "Library of utility configuration files for dealing with docs in the context of Ant Framework - Serverless microservices made easy",
   "keywords": [
     "ant",
-    "tests",
-    "eslint",
-    "jest",
+    "docs",
+    "jsdoc",
     "microservices",
     "api",
     "functions",
@@ -21,14 +20,12 @@
     "doc": "docs"
   },
   "files": [
-    ".eslintignore",
-    ".eslintrc.js",
-    "jest.config.js",
+    "jsdoc.json",
     "LICENSE",
     "package.json"
   ],
   "scripts": {
-    "apidocs": "jsdoc -c ./node_modules/@back4app/ant-util-docs/jsdoc.json ./*",
+    "apidocs": "jsdoc -c ./jsdoc.json ./*",
     "docs": "npm run apidocs"
   },
   "repository": {
@@ -40,9 +37,8 @@
   "bugs": {
     "url": "https://github.com/back4app/antframework/issues"
   },
-  "homepage": "https://github.com/back4app/antframework/tree/master/packages/ant-util-tests#readme",
+  "homepage": "https://github.com/back4app/antframework/tree/master/packages/ant-util-docs#readme",
   "devDependencies": {
-    "@back4app/ant-util-docs": "^0.0.0",
     "jsdoc": "^3.5.5",
     "minami": "^1.2.3"
   }

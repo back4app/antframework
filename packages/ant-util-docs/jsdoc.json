@@ -1,12 +1,5 @@
 {
   "source": {
-    "include":  [
-      "./README.md",
-      "./index.js",
-      "bin/",
-      "lib/",
-      "spec/"
-    ],
     "excludePattern": "/node_modules/"
   },
   "plugins": ["plugins/markdown"],
