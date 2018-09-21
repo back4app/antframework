@@ -1,7 +1,7 @@
 /**
  * Exports util functions to help leading with the
- * [RxJS]{@link https://rxjs-dev.firebaseapp.com/api} API.
- * @module antframework/lib/util/rxjsHelper
+ * [RxJS]{@link https://github.com/ReactiveX/rxjs} API.
+ * @module ant-util-rxjs/rxjsHelper
  */
 
 const assert = require('assert');

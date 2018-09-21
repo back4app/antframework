@@ -1,12 +1,12 @@
 /**
- * @fileoverview Tests for lib/util/rxjsHelper.js file.
+ * @fileoverview Tests for lib/rxjsHelper.js file.
  */
 
 const { Observable } = require('rxjs');
 const { toArray } = require('rxjs/operators');
-const rxjsHelper = require('../../../lib/util/rxjsHelper');
+const rxjsHelper = require('../../lib/rxjsHelper');
 
-describe('lib/util/rxjsHelper.js', () => {
+describe('lib/rxjsHelper.js', () => {
   describe('rxjsHelper.createObservable', () => {
     let myObservable = null;
 
