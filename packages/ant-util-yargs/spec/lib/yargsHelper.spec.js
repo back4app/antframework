@@ -1,12 +1,12 @@
 /* eslint-disable no-console */
 
 /**
- * @fileoverview Tests for lib/util/yargsHelper.js file.
+ * @fileoverview Tests for lib/yargsHelper.js file.
  */
 
-const yargsHelper = require('../../../lib/util/yargsHelper');
+const yargsHelper = require('../../lib/yargsHelper');
 
-describe('lib/util/yargsHelper.js', () => {
+describe('lib/yargsHelper.js', () => {
   test('should export getCliFileName function', () => {
     const originalArgv = process.argv;
     process.argv = ['node'];
