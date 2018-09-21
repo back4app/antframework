@@ -66,4 +66,44 @@ describe('lib/yargsHelper.js', () => {
     });
     yargsHelper.handleErrorMessage('Some message');
   });
+
+  test('handleErrorMessage should only log error if verbose', (done) => {
+    expect(yargsHelper.handleErrorMessage).toEqual(expect.any(Function));
+    const originalError = console.error;
+    console.error = jest.fn();
+    const originalArgv = process.argv;
+    process.argv = [];
+    const originalExit = process.exit;
+    process.exit = jest.fn((code) => {
+      expect(code).toEqual(1);
+      expect(console.error).toHaveBeenCalledWith(
+        expect.stringContaining('Some message')
+      );
+      process.exit = jest.fn((code) => {
+        expect(code).toEqual(1);
+        expect(console.error).toHaveBeenCalledWith(
+          expect.stringContaining('Some message')
+        );
+        expect(console.error).toHaveBeenCalledWith(
+          expect.stringContaining(
+            'For getting the error stack, use --verbose option'
+          )
+        );
+        expect(console.error).toHaveBeenCalledWith(
+          expect.stringContaining('--help someCommand')
+        );
+        console.error = originalError;
+        process.argv = originalArgv;
+        process.exit = originalExit;
+        done();
+      });
+      const someError = new Error('Some message');
+      yargsHelper.handleErrorMessage(
+        someError.message,
+        someError,
+        'someCommand'
+      );
+    });
+    yargsHelper.handleErrorMessage('Some message');
+  });
 });
