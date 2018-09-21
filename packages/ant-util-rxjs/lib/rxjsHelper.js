@@ -138,4 +138,4 @@ function createObservable(start, pause, resume) {
   });
 }
 
-module.exports.createObservable = createObservable;
+module.exports = { createObservable };
