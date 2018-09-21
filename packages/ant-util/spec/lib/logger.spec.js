@@ -1,10 +1,10 @@
 /**
- * @fileoverview Tests for lib/util/logger.js file.
+ * @fileoverview Tests for lib/logger.js file.
  */
 
-const logger = require('../../../lib/util/logger');
+const logger = require('../../lib/logger');
 
-describe('lib/util/logger.js', () => {
+describe('lib/logger.js', () => {
   test('should export Logger instance', () => {
     expect(logger).toEqual(expect.any(Object));
     expect(logger.constructor.name).toEqual('Logger');

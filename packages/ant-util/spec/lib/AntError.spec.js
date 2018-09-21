@@ -1,10 +1,10 @@
 /**
- * @fileoverview Tests for lib/util/AntError.js file.
+ * @fileoverview Tests for lib/AntError.js file.
  */
 
-const AntError = require('../../../lib/util/AntError');
+const AntError = require('../../lib/AntError');
 
-describe('lib/util/AntError.js', () => {
+describe('lib/AntError.js', () => {
   test('should export AntError class', () => {
     const antError = new AntError();
     expect(antError).toBeInstanceOf(Error);

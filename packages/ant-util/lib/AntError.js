@@ -3,6 +3,7 @@
  */
 
 /**
+ * @class ant-util/AntError
  * Representes the errors that are thrown by the Ant Framework.
  * @extends Error
  */

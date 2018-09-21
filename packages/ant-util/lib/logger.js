@@ -6,6 +6,7 @@
 const assert = require('assert');
 
 /**
+ * @class ant-util/Logger
  * Represents a logger utility that has a set of handlers and calls each of them
  * when a new entry is aimed to be logged.
  */
