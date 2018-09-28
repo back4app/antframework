@@ -3,8 +3,7 @@
  */
 
 const Mustache = require('mustache');
-const AntError = require('../../../util/AntError');
-const logger = require('../../../util/logger');
+const { AntError, logger } = require('@back4app/ant-util');
 
 /**
  * This function mocks a GraphQL field value.

@@ -1,20 +1,25 @@
 /**
- * @fileoverview Tests for lib/plugins/graphQL/lib/util/schemaHelper.js file.
+ * @fileoverview Tests for lib/util/schemaHelper.js file.
  */
 
 const path = require('path');
-const Ant = require('../../../../../../lib/Ant');
-const GraphQL = require('../../../../../../lib/plugins/graphQL/lib/GraphQL');
+const { Ant } = require('@back4app/ant');
+const GraphQL = require('../../../lib/GraphQL');
 const schemaHelper = require(
-  '../../../../../../lib/plugins/graphQL/lib/util/schemaHelper'
+  '../../../lib/util/schemaHelper'
+);
+
+const utilPath = path.resolve(
+  __dirname,
+  '../../../node_modules/@back4app/ant-util-tests'
 );
 
 describe('lib/util/schemaHelper.js', () => {
   test('should export generateSchema function', () => {
     expect(schemaHelper.generateSchema).toEqual(expect.any(Function));
     const basePath = path.resolve(
-      __dirname,
-      '../../../../../support/services/FooService'
+      utilPath,
+      'services/FooService'
     );
     const ant = new Ant({ basePath });
     const graphQL = new GraphQL(ant, { basePath });
@@ -25,8 +30,8 @@ describe('lib/util/schemaHelper.js', () => {
 
   test('should invoke subscribe directive resolver', () => {
     const basePath = path.resolve(
-      __dirname,
-      '../../../../../support/services/FooService'
+      utilPath,
+      'services/FooService'
     );
     const ant = new Ant({ basePath });
     const graphQL = new GraphQL(ant, { basePath });

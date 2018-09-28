@@ -2,9 +2,8 @@
  * @fileoverview Defines and exports the {@link subscribe} function.
  */
 
-const AntError = require('../../../util/AntError');
-const logger = require('../../../util/logger');
 const { Observable } = require('rxjs');
+const { AntError, logger } = require('@back4app/ant-util');
 const AsyncIterableObserver = require('../lib/util/AsyncIterableObserver');
 
 /**

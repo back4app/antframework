@@ -1,12 +1,13 @@
 /* eslint-disable no-console */
 /**
- * @fileoverview Tests for lib/plugins/graphQL/lib/util/AsyncIterableObserver.js file.
+ * @fileoverview Tests for lib/util/AsyncIterableObserver.js file.
  */
-const AsyncIterableObserver = require(
-  '../../../../../../lib/plugins/graphQL/lib/util/AsyncIterableObserver'
-);
+
 const rxjs = require('rxjs');
 const iterall = require('iterall');
+const AsyncIterableObserver = require(
+  '../../../lib/util/AsyncIterableObserver'
+);
 
 describe('lib/util/AsyncIterableObserver.js', () => {
   test('should export AsyncIterableObserver class', () => {

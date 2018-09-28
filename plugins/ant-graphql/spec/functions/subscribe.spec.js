@@ -1,14 +1,13 @@
 /**
- * @fileoverview Tests for lib/plugins/graphQL/functions/subscribe.js file.
+ * @fileoverview Tests for functions/subscribe.js file.
  */
 
-const subscribe = require('../../../../../lib/plugins/graphQL/functions/subscribe');
-const AsyncIterableObserver = require('../../../../../lib/plugins/graphQL/lib/util/AsyncIterableObserver');
-const AntError = require('../../../../../lib/util/AntError');
-const logger = require('../../../../../lib/util/logger');
+const { AntError, logger } = require('@back4app/ant-util');
 const rxjs = require('rxjs');
+const subscribe = require('../../functions/subscribe');
+const AsyncIterableObserver = require('../../lib/util/AsyncIterableObserver');
 
-describe('lib/plugins/graphQL/functions/subscribe.js', () => {
+describe('functions/subscribe.js', () => {
   test('should export a function', () => {
     expect(typeof subscribe).toEqual('function');
   });

@@ -1,13 +1,12 @@
 /**
- * @fileoverview Tests for lib/plugins/graphQL/functions/mock.js file.
+ * @fileoverview Tests for functions/mock.js file.
  */
 
 const Mustache = require('mustache');
-const AntError = require('../../../../../lib/util/AntError');
-const logger = require('../../../../../lib/util/logger');
-const mock = require('../../../../../lib/plugins/graphQL/functions/mock');
+const { AntError, logger } = require('@back4app/ant-util');
+const mock = require('../../functions/mock');
 
-describe('lib/plugins/graphQL/functions/mock.js', () => {
+describe('functions/mock.js', () => {
   test('should export a function', () => {
     expect(typeof mock).toEqual('function');
   });

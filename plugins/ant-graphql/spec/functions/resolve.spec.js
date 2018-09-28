@@ -1,15 +1,18 @@
 /**
- * @fileoverview Tests for lib/plugins/graphQL/functions/resolve.js file.
+ * @fileoverview Tests for functions/resolve.js file.
  */
 
 const path = require('path');
-const logger = require('../../../../../lib/util/logger');
-const AntError = require('../../../../../lib/util/AntError');
-const Ant = require('../../../../../lib/Ant');
-const AntFunction = require('../../../../../lib/functions/AntFunction');
-const resolve = require('../../../../../lib/plugins/graphQL/functions/resolve');
+const { AntError, logger } = require('@back4app/ant-util');
+const { Ant, AntFunction } = require('@back4app/ant');
+const resolve = require('../../functions/resolve');
 
-describe('lib/plugins/graphQL/functions/resolve.js', () => {
+const utilPath = path.resolve(
+  __dirname,
+  '../../node_modules/@back4app/ant-util-tests'
+);
+
+describe('functions/resolve.js', () => {
   test('should export a function', () => {
     expect(typeof resolve).toEqual('function');
   });
@@ -29,8 +32,8 @@ describe('lib/plugins/graphQL/functions/resolve.js', () => {
   test('should find path if not a loaded function', async () => {
     const ant = new Ant({
       basePath: path.resolve(
-        __dirname,
-        '../../../../support/functions'
+        utilPath,
+        'functions'
       )
     });
     const model = { field: { astNode: { type: { kind: 'ListType' }}}};
@@ -66,8 +69,8 @@ describe('lib/plugins/graphQL/functions/resolve.js', () => {
   test('should use current value if passed', async () => {
     const ant = new Ant({
       basePath: path.resolve(
-        __dirname,
-        '../../../../support/functions'
+        utilPath,
+        'functions'
       )
     });
     const model = { field: { astNode: { type: { kind: 'ListType' }}}};

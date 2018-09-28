@@ -1,13 +1,13 @@
 /**
  * Exports util functions to help leading with [GraphQL]{@link https://github.com/graphql/graphql-js}
  * schema.
- * @module antframework/lib/plugins/graphQL/lib/util
+ * @module ant-graphql/util
  */
 
+const { Observable } = require('@back4app/ant-util-rxjs/node_modules/rxjs');
 const { parse, buildASTSchema, validateSchema } = require('graphql');
-const logger = require('../../../../util/logger');
-const { Observable } = require('rxjs');
-const AntFunction = require('../../../../functions/AntFunction');
+const { logger } = require('@back4app/ant-util');
+const { AntFunction } = require('@back4app/ant');
 
 /**
  * Helper function that can be used to generate a GraphQL schema from Ant

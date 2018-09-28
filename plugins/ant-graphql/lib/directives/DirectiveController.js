@@ -3,11 +3,12 @@
  */
 
 const assert = require('assert');
-const AntError = require('../../../../util/AntError');
+const { AntError } = require('@back4app/ant-util');
+const { LibFunction, Ant } = require('@back4app/ant');
 const Directive = require('./Directive');
-const LibFunction = require('../../../../functions/LibFunction');
 
 /**
+ * @class ant-graphql/DirectiveController
  * Represents a controller for the Ant Framework GraphQL plugin's directives.
  */
 class DirectiveController {
@@ -19,7 +20,7 @@ class DirectiveController {
   */
   constructor(ant, directives) {
     assert(
-      ant instanceof require('../../../../Ant'),
+      ant instanceof Ant,
       'Could not initialize the directive controller: param "ant" should be Ant'
     );
 

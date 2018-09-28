@@ -1,30 +1,34 @@
 /* eslint-disable no-console */
 
 /**
- * @fileoverview Tests for lib/plugins/graphQL/lib/GraphQL.js file.
+ * @fileoverview Tests for lib/GraphQL.js file.
  */
 
 const path = require('path');
-const fs = require('fs-extra');
 const childProcess = require('child_process');
-const Ant = require('../../../../../lib/Ant');
-const AntCli = require('../../../../../lib/cli/AntCli');
-const Plugin = require('../../../../../lib/plugins/Plugin');
-const GraphQL = require('../../../../../lib/plugins/graphQL/lib/GraphQL');
+const fs = require('fs-extra');
+const { Ant, Plugin } = require('@back4app/ant');
+const { AntCli } = require('@back4app/ant-cli');
+const GraphQL = require('../../lib/GraphQL');
 const Directive = require(
-  '../../../../../lib/plugins/graphQL/lib/directives/Directive'
+  '../../lib/directives/Directive'
 );
 const DirectiveController = require(
-  '../../../../../lib/plugins/graphQL/lib/directives/DirectiveController'
+  '../../lib/directives/DirectiveController'
+);
+
+const utilPath = path.resolve(
+  __dirname,
+  '../../node_modules/@back4app/ant-util-tests'
 );
 
 const ant = new Ant();
 
-describe('lib/plugins/graphQL/lib/GraphQL.js', () => {
+describe('lib/GraphQL.js', () => {
   const originalCwd = process.cwd();
   const outPath = path.resolve(
     __dirname,
-    '../../../../support/out/lib/plugins/graphQL/lib/GraphQL.js',
+    '../support/out/lib/GraphQL.js',
     'out' + Math.floor(Math.random() * 1000)
   );
 
@@ -65,13 +69,13 @@ describe('lib/plugins/graphQL/lib/GraphQL.js', () => {
     console.error = jest.fn();
     expect.hasAssertions();
     const bin = path.resolve(
-      __dirname,
-      '../../../../support/templates/crashServerTemplate/server.js'
+      utilPath,
+      'templates/crashServerTemplate/server.js'
     );
     const server = { bin };
     const model = path.resolve(
-      __dirname,
-      '../../../../support/configs/graphQLPluginConfig/model.graphql'
+      utilPath,
+      'configs/graphQLPluginConfig/model.graphql'
     );
     const graphQL = new GraphQL(ant, { server, model });
     try {
@@ -92,8 +96,8 @@ describe('lib/plugins/graphQL/lib/GraphQL.js', () => {
     const port = 'FooPort';
     const server = { port };
     const model = path.resolve(
-      __dirname,
-      '../../../../support/configs/graphQLPluginConfig/model.graphql'
+      utilPath,
+      'configs/graphQLPluginConfig/model.graphql'
     );
     const graphQL = new GraphQL(ant, { server, model });
     try {
@@ -110,8 +114,8 @@ describe('lib/plugins/graphQL/lib/GraphQL.js', () => {
     expect.hasAssertions();
     const originalCwd = process.cwd();
     process.chdir(path.resolve(
-      __dirname,
-      '../../../../support/configs/graphQLPluginConfig'
+      utilPath,
+      'configs/graphQLPluginConfig'
     ));
     const originalSpawn = childProcess.spawn;
     childProcess.spawn = jest.fn(() => { return {
@@ -148,8 +152,8 @@ describe('lib/plugins/graphQL/lib/GraphQL.js', () => {
       }
     });
     const model = path.resolve(
-      __dirname,
-      '../../../../support/configs/graphQLPluginConfig/model.graphql'
+      utilPath,
+      'configs/graphQLPluginConfig/model.graphql'
     );
     const graphQL = new GraphQL(ant, { model });
     try {
@@ -171,12 +175,12 @@ describe('lib/plugins/graphQL/lib/GraphQL.js', () => {
     console.error = jest.fn();
     console.log = jest.fn();
     const model = path.resolve(
-      __dirname,
-      '../../../../support/configs/graphQLPluginConfig/model.graphql'
+      utilPath,
+      'configs/graphQLPluginConfig/model.graphql'
     );
     const bin = path.resolve(
-      __dirname,
-      '../../../../support/templates/fooServerTemplate/server.js'
+      utilPath,
+      'templates/fooServerTemplate/server.js'
     );
     const server = { bin };
     const graphQL = new GraphQL(ant, { model, server });
@@ -196,8 +200,8 @@ describe('lib/plugins/graphQL/lib/GraphQL.js', () => {
     expect.hasAssertions();
     const originalCwd = process.cwd();
     process.chdir(path.resolve(
-      __dirname,
-      '../../../../support/configs/graphQLPluginConfig'
+      utilPath,
+      'configs/graphQLPluginConfig'
     ));
     const originalExec = childProcess.exec;
     const originalLog = console.log;
@@ -233,8 +237,8 @@ for requests on http://localhost:3000')
     Object.defineProperty(process, 'platform', { value: 'darwin' });
     const originalCwd = process.cwd();
     process.chdir(path.resolve(
-      __dirname,
-      '../../../../support/configs/graphQLPluginConfig'
+      utilPath,
+      'configs/graphQLPluginConfig'
     ));
     const originalExec = childProcess.exec;
     const originalLog = console.log;
@@ -271,8 +275,8 @@ listening for requests on http://localhost:3000\n')
     Object.defineProperty(process, 'platform', { value: 'FooPlatform' });
     const originalCwd = process.cwd();
     process.chdir(path.resolve(
-      __dirname,
-      '../../../../support/configs/graphQLPluginConfig'
+      utilPath,
+      'configs/graphQLPluginConfig'
     ));
     const originalExec = childProcess.exec;
     const originalLog = console.log;
@@ -381,8 +385,8 @@ listening for requests on http://localhost:3000\n')
       const originalExit = process.exit;
       const originalCwd = process.cwd();
       process.chdir(path.resolve(
-        __dirname,
-        '../../../../support/configs/graphQLPluginConfig'
+        utilPath,
+        'configs/graphQLPluginConfig'
       ));
       const antCli = new AntCli();
       const graphQLPlugin = antCli._ant.pluginController.getPlugin('GraphQL');
@@ -400,8 +404,8 @@ listening for requests on http://localhost:3000\n')
     test('should show friendly errors', (done) => {
       const originalCwd = process.cwd();
       process.chdir(path.resolve(
-        __dirname,
-        '../../../../support/configs/graphQLPluginConfig'
+        utilPath,
+        'configs/graphQLPluginConfig'
       ));
       const originalError = console.error;
       console.error = jest.fn();
@@ -498,8 +502,8 @@ listening for requests on http://localhost:3000\n')
       ant,
       {
         basePath: path.resolve(
-          __dirname,
-          '../../../../support/services/FooService')
+          utilPath,
+          'services/FooService')
       }
     );
     it('should returns the model in the base path', () => {

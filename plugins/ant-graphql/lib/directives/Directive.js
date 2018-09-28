@@ -3,9 +3,10 @@
  */
 
 const assert = require('assert');
-const AntFunction = require('../../../../functions/AntFunction');
+const { AntFunction, Ant } = require('@back4app/ant');
 
 /**
+ * @class ant-graphql/Directive
  * Represents a GraphQL directive that can use to specify the behavior of a
  * GraphQL API.
  */
@@ -23,7 +24,7 @@ class Directive {
    */
   constructor(ant, name, definition, resolver) {
     assert(
-      ant instanceof require('../../../../Ant'),
+      ant instanceof Ant,
       'Could not initialize the directive: param "ant" should be Ant'
     );
     assert(

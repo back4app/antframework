@@ -1,18 +1,13 @@
 /**
- * @fileoverview Tests for
- * lib/plugins/graphQL/lib/directives/DirectiveController.js file.
+ * @fileoverview Tests for lib/directives/DirectiveController.js file.
  */
 
-const Ant = require('../../../../../../lib/Ant');
-const AntFunction = require('../../../../../../lib/functions/AntFunction');
-const LibFunction = require('../../../../../../lib/functions/LibFunction');
-const Runtime = require('../../../../../../lib/functions/runtimes/Runtime');
-const Plugin = require('../../../../../../lib/plugins/Plugin');
+const { AntFunction, Runtime, LibFunction, Ant, Plugin } = require('@back4app/ant');
 const Directive = require(
-  '../../../../../../lib/plugins/graphQL/lib/directives/Directive'
+  '../../../lib/directives/Directive'
 );
 const DirectiveController = require(
-  '../../../../../../lib/plugins/graphQL/lib/directives/DirectiveController'
+  '../../../lib/directives/DirectiveController'
 );
 
 const ant = new Ant();

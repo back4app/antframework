@@ -8,14 +8,11 @@ const assert = require('assert');
 const path = require('path');
 const fs = require('fs');
 const childProcess = require('child_process');
-const AntError = require('../../../util/AntError');
-const logger = require('../../../util/logger');
-const yargsHelper = require('../../../util/yargsHelper');
-const AntFunction = require('../../../functions/AntFunction');
-const Plugin = require('../../Plugin');
-const Template = require('../../../templates/Template');
-const DirectiveController = require('./directives/DirectiveController');
+const { AntError, logger } = require('@back4app/ant-util');
+const { yargsHelper } = require('@back4app/ant-util-yargs');
+const { AntFunction, Template, Plugin } = require('@back4app/ant');
 const Directive = require('./directives/Directive');
+const DirectiveController = require('./directives/DirectiveController');
 const mock = require('../functions/mock');
 const resolve = require('../functions/resolve');
 const subscribe = require('../functions/subscribe');
@@ -24,11 +21,12 @@ const templates = [
   new Template(
     'Server',
     'Default',
-    path.resolve(__dirname, '../templates/server/default')
+    path.resolve(__dirname, '../node_modules/@back4app/ant-graphql-express')
   )
 ];
 
 /**
+ * @class ant-graphql/GraphQL
  * Represents a plugin containing functionalities to build and start GraphQL API
  * services with Ant Framework.
  * @extends Plugin
@@ -207,7 +205,10 @@ class GraphQL extends Plugin {
 
     const bin =
       server.bin ||
-      path.resolve(__dirname, '../templates/server/default/bin/server.js');
+      path.resolve(
+        __dirname,
+        '../node_modules/@back4app/ant-graphql-express/bin/server.js'
+      );
 
     assert(
       typeof bin === 'string',

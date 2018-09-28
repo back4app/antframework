@@ -1,11 +1,10 @@
 /**
- * @fileoverview Tests for lib/plugins/graphQL/lib/directives/Directive.js file.
+ * @fileoverview Tests for lib/directives/Directive.js file.
  */
 
-const Ant = require('../../../../../../lib/Ant');
-const AntFunction = require('../../../../../../lib/functions/AntFunction');
+const { AntFunction, Ant } = require('@back4app/ant');
 const Directive = require(
-  '../../../../../../lib/plugins/graphQL/lib/directives/Directive'
+  '../../../lib/directives/Directive'
 );
 
 const ant = new Ant();
@@ -17,7 +16,7 @@ const fooDirective = new Directive(
   fooFunction
 );
 
-describe('lib/plugins/graphQL/lib/directives/Directive.js', () => {
+describe('lib/directives/Directive.js', () => {
   test('should export "Directive" class', () => {
     expect(fooDirective.constructor.name).toEqual('Directive');
   });
