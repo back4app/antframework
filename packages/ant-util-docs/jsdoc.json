@@ -1,6 +1,6 @@
 {
   "source": {
-    "excludePattern": "/node_modules/"
+    "excludePattern": "node_modules"
   },
   "plugins": ["plugins/markdown"],
   "opts": {
