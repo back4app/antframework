@@ -59,6 +59,14 @@ describe('lib/GraphQL.js', () => {
     expect(graphQL.name).toEqual('GraphQL');
   });
 
+  test('should load startService method in ant instance', async () => {
+    const ant = new Ant();
+    const graphQL = new GraphQL(ant);
+    graphQL.startService = jest.fn();
+    await ant.startService();
+    expect(graphQL.startService).toHaveBeenCalled();
+  });
+
   test('should fail if invalid server', () => {
     const graphQL = new GraphQL(ant, { server: '/foo/server' });
     expect(graphQL.startService()).rejects.toThrow();
@@ -108,7 +116,6 @@ describe('lib/GraphQL.js', () => {
       );
     }
   });
-
 
   test('should fail if server send error event', async () => {
     expect.hasAssertions();
@@ -430,6 +437,26 @@ listening for requests on http://localhost:3000\n')
       antCli._yargs.parse('start');
     });
 
+    test('_yargsFailed should be called in the case of failure', (done) => {
+      const originalCwd = process.cwd();
+      process.chdir(path.resolve(
+        utilPath,
+        'configs/graphQLPluginConfig'
+      ));
+      const antCli = (new AntCli());
+      const _yargsFailed = jest.fn();
+      antCli._ant.pluginController.getPlugin('GraphQL')
+        ._yargsFailed = _yargsFailed;
+      try {
+        antCli._yargs.parse('--config');
+      } catch (e) {
+        expect(_yargsFailed).toHaveBeenCalled();
+        process.chdir(originalCwd);
+        done();
+      }
+
+    });
+
     test('should show friendly error when more passed arguments', (done) => {
       const originalArgv = process.argv;
       process.argv.push('start');
@@ -508,7 +535,7 @@ listening for requests on http://localhost:3000\n')
     );
     it('should returns the model in the base path', () => {
       expect(graphQL.getModel()).toEqual(expect.stringContaining('schema'));
-      expect(graphQL.getModel()).toEqual(expect.stringContaining('helloQuery'));
+      expect(graphQL.getModel()).toEqual(expect.stringContaining('queryHello'));
     });
   });
 });

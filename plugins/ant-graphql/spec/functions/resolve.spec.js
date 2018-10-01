@@ -39,6 +39,8 @@ describe('functions/resolve.js', () => {
     const model = { field: { astNode: { type: { kind: 'ListType' }}}};
     expect(await resolve(ant, { to: 'fooLibFunction' }, 3, undefined, model))
       .toEqual([1, 2, 3]);
+    expect(await resolve(ant, { to: 'fooLibFunction' }, 1, undefined, null))
+      .toEqual(1);
   });
 
   test('should log error if function not found', async () => {

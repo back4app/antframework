@@ -117,7 +117,7 @@ function generateSchema(ant, graphQL, _model) {
       logger.error(
         'There were some errors when validating the GraphQL schema:'
       );
-      errors.forEach(error => logger.error(error));
+      errors.forEach(error => logger.error(error.toString()));
     }
 
     return schema;
