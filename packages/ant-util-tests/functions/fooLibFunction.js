@@ -2,7 +2,7 @@
  * @fileoverview Foo lib function for testing purposes.
  */
 
-const { Observable } = require('rxjs');
+const { Observable } = require('@back4app/ant-util-rxjs/node_modules/rxjs');
 
 module.exports = (count) => {
   return Observable.create(

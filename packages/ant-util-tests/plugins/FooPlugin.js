@@ -3,9 +3,10 @@
  * for testing purposes.
  */
 
-const Plugin = require('../../../lib/plugins/Plugin');
+const { Plugin } = require('@back4app/ant');
 
 /**
+ * @class ant-util-tests/FooPlugin
  * Represents a foo {@link Plugin} implementation for testing purposes.
  * @extends Plugin
  * @private
