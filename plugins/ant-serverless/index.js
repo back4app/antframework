@@ -1,6 +1,6 @@
 /**
  * Exports the {@link Serverless} plugin class.
- * @module antframework/lib/plugins/serverless
+ * @module ant-serverless
  */
 
 const Serverless = require('./lib/Serverless');

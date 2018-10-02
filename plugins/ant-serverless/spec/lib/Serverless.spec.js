@@ -1,31 +1,29 @@
 /* eslint-disable no-console */
 
 /**
- * @fileoverview Tests for lib/plugins/serverless/lib/Serverless.js file.
+ * @fileoverview Tests for lib/Serverless.js file.
  */
 
 const path = require('path');
 const fs = require('fs-extra');
-const AntError = require('../../../../../lib/util/AntError');
-const logger = require('../../../../../lib/util/logger');
-const Ant = require('../../../../../lib/Ant');
-const Plugin = require('../../../../../lib/plugins/Plugin');
-const Serverless = require(
-  '../../../../../lib/plugins/serverless/lib/Serverless'
-);
-const AntFunction = require(
-  '../../../../../lib/functions/AntFunction'
-);
-const LibFunction = require(
-  '../../../../../lib/functions/LibFunction'
-);
-const Template = require(
-  '../../../../../lib/templates/Template'
+const { AntError, logger } = require('@back4app/ant-util');
+const {
+  AntFunction,
+  LibFunction,
+  Ant,
+  Template,
+  Plugin
+} = require('@back4app/ant');
+const Serverless = require('../../lib/Serverless');
+
+const utilPath = path.resolve(
+  __dirname,
+  '../../node_modules/@back4app/ant-util-tests'
 );
 
 const ant = new Ant();
 
-describe('lib/plugins/serverless/lib/Serverless.js', () => {
+describe('lib/Serverless.js', () => {
   test('should export "Serverless" class extending "Plugin" class', () => {
     const serverless = new Serverless(ant);
     expect(serverless.constructor.name).toEqual('Serverless');
@@ -69,7 +67,7 @@ describe('lib/plugins/serverless/lib/Serverless.js', () => {
         console.log = jest.fn();
         const basePath = path.resolve(
           __dirname,
-          '../../../../support/out/lib/plugins/serverless/lib/Serverless.js'
+          '../support/out/lib/Serverless.js'
         );
         const outPath = path.resolve(
           basePath,
@@ -85,15 +83,15 @@ describe('lib/plugins/serverless/lib/Serverless.js', () => {
               'service',
               'FooService',
               path.resolve(
-                __dirname,
-                '../../../../support/services/FooService'
+                utilPath,
+                'services/FooService'
               )
             )).render(outPath);
           }
         }
         const serverless = new Serverless(ant);
         serverless._installAnt.run = (args, options) => {
-          expect(args).toEqual(['install', '@back4app/antframework']);
+          expect(args).toEqual(['install']);
           expect(options).toEqual(expect.any(Object));
           expect(options.cwd).toEqual(expect.stringContaining('.serverless'));
           serverless._serverlessCLI.run = (args, options) => {
@@ -124,10 +122,9 @@ describe('lib/plugins/serverless/lib/Serverless.js', () => {
                 'package-lock.json',
                 'package.json',
                 'serverless.yml',
-                'node_modules',
                 'fooLibFunction.zip'
               ]));
-              expect(outDir).toHaveLength(10);
+              expect(outDir).toHaveLength(9);
               onComplete();
             }};
           };
@@ -148,8 +145,8 @@ describe('lib/plugins/serverless/lib/Serverless.js', () => {
               ant,
               'fooLibFunction',
               path.resolve(
-                __dirname,
-                '../../../../support/functions/fooLibFunction.js'
+                utilPath,
+                'functions/fooLibFunction.js'
               ),
               ant.runtime
             )
@@ -166,7 +163,7 @@ describe('lib/plugins/serverless/lib/Serverless.js', () => {
         expect.hasAssertions();
         const basePath = path.resolve(
           __dirname,
-          '../../../../support/out/lib/plugins/serverless/lib/Serverless.js'
+          '../support/out/lib/Serverless.js'
         );
         const outPath = path.resolve(
           basePath,
@@ -182,15 +179,15 @@ describe('lib/plugins/serverless/lib/Serverless.js', () => {
               'service',
               'FooService',
               path.resolve(
-                __dirname,
-                '../../../../support/services/FooService'
+                utilPath,
+                'services/FooService'
               )
             )).render(outPath);
           }
         }
         const serverless = new Serverless(ant, { basePath: outPath });
         serverless._installAnt.run = (args, options) => {
-          expect(args).toEqual(['install', '@back4app/antframework']);
+          expect(args).toEqual(['install']);
           expect(options).toEqual(expect.any(Object));
           expect(options.cwd).toEqual(expect.stringContaining('.serverless'));
           serverless._serverlessCLI.run = (args, options) => {
@@ -213,8 +210,8 @@ describe('lib/plugins/serverless/lib/Serverless.js', () => {
               ant,
               'fooLibFunction',
               path.resolve(
-                __dirname,
-                '../../../../support/functions/fooLibFunction.js'
+                utilPath,
+                'functions/fooLibFunction.js'
               ),
               ant.runtime
             )
@@ -238,10 +235,9 @@ describe('lib/plugins/serverless/lib/Serverless.js', () => {
           'package-lock.json',
           'package.json',
           'serverless.yml',
-          'node_modules',
           'fooLibFunction.zip'
         ]));
-        expect(outDir).toHaveLength(10);
+        expect(outDir).toHaveLength(9);
         fs.removeSync(outPath);
       }
     );
@@ -260,7 +256,7 @@ describe('lib/plugins/serverless/lib/Serverless.js', () => {
         expect.hasAssertions();
         const basePath = path.resolve(
           __dirname,
-          '../../../../support/out/lib/plugins/serverless/lib/Serverless.js'
+          '../support/out/lib/Serverless.js'
         );
         const outPath = path.resolve(
           basePath,
@@ -276,8 +272,8 @@ describe('lib/plugins/serverless/lib/Serverless.js', () => {
               'service',
               'FooService',
               path.resolve(
-                __dirname,
-                '../../../../support/services/FooService'
+                utilPath,
+                'services/FooService'
               )
             )).render(outPath);
           }
@@ -303,8 +299,8 @@ describe('lib/plugins/serverless/lib/Serverless.js', () => {
               ant,
               'fooLibFunction',
               path.resolve(
-                __dirname,
-                '../../../../support/functions/fooLibFunction.js'
+                utilPath,
+                'functions/fooLibFunction.js'
               ),
               ant.runtime
             )
@@ -331,7 +327,7 @@ describe('lib/plugins/serverless/lib/Serverless.js', () => {
         const ant = new Ant();
         const basePath = path.resolve(
           __dirname,
-          '../../../../support/out/lib/plugins/serverless/lib/Serverless.js'
+          '../support/out/lib/Serverless.js'
         );
         const outPath = path.resolve(
           basePath,
@@ -347,8 +343,8 @@ describe('lib/plugins/serverless/lib/Serverless.js', () => {
               'service',
               'FooService',
               path.resolve(
-                __dirname,
-                '../../../../support/services/FooService'
+                utilPath,
+                'services/FooService'
               )
             )).render(outPath);
           }
@@ -369,8 +365,8 @@ describe('lib/plugins/serverless/lib/Serverless.js', () => {
                 ant,
                 'fooLibFunction',
                 path.resolve(
-                  __dirname,
-                  '../../../../support/functions/fooLibFunction.js'
+                  utilPath,
+                  'functions/fooLibFunction.js'
                 ),
                 ant.runtime
               )
@@ -385,12 +381,12 @@ describe('lib/plugins/serverless/lib/Serverless.js', () => {
     );
 
     test(
-      'should fail if cannot install Ant Framework',
+      'should fail if cannot install dependencies',
       async () => {
         expect.hasAssertions();
         const basePath = path.resolve(
           __dirname,
-          '../../../../support/out/lib/plugins/serverless/lib/Serverless.js'
+          '../support/out/lib/Serverless.js'
         );
         const outPath = path.resolve(
           basePath,
@@ -406,8 +402,8 @@ describe('lib/plugins/serverless/lib/Serverless.js', () => {
               'service',
               'FooService',
               path.resolve(
-                __dirname,
-                '../../../../support/services/FooService'
+                utilPath,
+                'services/FooService'
               )
             )).render(outPath);
           }
@@ -427,8 +423,8 @@ describe('lib/plugins/serverless/lib/Serverless.js', () => {
                 ant,
                 'fooLibFunction',
                 path.resolve(
-                  __dirname,
-                  '../../../../support/functions/fooLibFunction.js'
+                  utilPath,
+                  'functions/fooLibFunction.js'
                 ),
                 ant.runtime
               )
@@ -436,7 +432,7 @@ describe('lib/plugins/serverless/lib/Serverless.js', () => {
           );
         } catch (e) {
           expect(e.message).toEqual(expect.stringContaining(
-            'Could not install Ant Framework'
+            'Could not install dependencies'
           ));
           fs.removeSync(outPath);
         }
@@ -449,7 +445,7 @@ describe('lib/plugins/serverless/lib/Serverless.js', () => {
         expect.hasAssertions();
         const basePath = path.resolve(
           __dirname,
-          '../../../../support/out/lib/plugins/serverless/lib/Serverless.js'
+          '../support/out/lib/Serverless.js'
         );
         const outPath = path.resolve(
           basePath,
@@ -465,8 +461,8 @@ describe('lib/plugins/serverless/lib/Serverless.js', () => {
               'service',
               'FooService',
               path.resolve(
-                __dirname,
-                '../../../../support/services/FooService'
+                utilPath,
+                'services/FooService'
               )
             )).render(outPath);
           }
@@ -491,8 +487,8 @@ describe('lib/plugins/serverless/lib/Serverless.js', () => {
                 ant,
                 'fooLibFunction',
                 path.resolve(
-                  __dirname,
-                  '../../../../support/functions/fooLibFunction.js'
+                  utilPath,
+                  'functions/fooLibFunction.js'
                 ),
                 ant.runtime
               )
@@ -519,7 +515,7 @@ describe('lib/plugins/serverless/lib/Serverless.js', () => {
         expect.hasAssertions();
         const basePath = path.resolve(
           __dirname,
-          '../../../../support/out/lib/plugins/serverless/lib/Serverless.js'
+          '../support/out/lib/Serverless.js'
         );
         const outPath = path.resolve(
           basePath,
@@ -535,8 +531,8 @@ describe('lib/plugins/serverless/lib/Serverless.js', () => {
               'service',
               'FooService',
               path.resolve(
-                __dirname,
-                '../../../../support/services/FooService'
+                utilPath,
+                'services/FooService'
               )
             )).render(outPath);
           }
@@ -561,8 +557,8 @@ describe('lib/plugins/serverless/lib/Serverless.js', () => {
                 ant,
                 'fooLibFunction',
                 path.resolve(
-                  __dirname,
-                  '../../../../support/functions/fooLibFunction.js'
+                  utilPath,
+                  'functions/fooLibFunction.js'
                 ),
                 ant.runtime
               )
@@ -590,7 +586,7 @@ describe('lib/plugins/serverless/lib/Serverless.js', () => {
         expect.hasAssertions();
         const basePath = path.resolve(
           __dirname,
-          '../../../../support/out/lib/plugins/serverless/lib/Serverless.js'
+          '../support/out/lib/Serverless.js'
         );
         const outPath = path.resolve(
           basePath,
@@ -606,8 +602,8 @@ describe('lib/plugins/serverless/lib/Serverless.js', () => {
               'service',
               'FooService',
               path.resolve(
-                __dirname,
-                '../../../../support/services/FooService'
+                utilPath,
+                'services/FooService'
               )
             )).render(outPath);
           }
@@ -632,8 +628,8 @@ describe('lib/plugins/serverless/lib/Serverless.js', () => {
                 ant,
                 'fooLibFunction',
                 path.resolve(
-                  __dirname,
-                  '../../../../support/functions/fooLibFunction.js'
+                  utilPath,
+                  'functions/fooLibFunction.js'
                 ),
                 ant.runtime
               )
@@ -721,6 +717,15 @@ describe('lib/plugins/serverless/lib/Serverless.js', () => {
           'Could not deploy functions: could not find "Default" template'
         ));
       }
+    });
+
+    test('Serverless provider should call deploy function', () => {
+      const ant = new Ant();
+      const serverless = new Serverless(ant);
+      ant.pluginController.loadPlugins([serverless]);
+      serverless.deploy = jest.fn();
+      ant.providerController.getProvider('Serverless').deploy();
+      expect(serverless.deploy).toHaveBeenCalled();
     });
   });
 });

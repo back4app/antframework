@@ -12,13 +12,14 @@ const readFile = util.promisify(fs.readFile);
 const writeFile = util.promisify(fs.writeFile);
 const uuidv4 = require('uuid/v4');
 const JSZip = require('jszip');
-const AntError = require('../../../util/AntError');
-const logger = require('../../../util/logger');
-const Plugin = require('../../Plugin');
-const Template = require('../../../templates/Template');
-const Provider = require('../../../hosts/providers/Provider');
-const AntFunction = require('../../../functions/AntFunction');
-const BinFunction = require('../../../functions/BinFunction');
+const { AntError, logger } = require('@back4app/ant-util');
+const {
+  AntFunction,
+  BinFunction,
+  Provider,
+  Template,
+  Plugin
+} = require('@back4app/ant');
 
 const templates = [
   new Template(
@@ -29,6 +30,7 @@ const templates = [
 ];
 
 /**
+ * @class ant-serverless/Serverless
  * Represents a plugin containing functionalities to deploy Ant Framework's
  * functions using the Serverless framework.
  * @extends Plugin
@@ -208,13 +210,12 @@ function: should be AntFunction`
     }
     logger.log('Service configuration files successfully copied');
 
-    logger.log('Installing Ant Framework');
+    logger.log('Installing dependencies');
     try {
       await (new Promise((resolve, reject) => {
         this._installAnt.run(
           [
-            'install',
-            '@back4app/antframework'
+            'install'
           ],
           { cwd: outputPath }
         ).subscribe(
@@ -225,11 +226,11 @@ function: should be AntFunction`
       }));
     } catch (e) {
       throw new AntError(
-        'Could not install Ant Framework',
+        'Could not install dependencies',
         e
       );
     }
-    logger.log('Ant Framework successfully installed');
+    logger.log('Dependencies successfully installed');
 
     for (const antFunction of functions) {
       logger.log(`Creating "${antFunction.name}" function's artifact`);
