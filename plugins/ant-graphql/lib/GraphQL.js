@@ -129,7 +129,8 @@ class GraphQL extends Plugin {
           yargsHelper.handleErrorMessage(e.message, e, 'start');
         }
       }
-    ).fail(msg => this._yargsFailed(msg));
+    );
+    yargsHelper.attachFailHandler(yargs, this._yargsFailed);
   }
 
   /**

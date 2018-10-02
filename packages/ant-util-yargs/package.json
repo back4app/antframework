@@ -49,6 +49,7 @@
   },
   "homepage": "https://github.com/back4app/antframework/tree/master/packages/ant-util-yargs#readme",
   "devDependencies": {
+    "@back4app/ant-util-analytics": "^0.0.17",
     "@back4app/ant-util-docs": "^0.0.17",
     "@back4app/ant-util-tests": "^0.0.17",
     "eslint": "^5.6.0",

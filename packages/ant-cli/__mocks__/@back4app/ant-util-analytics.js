@@ -4,7 +4,8 @@
  * server during tests run.
  */
 module.exports = {
-  Analytics: {
-    spawnTrackingProcess: () => {}
-  }
+  spawnTrackingProcess: () => {},
+  trackCommand: () => {},
+  trackError: () => Promise.resolve(),
+  addBreadcrumb: () => {}
 };

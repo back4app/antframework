@@ -4,6 +4,7 @@
 const Analytics = require('../lib/Analytics');
 const Parse = require('parse/node');
 const child_process = require('child_process');
+const Sentry = require('@sentry/node');
 
 describe('lib/analytics/Analytics.js', () => {
   test('should export "trackCommand" function', () => {
@@ -86,6 +87,41 @@ describe('lib/analytics/Analytics.js', () => {
       } catch (err) {
         expect(err.message).toBe('Param "data" must be an object');
       }
+    });
+  });
+
+  describe('Analytics.trackError', () => {
+    test('should track an error', () => {
+      const trackErrorMock = jest.spyOn(Sentry, 'captureException');
+      const err = new Error('Mocked error');
+      const trackingPromise = Analytics.trackError(err);
+      expect(trackErrorMock).toHaveBeenCalledWith(err);
+      expect(trackingPromise).toBeDefined();
+    });
+  });
+
+  describe('Analytics.addBreadcrumb', () => {
+    test('should add a breadcrumb', () => {
+      const addBreadcrumbMock = jest.spyOn(Sentry, 'addBreadcrumb');
+      const message = 'Hello world';
+      const data = { my: 'data' };
+      const category = 'My category';
+      const level = 4;
+      Analytics.addBreadcrumb(message, data, category, level);
+      expect(addBreadcrumbMock).toHaveBeenCalledWith({ message, data, category, level });
+    });
+
+    test('should use default values when undefined', () => {
+      const addBreadcrumbMock = jest.spyOn(Sentry, 'addBreadcrumb');
+      const category = 'Initialization';
+      const level = 'info';
+      Analytics.addBreadcrumb();
+      expect(addBreadcrumbMock).toHaveBeenCalledWith({
+        message: undefined,
+        data: undefined,
+        category,
+        level
+      });
     });
   });
 });

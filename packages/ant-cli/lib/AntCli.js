@@ -6,7 +6,7 @@
 
 const fs = require('fs');
 const yargs = require('yargs');
-const { logger } = require('@back4app/ant-util');
+const { AntError, logger } = require('@back4app/ant-util');
 const { yargsHelper } = require('@back4app/ant-util-yargs');
 const { Ant, Config } = require('@back4app/ant');
 const { Analytics } = require('@back4app/ant-util-analytics');
@@ -26,27 +26,33 @@ class AntCli {
    * @throws {AntError} If the local config file cannot be read.
    */
   constructor() {
-    /**
-     * Contains the Ant framework local config.
-     * @type {Config}
-     * @private
-     */
-    this._config = this._getAntConfig();
+    try {
+      /**
+       * Contains the Ant framework local config.
+       * @type {Config}
+       * @private
+       */
+      this._config = this._getAntConfig();
+      Analytics.addBreadcrumb('Ant CLI --config loaded', { config: this._config });
 
-    /**
-     * Contains the {@link Ant} instance created during the CLI initilization.
-     * @type {Ant}
-     * @private
-     */
-    this._ant = new Ant(this._config ? this._config.config : null);
+      /**
+       * Contains the {@link Ant} instance created during the CLI initilization.
+       * @type {Ant}
+       * @private
+       */
+      this._ant = new Ant(this._config ? this._config.config : null);
 
-    this._loadYargs();
+      this._loadYargs();
+    } catch (err) {
+      yargsHelper.handleErrorMessage(err.message, err);
+    }
   }
 
   /**
    * Gets the config object to be used for the Ant Framework loading.
    * @returns {Object} The config to be used for loading the Ant Framework.
-   * @throws {AntError} If the local config file cannot be read.
+   * @throws {AntError} If the local config file cannot be read, or --config
+   * does not have "path" argument.
    * @private
    */
   _getAntConfig() {
@@ -59,7 +65,7 @@ class AntCli {
     }
     if (configPathIndex) {
       if (process.argv.length <= configPathIndex) {
-        yargsHelper.handleErrorMessage('Config option requires path argument');
+        throw new AntError('Config option requires path argument');
       } else {
         configPath = process.argv[configPathIndex];
       }
@@ -70,14 +76,7 @@ class AntCli {
       }
     }
     if (configPath) {
-      try {
-        config = new Config(configPath);
-      } catch (e) {
-        yargsHelper.handleErrorMessage(
-          `Could not load config file ${configPath}`,
-          e
-        );
-      }
+      config = new Config(configPath);
     }
     return config;
   }
@@ -92,7 +91,8 @@ class AntCli {
      * @type {Object}
      * @private
      */
-    this._yargs = yargs.usage(
+    this._yargs = yargs;
+    this._yargs.usage(
       'Usage: $0 [--help] [--version] [--config <path>] [--verbose] <command> [<args>] \
 [<options>]'
     )
@@ -131,7 +131,7 @@ class AntCli {
    * @private
    */
   _loadYargsMiddlewares() {
-    this._yargs = this._yargs.middleware([argv => {
+    this._yargs.middleware([argv => {
       if (argv.verbose) {
         logger.attachHandler(console.log);
         logger.attachErrorHandler(console.error);
@@ -185,7 +185,7 @@ ${loadingErrors}`);
 ${epilogue}`;
     }
 
-    this._yargs = this._yargs.epilogue(epilogue);
+    this._yargs.epilogue(epilogue);
   }
 
   /**
@@ -193,7 +193,7 @@ ${epilogue}`;
    * @private
    */
   _loadYargsFailHandler() {
-    this._yargs = this._yargs.fail((msg, err, yargs) => {
+    yargsHelper.attachFailHandler(this._yargs, (msg, err, yargs) => {
       if (err) {
         if (
           err.name === 'YError' &&
@@ -201,7 +201,7 @@ ${epilogue}`;
         ) {
           msg = err.message;
         } else {
-          throw err;
+          yargsHelper.handleErrorMessage(err.message, err);
         }
       }
 
@@ -231,7 +231,10 @@ ${epilogue}`;
   * Executes the CLI program.
   */
   execute() {
-    this._yargs.argv;
+    if (this._yargs) {
+      Analytics.addBreadcrumb('Running Ant CLI', { argv: process.argv });
+      this._yargs.argv;
+    }
   }
 }
 

@@ -415,7 +415,8 @@ file is found at the given path'
           }
         );
       }
-    ).fail(msg => this._yargsFailed(msg));
+    );
+    yargsHelper.attachFailHandler(yargs, this._yargsFailed);
   }
 
   /**
