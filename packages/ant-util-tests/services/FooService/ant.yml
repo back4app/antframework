@@ -8,7 +8,7 @@ hosts:
     provider: Serverless
 plugins: # Plugins should be listed below
   # This plugin enables the Ant Framework for building and starting GraphQL API services
-  - $GLOBAL/plugins/graphQL:
+  - $GLOBAL/@back4app/ant-graphQL:
       {}
     # The GraphQL plugin base path
     # basePath: ./
@@ -19,7 +19,7 @@ plugins: # Plugins should be listed below
     #   bin: $GLOBAL/plugins/graphQL/templates/default/bin/server.js
     #   port: 3000
   # This plugin enables the Ant Framework for deploying functions using the Serverless framework
-  - $GLOBAL/plugins/serverless:
+  - $GLOBAL/@back4app/ant-serverless:
       {}
 templates:
   {}
