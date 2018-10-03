@@ -7,15 +7,11 @@
 const assert = require('assert');
 const path = require('path');
 const fs = require('fs-extra');
-const AntError = require('../../../util/AntError');
-const logger = require('../../../util/logger');
-const yargsHelper = require('../../../util/yargsHelper');
-const Plugin = require('../../Plugin');
-const Template = require('../../../templates/Template');
-const BinFunction = require('../../../functions/BinFunction');
-const LibFunction = require('../../../functions/LibFunction');
-const Runtime = require('../../../functions/runtimes/Runtime');
-const Config = require('../../../config/Config');
+const { AntError, logger } = require('@back4app/ant-util');
+const { yargsHelper } = require('@back4app/ant-util-yargs');
+const { Config, BinFunction, Runtime, LibFunction, Template, Plugin } = require(
+  '@back4app/ant'
+);
 
 const templates = [
   new Template(
@@ -26,6 +22,7 @@ const templates = [
 ];
 
 /**
+ * @class ant-core/Core
  * Represents a plugin containing the Ant Framework's core functionalities.
  * @extends Plugin
  * @param {!Ant} ant The {@link Ant} instance that is loading the plugin.

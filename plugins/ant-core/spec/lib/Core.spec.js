@@ -1,34 +1,41 @@
 /* eslint-disable no-console */
 
 /**
- * @fileoverview Tests for lib/plugins/core/lib/Core.js file.
+ * @fileoverview Tests for lib/Core.js file.
  */
 
 const path = require('path');
 const fs = require('fs-extra');
 const yaml = require('yaml').default;
 const { makeExecutableSchema } = require('graphql-tools');
-const AntCli = require('../../../../../lib/cli/AntCli');
-const Ant = require('../../../../../lib/Ant');
-const Plugin = require('../../../../../lib/plugins/Plugin');
-const Template = require('../../../../../lib/templates/Template');
-const AntFunction = require('../../../../../lib/functions/AntFunction');
-const BinFunction = require('../../../../../lib/functions/BinFunction');
-const LibFunction = require('../../../../../lib/functions/LibFunction');
-const Runtime = require('../../../../../lib/functions/runtimes/Runtime');
-const Provider = require('../../../../../lib/hosts/providers/Provider');
-const Host = require('../../../../../lib/hosts/Host');
-const Core = require('../../../../../lib/plugins/core/lib/Core');
-const yargsHelper = require('../../../../../lib/util/yargsHelper');
-const Config = require('../../../../../lib/config/Config');
+const { yargsHelper } = require('@back4app/ant-util-yargs');
+const {
+  Config,
+  Ant,
+  AntFunction,
+  BinFunction,
+  Runtime,
+  LibFunction,
+  Provider,
+  Host,
+  Template,
+  Plugin
+} = require('@back4app/ant');
+const { AntCli } = require('@back4app/ant-cli');
+const Core = require('../../lib/Core');
+
+const utilPath = path.resolve(
+  __dirname,
+  '../../node_modules/@back4app/ant-util-tests'
+);
 
 const ant = new Ant();
 
-describe('lib/plugins/core/lib/Core.js', () => {
+describe('lib/Core.js', () => {
   const originalCwd = process.cwd();
   const outPath = path.resolve(
     __dirname,
-    '../../../../support/out/lib/plugins/core/lib/Core.js',
+    '../support/out/lib/Core.js',
     'out' + Math.floor(Math.random() * 1000)
   );
 
@@ -96,8 +103,8 @@ describe('lib/plugins/core/lib/Core.js', () => {
           });
           const originalCwd = process.cwd();
           process.chdir(path.resolve(
-            __dirname,
-            '../../../../support/configs/graphQLPluginConfig'
+            utilPath,
+            'configs/graphQLPluginConfig'
           ));
           const originalLog = console.log;
           console.log = jest.fn();
@@ -258,8 +265,8 @@ describe('lib/plugins/core/lib/Core.js', () => {
           done();
         });
         const fooServicePath = path.resolve(
-          __dirname,
-          '../../../../support/services/FooService'
+          utilPath,
+          'services/FooService'
         );
         process.chdir(fooServicePath);
         const antCli = new AntCli();
@@ -358,6 +365,38 @@ describe('lib/plugins/core/lib/Core.js', () => {
           Config.prototype.save = originalSave;
         });
 
+        test('should handle error message', done => {
+          const antCli = new AntCli();
+          antCli._ant.pluginController.getPlugin('Core').addPlugin =
+            jest.fn(
+              () => {
+                throw new Error('Some Error');
+              }
+            );
+          const originalHandleErrorMessage = yargsHelper.handleErrorMessage;
+          yargsHelper.handleErrorMessage = jest.fn(message => {
+            expect(message).toEqual(
+              expect.stringContaining('Some Error')
+            );
+            yargsHelper.handleErrorMessage = originalHandleErrorMessage;
+            done();
+          });
+          antCli._yargs.parse('plugin add fooPlugin');
+        });
+
+        test('should exit with code 0', done => {
+          const antCli = new AntCli();
+          antCli._ant.pluginController.getPlugin('Core').addPlugin =
+            jest.fn();
+          const originalExit = process.exit;
+          process.exit = jest.fn(code => {
+            expect(code).toEqual(0);
+            process.exit = originalExit;
+            done();
+          });
+          antCli._yargs.parse('plugin add fooPlugin');
+        });
+
         test('should show friendly error when plugin was not passed', (done) => {
           process.argv = ['plugin', 'add'];
           console.error = jest.fn();
@@ -401,6 +440,38 @@ describe('lib/plugins/core/lib/Core.js', () => {
           expect(removePlugin).toHaveBeenCalledWith(myPlugin);
           expect(save).toHaveBeenCalled();
           Config.prototype.save = originalSave;
+        });
+
+        test('should handle error message', done => {
+          const antCli = new AntCli();
+          antCli._ant.pluginController.getPlugin('Core').removePlugin =
+            jest.fn(
+              () => {
+                throw new Error('Some Error');
+              }
+            );
+          const originalHandleErrorMessage = yargsHelper.handleErrorMessage;
+          yargsHelper.handleErrorMessage = jest.fn(message => {
+            expect(message).toEqual(
+              expect.stringContaining('Some Error')
+            );
+            yargsHelper.handleErrorMessage = originalHandleErrorMessage;
+            done();
+          });
+          antCli._yargs.parse('plugin remove fooPlugin');
+        });
+
+        test('should exit with code 0', done => {
+          const antCli = new AntCli();
+          antCli._ant.pluginController.getPlugin('Core').removePlugin =
+            jest.fn();
+          const originalExit = process.exit;
+          process.exit = jest.fn(code => {
+            expect(code).toEqual(0);
+            process.exit = originalExit;
+            done();
+          });
+          antCli._yargs.parse('plugin remove fooPlugin');
         });
 
         test('should show friendly error when plugin was not passed', (done) => {
@@ -487,6 +558,38 @@ describe('lib/plugins/core/lib/Core.js', () => {
           expect(Config.prototype.save).toHaveBeenCalled();
         });
 
+        test('should handle error message', done => {
+          const antCli = new AntCli();
+          antCli._ant.pluginController.getPlugin('Core').addTemplate =
+            jest.fn(
+              () => {
+                throw new Error('Some Error');
+              }
+            );
+          const originalHandleErrorMessage = yargsHelper.handleErrorMessage;
+          yargsHelper.handleErrorMessage = jest.fn(message => {
+            expect(message).toEqual(
+              expect.stringContaining('Some Error')
+            );
+            yargsHelper.handleErrorMessage = originalHandleErrorMessage;
+            done();
+          });
+          antCli._yargs.parse('template add fooCategory fooTemplate my/templ');
+        });
+
+        test('should exit with code 0', done => {
+          const antCli = new AntCli();
+          antCli._ant.pluginController.getPlugin('Core').addTemplate =
+            jest.fn();
+          const originalExit = process.exit;
+          process.exit = jest.fn(code => {
+            expect(code).toEqual(0);
+            process.exit = originalExit;
+            done();
+          });
+          antCli._yargs.parse('template add fooCategory fooTemplate /my/templ');
+        });
+
         test('should show friendly error when category was not passed', (done) => {
           const handleErrorMessage = jest.spyOn(yargsHelper, 'handleErrorMessage');
           process.argv = ['template', 'add'];
@@ -562,6 +665,38 @@ describe('lib/plugins/core/lib/Core.js', () => {
           expect(Config.prototype.save).toHaveBeenCalled();
         });
 
+        test('should handle error message', done => {
+          const antCli = new AntCli();
+          antCli._ant.pluginController.getPlugin('Core').removeTemplate =
+            jest.fn(
+              () => {
+                throw new Error('Some Error');
+              }
+            );
+          const originalHandleErrorMessage = yargsHelper.handleErrorMessage;
+          yargsHelper.handleErrorMessage = jest.fn(message => {
+            expect(message).toEqual(
+              expect.stringContaining('Some Error')
+            );
+            yargsHelper.handleErrorMessage = originalHandleErrorMessage;
+            done();
+          });
+          antCli._yargs.parse('template remove fooCategory fooTemplate');
+        });
+
+        test('should exit with code 0', done => {
+          const antCli = new AntCli();
+          antCli._ant.pluginController.getPlugin('Core').removeTemplate =
+            jest.fn();
+          const originalExit = process.exit;
+          process.exit = jest.fn(code => {
+            expect(code).toEqual(0);
+            process.exit = originalExit;
+            done();
+          });
+          antCli._yargs.parse('template remove fooCategory fooTemplate');
+        });
+
         test('should show friendly error when template was not passed', (done) => {
           const handleErrorMessage = jest.spyOn(yargsHelper, 'handleErrorMessage');
           process.argv = ['template', 'remove'];
@@ -592,6 +727,38 @@ describe('lib/plugins/core/lib/Core.js', () => {
           await core.listTemplates();
           expect(log).toHaveBeenCalledWith('Listing all templates available (<category>: <name> <path>):');
           expect(getAllTemplates).toHaveBeenCalled();
+        });
+
+        test('should handle error message', done => {
+          const antCli = new AntCli();
+          antCli._ant.pluginController.getPlugin('Core').listTemplates =
+            jest.fn(
+              () => {
+                throw new Error('Some Error');
+              }
+            );
+          const originalHandleErrorMessage = yargsHelper.handleErrorMessage;
+          yargsHelper.handleErrorMessage = jest.fn(message => {
+            expect(message).toEqual(
+              expect.stringContaining('Some Error')
+            );
+            yargsHelper.handleErrorMessage = originalHandleErrorMessage;
+            done();
+          });
+          antCli._yargs.parse('template ls');
+        });
+
+        test('should exit with code 0', done => {
+          const antCli = new AntCli();
+          antCli._ant.pluginController.getPlugin('Core').listTemplates =
+            jest.fn();
+          const originalExit = process.exit;
+          process.exit = jest.fn(code => {
+            expect(code).toEqual(0);
+            process.exit = originalExit;
+            done();
+          });
+          antCli._yargs.parse('template ls');
         });
       });
     });
@@ -820,13 +987,19 @@ describe('lib/plugins/core/lib/Core.js', () => {
     });
 
     test('should show friendly error when no command is given', (done) => {
+      const originalArgv = process.argv;
       process.argv = ['function'];
+      const originalError = console.error;
       console.error = jest.fn();
+      const originalExit = process.exit;
       process.exit = jest.fn((code) => {
         expect(console.error).toHaveBeenCalledWith(
           expect.stringContaining('Function requires a command')
         );
         expect(code).toEqual(1);
+        process.argv = originalArgv;
+        console.error = originalError;
+        process.exit = originalExit;
         done();
       });
       const core = new Core(ant);
@@ -1024,6 +1197,37 @@ describe('lib/plugins/core/lib/Core.js', () => {
         );
       });
 
+      test('should handle error message', done => {
+        const antCli = new AntCli();
+        antCli._ant.pluginController.getPlugin('Core').addFunction = jest.fn(
+          () => {
+            throw new Error('Some Error');
+          }
+        );
+        const originalHandleErrorMessage = yargsHelper.handleErrorMessage;
+        yargsHelper.handleErrorMessage = jest.fn(message => {
+          expect(message).toEqual(
+            expect.stringContaining('Some Error')
+          );
+          yargsHelper.handleErrorMessage = originalHandleErrorMessage;
+          done();
+        });
+        antCli._yargs.parse('function add fooFunction my/fooFunction');
+      });
+
+      test('should exit with code 0', done => {
+        const antCli = new AntCli();
+        antCli._ant.pluginController.getPlugin('Core').addFunction =
+          jest.fn();
+        const originalExit = process.exit;
+        process.exit = jest.fn(code => {
+          expect(code).toEqual(0);
+          process.exit = originalExit;
+          done();
+        });
+        antCli._yargs.parse('function add fooFunction');
+      });
+
       test('should fail to render LibFunction source file due to inexistent template path', async () => {
         const ant = new Ant();
         const name = 'myFunc';
@@ -1062,12 +1266,16 @@ describe('lib/plugins/core/lib/Core.js', () => {
 
       test('should show friendly error when name was not passed', (done) => {
         const handleErrorMessage = jest.spyOn(yargsHelper, 'handleErrorMessage');
+        const originalArgv = process.argv;
         process.argv = ['function', 'add'];
+        const originalExit = process.exit;
         process.exit = jest.fn((code) => {
           expect(handleErrorMessage).toHaveBeenCalledWith(
             'Function add command requires name and function arguments', null, 'function add'
           );
           expect(code).toEqual(1);
+          process.argv = originalArgv;
+          process.exit = originalExit;
           done();
         });
         new Core(ant)._yargsFailed('Not enough non-option arguments');
@@ -1075,12 +1283,16 @@ describe('lib/plugins/core/lib/Core.js', () => {
 
       test('should show friendly error when function was not passed', (done) => {
         const handleErrorMessage = jest.spyOn(yargsHelper, 'handleErrorMessage');
+        const originalArgv = process.argv;
         process.argv = ['function', 'add', 'myfunc'];
+        const originalExit = process.exit;
         process.exit = jest.fn((code) => {
           expect(handleErrorMessage).toHaveBeenCalledWith(
             'Function add command requires name and function arguments', null, 'function add'
           );
           expect(code).toEqual(1);
+          process.argv = originalArgv;
+          process.exit = originalExit;
           done();
         });
         new Core(ant)._yargsFailed('Not enough non-option arguments');
@@ -1129,14 +1341,49 @@ describe('lib/plugins/core/lib/Core.js', () => {
         expect(configMock.save).toHaveBeenCalled();
       });
 
-      test('should show friendly error when name was not passed', async done => {
+      test('should handle error message', done => {
+        const antCli = new AntCli();
+        antCli._ant.pluginController.getPlugin('Core').removeFunction = jest.fn(
+          () => {
+            throw new Error('Some Error');
+          }
+        );
+        const originalHandleErrorMessage = yargsHelper.handleErrorMessage;
+        yargsHelper.handleErrorMessage = jest.fn(message => {
+          expect(message).toEqual(
+            expect.stringContaining('Some Error')
+          );
+          yargsHelper.handleErrorMessage = originalHandleErrorMessage;
+          done();
+        });
+        antCli._yargs.parse('function remove fooFunction');
+      });
+
+      test('should exit with code 0', done => {
+        const antCli = new AntCli();
+        antCli._ant.pluginController.getPlugin('Core').removeFunction =
+          jest.fn();
+        const originalExit = process.exit;
+        process.exit = jest.fn(code => {
+          expect(code).toEqual(0);
+          process.exit = originalExit;
+          done();
+        });
+        antCli._yargs.parse('function remove fooFunction');
+      });
+
+      test('should show friendly error when name was not passed', done => {
         const handleErrorMessage = jest.spyOn(yargsHelper, 'handleErrorMessage');
+        const originalArgv = process.argv;
         process.argv = ['function', 'remove'];
+        const originalExit = process.exit;
         process.exit = jest.fn((code) => {
           expect(handleErrorMessage).toHaveBeenCalledWith(
             'Function remove command requires name argument', null, 'function remove'
           );
           expect(code).toEqual(1);
+          process.argv = originalArgv;
+          process.exit = originalExit;
           done();
         });
         new Core(ant)._yargsFailed('Not enough non-option arguments');
@@ -1168,15 +1415,63 @@ describe('lib/plugins/core/lib/Core.js', () => {
         expect(console.log.mock.calls[2][0]).toBe('BinFunction foo: /path/to/foo');
         expect(console.log.mock.calls[3][0]).toBe('LibFunction bar: /path/to/bar barRuntime');
       });
+
+      test('should handle error message', done => {
+        const antCli = new AntCli();
+        antCli._ant.pluginController.getPlugin('Core').listFunctions = jest.fn(
+          () => {
+            throw new Error('Some Error');
+          }
+        );
+        const originalHandleErrorMessage = yargsHelper.handleErrorMessage;
+        yargsHelper.handleErrorMessage = jest.fn(message => {
+          expect(message).toEqual(
+            expect.stringContaining('Some Error')
+          );
+          yargsHelper.handleErrorMessage = originalHandleErrorMessage;
+          done();
+        });
+        antCli._yargs.parse('function ls');
+      });
+
+      test('should exit with code 0', done => {
+        const antCli = new AntCli();
+        const originalExit = process.exit;
+        process.exit = jest.fn(code => {
+          expect(code).toEqual(0);
+          process.exit = originalExit;
+          done();
+        });
+        antCli._yargs.parse('function ls');
+      });
     });
 
     describe('function exec command', () => {
       test ('should throw error when function was not found', async () => {
         const name = 'should not be found';
         const core = new Core(ant);
-        expect(core.execFunction(name)).rejects.toBe(
-          `Function ${name} not found to be executed.`
+        try {
+          await core.execFunction(name);
+        } catch (e) {
+          expect(e.toString()).toEqual(expect.stringContaining(
+            `Function ${name} not found to be executed.`
+          ));
+        }
+      });
+
+      test ('should handle error message', (done) => {
+        const handleErrorMessage = jest.spyOn(
+          yargsHelper,
+          'handleErrorMessage'
         );
+        const name = 'should_not_be_found';
+        const antCli = new AntCli();
+        antCli._yargs.parse(`function exec ${name}`);
+        process.exit = jest.fn((code) => {
+          expect(code).toEqual(1);
+          expect(handleErrorMessage).toHaveBeenCalled();
+          done();
+        });
       });
 
       test ('should execute function with args', async () => {
@@ -1192,6 +1487,55 @@ describe('lib/plugins/core/lib/Core.js', () => {
         core.execFunction(name, args);
         expect(ant.functionController.getFunction).toHaveBeenCalledWith(name);
         expect(runMock).toHaveBeenCalledWith(...args);
+      });
+
+      test('should execute function with args v2', (done) => {
+        const antCli = new AntCli();
+        const runMock = jest.fn((onNext, _, onComplete) => {
+          onNext('Some data');
+          onComplete();
+        });
+        antCli._ant.functionController.getFunction = jest.fn().mockImplementation(() => {
+          return {
+            run: () => {
+              return {
+                subscribe: runMock
+              };
+            }
+          };
+        });
+        const name = 'funcName';
+        antCli._yargs.parse(`function exec ${name}`);
+        process.exit = jest.fn((code) => {
+          expect(code).toEqual(0);
+          expect(antCli._ant.functionController.getFunction).toHaveBeenCalledWith(name);
+          expect(runMock).toHaveBeenCalled();
+          done();
+        });
+      });
+
+      test('should log error', (done) => {
+        const antCli = new AntCli();
+        const runMock = jest.fn((_, onError) => {
+          onError('Some error');
+        });
+        antCli._ant.functionController.getFunction = jest.fn().mockImplementation(() => {
+          return {
+            run: () => {
+              return {
+                subscribe: runMock
+              };
+            }
+          };
+        });
+        const name = 'funcName';
+        antCli._yargs.parse(`function exec ${name}`);
+        process.exit = jest.fn((code) => {
+          expect(code).toEqual(1);
+          expect(antCli._ant.functionController.getFunction).toHaveBeenCalledWith(name);
+          expect(runMock).toHaveBeenCalled();
+          done();
+        });
       });
 
       test('should show friendly error when name was not passed', async done => {
@@ -1266,6 +1610,60 @@ describe('lib/plugins/core/lib/Core.js', () => {
         expect(configMock.save).toHaveBeenCalled();
       });
 
+      test('should add runtime and save locally v2', (done) => {
+        const antCli = new AntCli();
+        const name = 'runtime';
+        const bin = 'my/runtime';
+        const extensions = 'js';
+        const configFilePath = path.resolve(outPath, 'ant.yml');
+        fs.ensureFileSync(configFilePath);
+        const getLocalConfigPath = jest.spyOn(Config, 'GetLocalConfigPath')
+          .mockImplementation(() => configFilePath);
+        const configMock = {
+          save: jest.fn()
+        };
+        jest.spyOn(Config.prototype, 'addRuntime')
+          .mockImplementation(runtime => {
+            expect(runtime.name).toBe(name);
+            expect(runtime.bin).toEqual(expect.stringContaining(bin));
+            expect(runtime.extensions).toEqual([extensions]);
+            return configMock;
+          });
+        antCli._yargs.parse(`runtime add ${name} ${bin} ${extensions}`);
+        process.exit = jest.fn((code) => {
+          expect(code).toEqual(0);
+          expect(getLocalConfigPath).toHaveBeenCalled();
+          expect(configMock.save).toHaveBeenCalled();
+          done();
+        });
+      });
+
+      test('should handle error message', (done) => {
+        const antCli = new AntCli();
+        const name = 'runtime';
+        const bin = '/my/runtime';
+        const extensions = 'js';
+        const configFilePath = path.resolve(outPath, 'ant.yml');
+        fs.ensureFileSync(configFilePath);
+        const getLocalConfigPath = jest.spyOn(Config, 'GetLocalConfigPath')
+          .mockImplementation(() => configFilePath);
+        jest.spyOn(Config.prototype, 'addRuntime')
+          .mockImplementation(runtime => {
+            expect(runtime.name).toBe(name);
+            expect(runtime.bin).toBe(bin);
+            expect(runtime.extensions).toEqual([extensions]);
+            throw new Error('Some add error');
+          });
+        const handleErrorMessage = jest.spyOn(yargsHelper, 'handleErrorMessage');
+        antCli._yargs.parse(`runtime add ${name} ${bin} ${extensions}`);
+        process.exit = jest.fn((code) => {
+          expect(code).toEqual(1);
+          expect(getLocalConfigPath).toHaveBeenCalled();
+          expect(handleErrorMessage).toHaveBeenCalled();
+          done();
+        });
+      });
+
       test('should add runtime and save globally', async () => {
         const name = 'runtime';
         const bin = '/my/runtime';
@@ -1337,6 +1735,31 @@ describe('lib/plugins/core/lib/Core.js', () => {
         expect(save).toHaveBeenCalled();
       });
 
+      test('should handle error message', async () => {
+        const antCli = new AntCli();
+        const name = 'myRuntime';
+        const configFilePath = path.resolve(outPath, 'ant.yml');
+        fs.ensureFileSync(configFilePath);
+        const getLocalConfigPath = jest.spyOn(Config, 'GetLocalConfigPath')
+          .mockImplementation(() => configFilePath);
+        const removeRuntime = jest.fn(() => {
+          throw new Error('Some remotion error');
+        });
+        const save = jest.spyOn(Config.prototype, 'save');
+        const handleErrorMessage = jest.spyOn(
+          yargsHelper,
+          'handleErrorMessage'
+        );
+        antCli._yargs.parse(`runtime remove ${name}`);
+        process.exit = jest.fn(code => {
+          expect(code).toEqual(1);
+          expect(getLocalConfigPath).toHaveBeenCalled();
+          expect(removeRuntime).toHaveBeenCalled();
+          expect(save).toHaveBeenCalled();
+          expect(handleErrorMessage).toHaveBeenCalled();
+        });
+      });
+
       test('should remove runtime and save globally', async () => {
         const name = 'myRuntime';
         const configMock = {
@@ -1393,6 +1816,29 @@ describe('lib/plugins/core/lib/Core.js', () => {
         expect(console.log.mock.calls[1][0]).toBe('foo /path/to/foo foo js');
         expect(console.log.mock.calls[2][0]).toBe('bar /path/to/bar bar');
         expect(console.log.mock.calls[3][0]).toBe('lorem /ipsum');
+      });
+
+      test('should print runtimes v2', (done) => {
+        console.log = jest.fn();
+        const antCli = new AntCli();
+        const runtimes = [
+          new Runtime(antCli._ant, 'foo', '/path/to/foo', ['foo', 'js']),
+          new Runtime(antCli._ant, 'bar', '/path/to/bar', ['bar']),
+          new Runtime(antCli._ant, 'lorem', '/ipsum')
+        ];
+        antCli._ant.runtimeController._runtimes = new Map();
+        antCli._ant.runtimeController.loadRuntimes(runtimes);
+        antCli._yargs.parse('runtime ls');
+        process.exit = jest.fn(code => {
+          expect(code).toEqual(1);
+          expect(console.log.mock.calls.length).toBe(4);
+          expect(console.log.mock.calls[0][0]).toBe('Listing all runtimes available \
+(<name> <bin> [extensions]):');
+          expect(console.log.mock.calls[1][0]).toBe('foo /path/to/foo foo js');
+          expect(console.log.mock.calls[2][0]).toBe('bar /path/to/bar bar');
+          expect(console.log.mock.calls[3][0]).toBe('lorem /ipsum');
+          done();
+        });
       });
     });
   });

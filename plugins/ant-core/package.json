@@ -1,0 +1,65 @@
+{
+  "name": "@back4app/ant-core",
+  "version": "0.0.0",
+  "engines": {
+    "node": ">=10.10"
+  },
+  "description": "Plugin with core functionalities for Ant Framework - Serverless microservices made easy",
+  "keywords": [
+    "ant",
+    "core",
+    "plugin",
+    "microservices",
+    "api",
+    "functions",
+    "graphql",
+    "reactive",
+    "serverlesss"
+  ],
+  "directories": {
+    "lib": "lib",
+    "doc": "docs",
+    "test": "spec"
+  },
+  "files": [
+    "lib",
+    "index.js",
+    "LICENSE",
+    "package.json"
+  ],
+  "main": "index.js",
+  "scripts": {
+    "lint": "eslint ./ --config ./node_modules/@back4app/ant-util-tests/.eslintrc.js --ignore-path ./node_modules/@back4app/ant-util-tests/.eslintignore",
+    "pretest": "npm run lint",
+    "test": "jest --config ./node_modules/@back4app/ant-util-tests/jest.config.js --rootDir ./",
+    "posttest": "rm -rf ./spec/support/out",
+    "apidocs": "jsdoc -c ./node_modules/@back4app/ant-util-docs/jsdoc.json ./*",
+    "docs": "npm run apidocs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/back4app/antframework.git"
+  },
+  "author": "Back4App Inc.",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/back4app/antframework/issues"
+  },
+  "homepage": "https://github.com/back4app/antframework/tree/master/plugins/ant-core#readme",
+  "dependencies": {
+    "@back4app/ant": "^0.0.0",
+    "@back4app/ant-util": "^0.0.0",
+    "@back4app/ant-util-rxjs": "^0.0.0",
+    "@back4app/ant-util-yargs": "^0.0.0",
+    "fs-extra": "^7.0.0"
+  },
+  "devDependencies": {
+    "@back4app/ant-cli": "^0.0.0",
+    "@back4app/ant-util-docs": "^0.0.0",
+    "@back4app/ant-util-tests": "^0.0.0",
+    "eslint": "^5.6.0",
+    "jest": "^23.6.0",
+    "jsdoc": "^3.5.5",
+    "minami": "^1.2.3"
+  }
+}

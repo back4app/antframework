@@ -1,6 +1,6 @@
 /**
  * Exports the {@link Core} plugin class.
- * @module antframework/lib/plugins/core
+ * @module ant-core
  */
 
 const Core = require('./lib/Core');
