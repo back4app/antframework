@@ -6,7 +6,7 @@
  * {@link AntCli} class.
  */
 
-const AntCli = require('../lib/cli/AntCli.js');
+const AntCli = require('../lib/AntCli.js');
 
 const antCli = new AntCli();
 antCli.execute();

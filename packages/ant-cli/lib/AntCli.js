@@ -6,15 +6,15 @@
 
 const fs = require('fs');
 const yargs = require('yargs');
-const yargsHelper = require('../util/yargsHelper');
-const Ant = require('../Ant');
-const logger = require('../util/logger');
-const Config = require('../config/Config');
+const { logger } = require('@back4app/ant-util');
+const { yargsHelper } = require('@back4app/ant-util-yargs');
+const { Ant, Config } = require('@back4app/ant');
 
 const demandCommandMinMsg = 'You missed the command';
 const demandCommandMinMax = 'You can run only one command per call';
 
 /**
+ * @class ant-cli/AntCli
  * Represents the Ant Framework CLI - Command Line Interface.
  * @example
  * <caption>Usage</caption>

@@ -4,16 +4,21 @@
  * @fileoverview Tests for bin/ant.js file.
  */
 
-const path = require('path');
-const fs = require('fs-extra');
 const util = require('util');
+const path = require('path');
 const childProcess = require('child_process');
 const exec = util.promisify(childProcess.exec);
-const AntCli = require('../../lib/cli/AntCli');
-const yargsHelper = require('../../lib/util/yargsHelper');
+const fs = require('fs-extra');
 const rx = require('rxjs');
+const { yargsHelper } = require('@back4app/ant-util-yargs');
+const AntCli = require('../../lib/AntCli');
 
 const binPath = path.resolve(__dirname, '../../bin/ant.js');
+
+const utilPath = path.resolve(
+  __dirname,
+  '../../node_modules/@back4app/ant-util-tests'
+);
 
 /**
  * Helper function to run the CLI command with args and check the expected
@@ -153,7 +158,7 @@ describe('bin/ant.js', () => {
   test('should load local config', async () => {
     const { stdout, stderr } = await exec(
       binPath,
-      { cwd: path.resolve(__dirname, '../support/configs/fooPluginConfig')}
+      { cwd: path.resolve(utilPath, './configs/fooPluginConfig')}
     );
     expect(stdout).not.toBeNull();
     expect(stdout).toContain('Plugins:');
@@ -164,7 +169,7 @@ describe('bin/ant.js', () => {
   test('should print plugin load error', async () => {
     const { stdout, stderr } = await exec(
       binPath,
-      { cwd: path.resolve(__dirname, '../support/configs/notAPluginConfig')}
+      { cwd: path.resolve(utilPath, './configs/notAPluginConfig')}
     );
     expect(stdout).not.toBeNull();
     expect(stdout).toContain(
@@ -1224,8 +1229,8 @@ ant.js --help plugin add`)
     describe('start command', () => {
       const originalCwd = process.cwd();
       const graphQlPluginConfigPath = path.resolve(
-        __dirname,
-        '../support/configs/graphQLPluginConfig'
+        utilPath,
+        './configs/graphQLPluginConfig'
       );
 
       beforeEach(() => {
