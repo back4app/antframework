@@ -9,7 +9,7 @@ const graphqlHTTP = require('express-graphql');
 const { SubscriptionServer } = require('subscriptions-transport-ws');
 const { logger } = require('@back4app/ant-util');
 const { Ant } = require('@back4app/ant');
-const { schemaHelper } = require('@back4app/ant-graphQL');
+const { schemaHelper } = require('@back4app/ant-graphql');
 
 /**
  * @class ant-graphql-express/Server

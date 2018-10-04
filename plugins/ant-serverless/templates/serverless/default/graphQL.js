@@ -2,11 +2,9 @@
 
 const AWS = require('aws-sdk');
 const { graphqlLambda } = require('apollo-server-lambda');
-const { Ant, Config, util } = require('@back4app/antframework');
-const { logger } = util;
-const schemaHelper = require(
-  '@back4app/antframework/lib/plugins/graphQL/lib/util/schemaHelper'
-);
+const { logger } = require('@back4app/ant-util');
+const { Config, Ant } = require('@back4app/ant');
+const { schemaHelper } = require('@back4app/ant-graphql');
 
 logger.attachHandler(console.log);
 logger.attachErrorHandler(console.error);
