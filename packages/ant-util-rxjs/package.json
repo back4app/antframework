@@ -1,6 +1,6 @@
 {
   "name": "@back4app/ant-util-rxjs",
-  "version": "0.0.0",
+  "version": "0.0.1-alpha.0",
   "engines": {
     "node": ">=10.10"
   },
@@ -50,8 +50,8 @@
     "rxjs": "^6.3.2"
   },
   "devDependencies": {
-    "@back4app/ant-util-docs": "^0.0.0",
-    "@back4app/ant-util-tests": "^0.0.0",
+    "@back4app/ant-util-docs": "^0.0.1-alpha.0",
+    "@back4app/ant-util-tests": "^0.0.1-alpha.0",
     "eslint": "^5.6.0",
     "jest": "^23.6.0",
     "jsdoc": "^3.5.5",

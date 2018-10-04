@@ -1,6 +1,6 @@
 {
   "name": "@back4app/ant-cli",
-  "version": "0.0.0",
+  "version": "0.0.1-alpha.0",
   "engines": {
     "node": ">=10.10"
   },
@@ -52,14 +52,14 @@
   },
   "homepage": "https://github.com/back4app/antframework/tree/master/packages/ant-cli#readme",
   "dependencies": {
-    "@back4app/ant": "^0.0.0",
-    "@back4app/ant-util": "^0.0.0",
-    "@back4app/ant-util-yargs": "^0.0.0",
+    "@back4app/ant": "^0.0.1-alpha.0",
+    "@back4app/ant-util": "^0.0.1-alpha.0",
+    "@back4app/ant-util-yargs": "^0.0.1-alpha.0",
     "yargs": "^12.0.2"
   },
   "devDependencies": {
-    "@back4app/ant-util-docs": "^0.0.0",
-    "@back4app/ant-util-tests": "^0.0.0",
+    "@back4app/ant-util-docs": "^0.0.1-alpha.0",
+    "@back4app/ant-util-tests": "^0.0.1-alpha.0",
     "eslint": "^5.6.0",
     "fs-extra": "^7.0.0",
     "jest": "^23.6.0",
