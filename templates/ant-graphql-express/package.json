@@ -57,6 +57,7 @@
     "@back4app/ant-util-rxjs": "^0.0.4",
     "express": "^4.16.3",
     "express-graphql": "^0.6.12",
+    "graphql": "^0.13.0",
     "subscriptions-transport-ws": "^0.9.15"
   },
   "devDependencies": {
@@ -66,5 +67,6 @@
     "jest": "^23.6.0",
     "jsdoc": "^3.5.5",
     "minami": "^1.2.3"
-  }
+  },
+  "gitHead": "cc52e334f800e4906bef481e692c49d5246ebe86"
 }
