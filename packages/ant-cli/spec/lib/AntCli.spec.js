@@ -1,17 +1,22 @@
 /* eslint-disable no-console */
 
 /**
- * @fileoverview Tests for lib/cli/AntCli.js file.
+ * @fileoverview Tests for lib/AntCli.js file.
  */
 
 const path = require('path');
-const Ant = require('../../../lib/Ant');
-const YError = require('yargs/lib/yerror');
-const AntCli = require('../../../lib/cli/AntCli');
-const logger = require('../../../lib/util/logger');
 const fs = require('fs');
+const YError = require('yargs/lib/yerror');
+const { logger } = require('@back4app/ant-util');
+const { Ant } = require('@back4app/ant');
+const AntCli = require('../../lib/AntCli');
 
-describe('lib/cli/AntCli.js', () => {
+const utilPath = fs.realpathSync(path.resolve(
+  __dirname,
+  '../../node_modules/@back4app/ant-util-tests'
+));
+
+describe('lib/AntCli.js', () => {
   test('should export "AntCli" class with "execute" method', () => {
     const antCli = new AntCli();
     expect(antCli.constructor.name).toEqual('AntCli');
@@ -42,8 +47,8 @@ describe('lib/cli/AntCli.js', () => {
     console.log = jest.fn();
     const originalCwd = process.cwd();
     process.chdir(path.resolve(
-      __dirname,
-      '../../support/configs/fooPluginConfig'
+      utilPath,
+      'configs/fooPluginConfig'
     ));
     try {
       (new AntCli()).execute();
@@ -63,8 +68,8 @@ describe('lib/cli/AntCli.js', () => {
     process.argv = [];
     process.argv.push('--config');
     process.argv.push(path.resolve(
-      __dirname,
-      '../../support/configs/fooPluginConfig/ant.yml'
+      utilPath,
+      'configs/fooPluginConfig/ant.yml'
     ));
     const originalExit = process.exit;
     process.exit = jest.fn();
@@ -93,8 +98,8 @@ describe('lib/cli/AntCli.js', () => {
     process.argv.push('--version');
     process.argv.push('--config');
     const configPath = path.resolve(
-      __dirname,
-      '../../support/configs/fooPluginConfig/ant.yml'
+      utilPath,
+      'configs/fooPluginConfig/ant.yml'
     );
     process.argv.push(configPath);
     const originalExit = process.exit;
@@ -173,8 +178,8 @@ describe('lib/cli/AntCli.js', () => {
     console.log = jest.fn();
     const originalCwd = process.cwd();
     const currentDir = path.resolve(
-      __dirname,
-      '../../support/configs/noPluginsConfig'
+      utilPath,
+      'configs/noPluginsConfig'
     );
     process.chdir(currentDir);
     const originalWriteFileSync = fs.writeFileSync;
@@ -205,8 +210,8 @@ describe('lib/cli/AntCli.js', () => {
     console.error = jest.fn();
     const originalCwd = process.cwd();
     process.chdir(path.resolve(
-      __dirname,
-      '../../support/configs/invalidConfig'
+      utilPath,
+      'configs/invalidConfig'
     ));
     try {
       (new AntCli()).execute();
@@ -231,8 +236,8 @@ describe('lib/cli/AntCli.js', () => {
     console.log = jest.fn();
     const originalCwd = process.cwd();
     process.chdir(path.resolve(
-      __dirname,
-      '../../support/configs/notAPluginConfig'
+      utilPath,
+      'configs/notAPluginConfig'
     ));
     try {
       (new AntCli()).execute();
@@ -258,14 +263,14 @@ describe('lib/cli/AntCli.js', () => {
     console.log = jest.fn();
     const originalCwd = process.cwd();
     process.chdir(path.resolve(
-      __dirname,
-      '../../support/configs/notAPluginConfig'
+      utilPath,
+      'configs/notAPluginConfig'
     ));
     try {
       (new AntCli())._yargs.parse('--verbose');
       expect(process.exit).toHaveBeenCalledWith(0);
       expect(console.log.mock.calls[0][0]).toContain(
-        'at PluginController.loadPlugin'
+        'at PluginController._loadPlugin'
       );
     } catch (e) {
       throw e;
@@ -286,14 +291,14 @@ describe('lib/cli/AntCli.js', () => {
     console.log = jest.fn();
     const originalCwd = process.cwd();
     process.chdir(path.resolve(
-      __dirname,
-      '../../support/configs/notAPluginConfig'
+      utilPath,
+      'configs/notAPluginConfig'
     ));
     try {
       (new AntCli())._yargs.parse('-v');
       expect(process.exit).toHaveBeenCalledWith(0);
       expect(console.log.mock.calls[0][0]).toContain(
-        'at PluginController.loadPlugin'
+        'at PluginController._loadPlugin'
       );
     } catch (e) {
       throw e;
@@ -413,7 +418,7 @@ describe('lib/cli/AntCli.js', () => {
 
   test('should load base path', () => {
     const originalCwd = process.cwd();
-    const currentDir = path.resolve(__dirname, '../../support/configs/basePathConfig');
+    const currentDir = path.resolve(utilPath, 'configs/basePathConfig');
     process.chdir(currentDir);
     const antCli = new AntCli();
     const basePath = path.resolve(currentDir, '../../');
