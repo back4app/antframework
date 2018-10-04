@@ -22,7 +22,7 @@
     "package.json"
   ],
   "scripts": {
-    "clean": "lerna clean",
+    "clean": "lerna clean && rm -rf node_modules",
     "install": "lerna bootstrap && lerna link",
     "lint": "lerna run lint",
     "pretest": "lerna link",
