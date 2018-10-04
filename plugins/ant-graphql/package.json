@@ -1,6 +1,6 @@
 {
   "name": "@back4app/ant-graphql",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "engines": {
     "node": ">=10.10"
   },
@@ -47,18 +47,18 @@
   },
   "homepage": "https://github.com/back4app/antframework/tree/master/plugins/ant-graphql#readme",
   "dependencies": {
-    "@back4app/ant": "^0.0.6",
-    "@back4app/ant-util": "^0.0.6",
-    "@back4app/ant-util-rxjs": "^0.0.6",
-    "@back4app/ant-util-yargs": "^0.0.6",
+    "@back4app/ant": "^0.0.7",
+    "@back4app/ant-util": "^0.0.7",
+    "@back4app/ant-util-rxjs": "^0.0.7",
+    "@back4app/ant-util-yargs": "^0.0.7",
     "graphql": "^0.13.0",
     "mustache": "^3.0.0",
     "rxjs": "^6.3.2"
   },
   "devDependencies": {
-    "@back4app/ant-cli": "^0.0.6",
-    "@back4app/ant-util-docs": "^0.0.6",
-    "@back4app/ant-util-tests": "^0.0.6",
+    "@back4app/ant-cli": "^0.0.7",
+    "@back4app/ant-util-docs": "^0.0.7",
+    "@back4app/ant-util-tests": "^0.0.7",
     "eslint": "^5.6.0",
     "fs-extra": "^7.0.0",
     "iterall": "^1.2.2",
