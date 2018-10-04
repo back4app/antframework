@@ -1,6 +1,6 @@
 {
   "name": "@back4app/ant",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "engines": {
     "node": ">=10.10"
   },
@@ -46,21 +46,21 @@
   },
   "homepage": "https://github.com/back4app/antframework/tree/master/packages/ant#readme",
   "dependencies": {
-    "@back4app/ant-core": "^0.0.4",
-    "@back4app/ant-graphql": "^0.0.4",
-    "@back4app/ant-graphql-express": "^0.0.4",
-    "@back4app/ant-serverless": "^0.0.4",
-    "@back4app/ant-util": "^0.0.4",
-    "@back4app/ant-util-rxjs": "^0.0.4",
+    "@back4app/ant-core": "^0.0.5",
+    "@back4app/ant-graphql": "^0.0.5",
+    "@back4app/ant-graphql-express": "^0.0.5",
+    "@back4app/ant-serverless": "^0.0.5",
+    "@back4app/ant-util": "^0.0.5",
+    "@back4app/ant-util-rxjs": "^0.0.5",
     "fs-extra": "^7.0.0",
     "mustache": "^3.0.0",
     "rxjs": "^6.3.2",
     "yaml": "^1.0.0-rc.7"
   },
   "devDependencies": {
-    "@back4app/ant-cli": "^0.0.4",
-    "@back4app/ant-util-docs": "^0.0.4",
-    "@back4app/ant-util-tests": "^0.0.4",
+    "@back4app/ant-cli": "^0.0.5",
+    "@back4app/ant-util-docs": "^0.0.5",
+    "@back4app/ant-util-tests": "^0.0.5",
     "eslint": "^5.6.0",
     "jest": "^23.6.0",
     "jsdoc": "^3.5.5",
