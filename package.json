@@ -28,7 +28,8 @@
     "pretest": "lerna link",
     "test": "lerna run test",
     "apidocs": "lerna run apidocs",
-    "docs": "lerna run docs"
+    "docs": "lerna run docs",
+    "deploy": "lerna publish"
   },
   "repository": {
     "type": "git",
