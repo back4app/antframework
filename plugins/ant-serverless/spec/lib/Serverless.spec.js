@@ -119,12 +119,11 @@ describe('lib/Serverless.js', () => {
                 'graphiQL.js',
                 'graphQL.js',
                 'libFunction.js',
-                'package-lock.json',
                 'package.json',
                 'serverless.yml',
                 'fooLibFunction.zip'
               ]));
-              expect(outDir).toHaveLength(9);
+              expect(outDir).toHaveLength(8);
               onComplete();
             }};
           };
@@ -232,12 +231,11 @@ describe('lib/Serverless.js', () => {
           'graphiQL.js',
           'graphQL.js',
           'libFunction.js',
-          'package-lock.json',
           'package.json',
           'serverless.yml',
           'fooLibFunction.zip'
         ]));
-        expect(outDir).toHaveLength(9);
+        expect(outDir).toHaveLength(8);
         fs.removeSync(outPath);
       }
     );
