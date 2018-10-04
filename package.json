@@ -23,8 +23,9 @@
   ],
   "scripts": {
     "clean": "lerna clean",
-    "install": "lerna bootstrap",
+    "install": "lerna bootstrap && lerna link",
     "lint": "lerna run lint",
+    "pretest": "lerna link",
     "test": "lerna run test",
     "apidocs": "lerna run apidocs",
     "docs": "lerna run docs"
