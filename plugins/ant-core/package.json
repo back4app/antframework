@@ -58,8 +58,11 @@
     "@back4app/ant-util-docs": "^0.0.0",
     "@back4app/ant-util-tests": "^0.0.0",
     "eslint": "^5.6.0",
+    "graphql": "^0.13.0",
+    "graphql-tools": "^3.0.5",
     "jest": "^23.6.0",
     "jsdoc": "^3.5.5",
-    "minami": "^1.2.3"
+    "minami": "^1.2.3",
+    "yaml": "^1.0.0"
   }
 }
