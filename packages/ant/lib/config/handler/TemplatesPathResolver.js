@@ -1,6 +1,15 @@
-const ConfigJSONHandler = require('./ConfigJSONHandler');
-const path = require('path');
+/**
+ * @fileoverview Defines and exports the {@link TemplatesPathResolver} class.
+ */
 
+const path = require('path');
+const ConfigJSONHandler = require('./ConfigJSONHandler');
+
+/**
+ * @class ant/TemplatesPathResolver
+ * Represents a resolver to lead with the templates configuration.
+ * @extends ConfigJSONHandler
+ */
 class TemplatesPathResolver extends ConfigJSONHandler {
   /**
    * Resolves the templates paths if they are not absolute.

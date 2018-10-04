@@ -4,12 +4,12 @@
 
 const assert = require('assert');
 const childProcess = require('child_process');
-const AntError = require('../util/AntError');
-const logger = require('../util/logger');
-const rxjsHelper = require('../util/rxjsHelper');
+const { AntError, logger } = require('@back4app/ant-util');
+const { rxjsHelper } = require('@back4app/ant-util-rxjs');
 const AntFunction = require('./AntFunction');
 
 /**
+ * @class ant/BinFunction
  * Represents a function that contains a binary file that will be executed by
  * the Ant Framework during the running process.
  * @extends AntFunction

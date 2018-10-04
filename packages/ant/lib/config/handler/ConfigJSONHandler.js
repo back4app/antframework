@@ -5,6 +5,7 @@
  */
 
 /**
+ * @class ant/ConfigJSONHandler
  * Represents a generic JSON handler for the configuration files of Ant Framework.
  *
  * The main purpose of this class is to provide a way to pipe the JSON

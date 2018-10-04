@@ -1,6 +1,15 @@
-const ConfigJSONHandler = require('./ConfigJSONHandler');
-const path = require('path');
+/**
+ * @fileoverview Defines and exports the {@link RuntimesPathResolver} class.
+ */
 
+const path = require('path');
+const ConfigJSONHandler = require('./ConfigJSONHandler');
+
+/**
+ * @class ant/RuntimesPathResolver
+ * Represents a resolver to lead with the runtimes configuration.
+ * @extends ConfigJSONHandler
+ */
 class RuntimesPathResolver extends ConfigJSONHandler {
   /**
    * Resolves the runtimes paths if they are not absolute.

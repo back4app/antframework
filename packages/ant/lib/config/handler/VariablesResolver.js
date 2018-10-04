@@ -1,5 +1,9 @@
-const ConfigJSONHandler = require('./ConfigJSONHandler');
+/**
+ * @fileoverview Defines and exports the {@link VariablesResolver} class.
+ */
+
 const path = require('path');
+const ConfigJSONHandler = require('./ConfigJSONHandler');
 
 /**
  * Defines the YAML variables that could be used on any YAML document node
@@ -14,9 +18,14 @@ const path = require('path');
  * the Ant framework
  */
 const YAML_VARS = {
-  GLOBAL: path.resolve(__dirname, '../../')
+  GLOBAL: path.resolve(__dirname, '../../../node_modules/')
 };
 
+/**
+ * @class ant/VariablesResolver
+ * Represents a resolver to lead with the configuration variables.
+ * @extends ConfigJSONHandler
+ */
 class VariablesResolver extends ConfigJSONHandler {
   /**
    * Traverses the JSON object given and replaces all variables found.

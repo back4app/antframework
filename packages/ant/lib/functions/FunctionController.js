@@ -5,12 +5,12 @@
 const assert = require('assert');
 const path = require('path');
 const fs = require('fs');
-const AntError = require('../util/AntError');
-const logger = require('../util/logger');
+const { AntError, logger } = require('@back4app/ant-util');
 const AntFunction = require('./AntFunction');
 const LibFunction = require('./LibFunction');
 
 /**
+ * @class ant/FunctionController
  * Represents a controller for the Ant Framework's functions.
  */
 class FunctionController {

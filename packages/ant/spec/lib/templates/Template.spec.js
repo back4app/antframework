@@ -60,20 +60,33 @@ describe('lib/templates/Template.js', () => {
         '../../support/out/lib/templates/Template.js',
         'out' + Math.floor(Math.random() * 1000)
       );
+      const linkPath = path.resolve(
+        __dirname,
+        '../../../node_modules/@back4app/ant-util-tests',
+        'templates/fooTemplate/bar/cfg/cfg.txt'
+      );
       fs.ensureDirSync(path.resolve(__dirname, '../../support/out/lib/templates/Template.js'));
       try {
         fs.removeSync(outPath);
       } finally {
-        if (!fs.existsSync(path.resolve(__dirname, '../../support/templates/fooTemplate/bar/cfg/cfg.txt'))) {
+        if (!fs.existsSync(linkPath)) {
           fs.symlinkSync(
-            path.resolve(__dirname, '../../support/templates/fooTemplate/bar/bar.txt'),
-            path.resolve(__dirname, '../../support/templates/fooTemplate/bar/cfg/cfg.txt')
+            path.resolve(
+              __dirname,
+              '../../../node_modules/@back4app/ant-util-tests',
+              'templates/fooTemplate/bar/bar.txt'
+            ),
+            linkPath
           );
         }
         const template = new Template(
           'FooCategory',
           'FooTemplate',
-          path.resolve(__dirname, '../../support/templates/fooTemplate')
+          path.resolve(
+            __dirname,
+            '../../../node_modules/@back4app/ant-util-tests',
+            'templates/fooTemplate'
+          )
         );
         await template.render(
           outPath,
@@ -117,6 +130,7 @@ describe('lib/templates/Template.js', () => {
         ).toEqual('vars.cfg content');
 
         fs.removeSync(outPath);
+        fs.removeSync(linkPath);
       }
     });
 
@@ -135,7 +149,8 @@ describe('lib/templates/Template.js', () => {
           'SingleFileTemplate',
           path.resolve(
             __dirname,
-            '../../support/templates/singleFileTemplate/singleFileTemplate.js.mustache'
+            '../../../node_modules/@back4app/ant-util-tests/',
+            'templates/singleFileTemplate/singleFileTemplate.js.mustache'
           )
         );
         try {
@@ -187,7 +202,7 @@ describe('lib/templates/Template.js', () => {
         const template = new Template(
           'FooCategory',
           'FooTemplate',
-          './spec/support/templates/fooTemplate'
+          'node_modules/@back4app/ant-util-tests/templates/fooTemplate'
         );
         await template.render(
           outPath,
@@ -225,9 +240,10 @@ of category FooCategory. No valid path found to read template files'
 
     test('should find alternative source directories for template path', () => {
       const originalCwd = process.cwd();
-      process.chdir(path.resolve(__dirname, '..'));
+      process.chdir(path.resolve(__dirname, '../../../'));
 
-      const templatePath = './spec/support/templates/fooTemplate';
+      const templatePath =
+        'node_modules/@back4app/ant-util-tests/templates/fooTemplate';
       const template = new Template(
         'FooCategory',
         'FooTemplate',

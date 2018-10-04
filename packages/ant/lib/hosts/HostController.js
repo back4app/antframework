@@ -6,6 +6,7 @@ const assert = require('assert');
 const Host = require('./Host');
 
 /**
+ * @class ant/HostController
  * Represents a controller for the Ant Framework's hosts.
  */
 class HostController {

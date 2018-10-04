@@ -6,6 +6,7 @@ const assert = require('assert');
 const Provider = require('./providers/Provider');
 
 /**
+ * @class ant/Host
  * Represents a host that can be used to deploy the Ant Framework's functions.
  */
 class Host {

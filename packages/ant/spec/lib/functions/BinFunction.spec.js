@@ -4,11 +4,18 @@
 
 const path = require('path');
 const childProcess = require('child_process');
-const { Observable } = require('rxjs');
-const { toArray } = require('rxjs/operators');
-const logger = require('../../../lib/util/logger');
+const { Observable } = require('@back4app/ant-util-rxjs/node_modules/rxjs');
+const { toArray } = require(
+  '@back4app/ant-util-rxjs/node_modules/rxjs/operators'
+);
+const { logger } = require('@back4app/ant-util');
 const Ant = require('../../../lib/Ant');
 const BinFunction = require('../../../lib/functions/BinFunction');
+
+const utilPath = path.resolve(
+  __dirname,
+  '../../../node_modules/@back4app/ant-util-tests'
+);
 
 const ant = new Ant();
 const binFunction = new BinFunction(ant, 'fooFunction', 'ls');
@@ -68,7 +75,7 @@ describe('lib/functions/BinFunction.js', () => {
       expect((await (new BinFunction(
         ant,
         'fooBinFunction',
-        path.resolve(__dirname, '../../support/functions/fooBinFunction.js')
+        path.resolve(utilPath, 'functions/fooBinFunction.js')
       )).run().pipe(toArray()).toPromise()).join('')).toEqual(
         `Some initial log
 Some other log
@@ -91,7 +98,7 @@ Some other log
       expect((new BinFunction(
         ant,
         'crashBinFunction',
-        path.resolve(__dirname, '../../support/functions/crashBinFunction.js')
+        path.resolve(utilPath, 'functions/crashBinFunction.js')
       )).run().toPromise()).rejects.toThrowError(
         'crashBinFunction bin function process closed with code "1"'
       );

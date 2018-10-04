@@ -3,6 +3,7 @@
  */
 
 const ConfigJSONHandler = require('../../../../lib/config/handler/ConfigJSONHandler');
+
 const handler = new ConfigJSONHandler();
 
 describe('lib/config/handler/ConfigJSONHandler.js', () => {

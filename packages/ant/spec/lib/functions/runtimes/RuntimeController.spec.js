@@ -78,11 +78,18 @@ should be Ant'
   });
 
   test('should load runtimes', () => {
-    const myCustomRuntime = new Runtime(ant, 'myCustomRuntime', '/foo/bin');
+    const myCustomRuntime = new Runtime(
+      ant,
+      'myCustomRuntime',
+      '/foo/bin',
+      ['extension'],
+      '/foo/template'
+    );
     const runtimes = [myCustomRuntime];
     const runtimeController = new RuntimeController(ant, runtimes);
-    expect(() => runtimeController.getFunction(
-      myCustomRuntime.name).toEqual(myCustomRuntime));
+    const loadedRuntime = runtimeController.getRuntime(myCustomRuntime.name);
+    expect(loadedRuntime).toEqual(myCustomRuntime);
+    expect(loadedRuntime.template).toEqual('/foo/template');
   });
 
   describe('RuntimeController.ant', () => {

@@ -5,6 +5,7 @@
 const assert = require('assert');
 
 /**
+ * @class ant/Provider
  * Represents a provider that can be used by the hosts in the deployment process
  * of the Ant Framework's functions.
  */

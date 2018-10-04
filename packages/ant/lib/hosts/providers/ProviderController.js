@@ -6,6 +6,7 @@ const assert = require('assert');
 const Provider = require('./Provider');
 
 /**
+ * @class ant/ProviderController
  * Represents a controller for the Ant Framework's providers.
  */
 class ProviderController {

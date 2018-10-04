@@ -1,6 +1,15 @@
-const ConfigJSONHandler = require('./ConfigJSONHandler');
-const path = require('path');
+/**
+ * @fileoverview Defines and exports the {@link FunctionsResolver} class.
+ */
 
+const path = require('path');
+const ConfigJSONHandler = require('./ConfigJSONHandler');
+
+/**
+ * @class ant/FunctionsResolver
+ * Represents a resolver to lead with the functions configuration.
+ * @extends ConfigJSONHandler
+ */
 class FunctionsResolver extends ConfigJSONHandler {
   /**
    * Resolves the functions paths if they are not absolute.

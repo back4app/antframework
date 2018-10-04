@@ -2,8 +2,9 @@
  * @fileoverview Tests for lib/functions/FunctionController.js file.
  */
 
-const AntError = require('../../../lib/util/AntError');
-const logger = require('../../../lib/util/logger');
+const path = require('path');
+const { AntError, logger } = require('@back4app/ant-util');
+const { AntCli } = require('@back4app/ant-cli');
 const Ant = require('../../../lib/Ant');
 const Plugin = require('../../../lib/plugins/Plugin');
 const AntFunction = require('../../../lib/functions/AntFunction');
@@ -92,6 +93,17 @@ describe('lib/functions/FunctionController.js', () => {
     expect(fakeError)
       .toHaveBeenCalledWith(expect.any(AntError));
     logger._errorHandlers.delete(fakeError);
+  });
+
+  test('shoud search for lib functions', () => {
+    const originalCwd = process.cwd();
+    process.chdir(path.resolve(
+      __dirname,
+      '../../../node_modules/@back4app/ant-util-tests/services/FooService'
+    ));
+    const antCli = new AntCli();
+    expect(antCli._ant.functionController.functions).toHaveLength(2);
+    process.chdir(originalCwd);
   });
 
   describe('FunctionController.ant', () => {

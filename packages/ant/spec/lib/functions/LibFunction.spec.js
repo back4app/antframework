@@ -3,31 +3,36 @@
  */
 
 const path = require('path');
-const { Observable } = require('rxjs');
-const { toArray } = require('rxjs/operators');
+const { Observable } = require('@back4app/ant-util-rxjs/node_modules/rxjs');
+const { toArray } = require('@back4app/ant-util-rxjs/node_modules/rxjs/operators');
 const Ant = require('../../../lib/Ant');
 const LibFunction = require('../../../lib/functions/LibFunction');
 const Runtime = require('../../../lib/functions/runtimes/Runtime');
+
+const utilPath = path.resolve(
+  __dirname,
+  '../../../node_modules/@back4app/ant-util-tests'
+);
 
 const ant = new Ant();
 
 const fooRuntime = new Runtime(
   ant,
   'fooRuntime',
-  path.resolve(__dirname, '../../support/functions/fooRuntime.js')
+  path.resolve(utilPath, 'functions/fooRuntime.js')
 );
 
 const libFunction = new LibFunction(
   ant,
   'fooLibFunction',
-  path.resolve(__dirname, '../../support/functions/fooLibFunction'),
+  path.resolve(utilPath, 'functions/fooLibFunction'),
   fooRuntime
 );
 
 const undefinedlibFunction = new LibFunction(
   ant,
   'undefinedLibFunction',
-  path.resolve(__dirname, '../../support/functions/undefinedLibFunction'),
+  path.resolve(utilPath, 'functions/undefinedLibFunction'),
   fooRuntime
 );
 

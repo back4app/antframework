@@ -4,8 +4,10 @@
 
 const assert = require('assert');
 const { AssertionError } = assert;
-const { Observable } = require('rxjs');
+const path = require('path');
 const yargs = require('yargs');
+const { Observable } = require('@back4app/ant-util-rxjs/node_modules/rxjs');
+const Core = require('@back4app/ant-core');
 const Ant = require('../../../lib/Ant');
 const Plugin = require('../../../lib/plugins/Plugin');
 const PluginController = require('../../../lib/plugins/PluginController');
@@ -13,16 +15,24 @@ const Template = require('../../../lib/templates/Template');
 const AntFunction = require('../../../lib/functions/AntFunction');
 const Runtime = require('../../../lib/functions/runtimes/Runtime');
 const Provider = require('../../../lib/hosts/providers/Provider');
-const Core = require('../../../lib/plugins/core');
-const FooPlugin = require('../../support/plugins/FooPlugin');
-const NotAPlugin = require('../../support/plugins/NotAPlugin');
-const path = require('path');
+const FooPlugin = require('@back4app/ant-util-tests/plugins/FooPlugin');
+const NotAPlugin = require('@back4app/ant-util-tests/plugins/NotAPlugin');
+
 
 const ant = new Ant();
 const plugin = new Plugin(ant);
-const corePluginPath = path.resolve(__dirname, '../../../lib/plugins/core');
-const fooPluginPath = path.resolve(__dirname, '../../support/plugins/FooPlugin');
-const notAPluginPath = path.resolve(__dirname, '../../support/plugins/NotAPlugin');
+const corePluginPath = path.resolve(
+  __dirname,
+  '../../../node_modules/@back4app/ant-core'
+);
+const fooPluginPath = path.resolve(
+  __dirname,
+  '../../../node_modules/@back4app/ant-util-tests/plugins/FooPlugin'
+);
+const notAPluginPath = path.resolve(
+  __dirname,
+  '../../../node_modules/@back4app/ant-util-tests/plugins/NotAPlugin'
+);
 
 /**
  * Represents a fake {@link Plugin} class for testing purposes.

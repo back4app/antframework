@@ -2,8 +2,9 @@
  * @fileoverview Tests for lib/config/handler/RuntimesPathResolver.js file.
  */
 
-const RuntimesPathResolver = require('../../../../lib/config/handler/RuntimesPathResolver');
 const path = require('path');
+const RuntimesPathResolver = require('../../../../lib/config/handler/RuntimesPathResolver');
+
 const resolver = new RuntimesPathResolver();
 
 const assertRuntimes = (runtimes, basePath, expectedRuntimes) => {

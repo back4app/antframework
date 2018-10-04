@@ -2,21 +2,29 @@
  * @fileoverview Tests for lib/config/handler/PluginsPathResolver.js file.
  */
 
-const AntError = require('../../../../lib/util/AntError');
 const path = require('path');
+const fs = require('fs');
+const { AntError } = require('@back4app/ant-util');
 const PluginsPathResolver = require('../../../../lib/config/handler/PluginsPathResolver');
+
 const resolver = new PluginsPathResolver();
 
 describe('lib/config/handler/PluginsPathResolver.js', () => {
-  const absoluteFooPluginPath = path.resolve(__dirname, '../../../support/plugins/FooPlugin');
+  const absoluteFooPluginPath = fs.realpathSync(path.resolve(
+    __dirname,
+    '../../../../node_modules/@back4app/ant-util-tests/plugins/FooPlugin.js'
+  ));
 
   test('should resolve relative plugin path', () => {
     const json = {
-      basePath: path.resolve(__dirname, '../../../support/plugins'),
+      basePath: path.resolve(
+        __dirname,
+        '../../../../node_modules/@back4app/ant-util-tests/plugins'
+      ),
       plugins: ['./FooPlugin']
     };
     resolver.handle(json);
-    expect(json.plugins).toEqual([ absoluteFooPluginPath + '.js' ]);
+    expect(json.plugins).toEqual([ absoluteFooPluginPath ]);
   });
 
   test('should resolve absolute plugin path', () => {
@@ -39,7 +47,10 @@ describe('lib/config/handler/PluginsPathResolver.js', () => {
 
   test('should resolve relative plugins path with object plugin', () => {
     const json = {
-      basePath: path.resolve(__dirname, '../../../support/plugins'),
+      basePath: path.resolve(
+        __dirname,
+        '../../../../node_modules/@back4app/ant-util-tests/plugins'
+      ),
       plugins: [
         {
           './FooPlugin': {}
@@ -48,13 +59,13 @@ describe('lib/config/handler/PluginsPathResolver.js', () => {
     };
     resolver.handle(json);
     const expected = {};
-    expected[absoluteFooPluginPath + '.js'] = {};
+    expected[absoluteFooPluginPath] = {};
     expect(json.plugins).toEqual([ expected ]);
   });
 
   test('should resolve absolute plugins path with object plugin', () => {
     const plugin = {};
-    plugin[absoluteFooPluginPath + '.js'] = {};
+    plugin[absoluteFooPluginPath] = {};
     const json = {
       basePath: path.resolve(__dirname, '../../../support/plugins'),
       plugins: [ plugin ]

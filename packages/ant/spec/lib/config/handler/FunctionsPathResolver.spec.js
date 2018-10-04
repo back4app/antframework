@@ -2,8 +2,9 @@
  * @fileoverview Tests for lib/config/handler/BasepathResolver.js file.
  */
 
-const FunctionsPathResolver = require('../../../../lib/config/handler/FunctionsPathResolver');
 const path = require('path');
+const FunctionsPathResolver = require('../../../../lib/config/handler/FunctionsPathResolver');
+
 const resolver = new FunctionsPathResolver();
 
 const assertFunctions = (functions, basePath, expectedFunctions) => {

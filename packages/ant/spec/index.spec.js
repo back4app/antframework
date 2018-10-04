@@ -7,12 +7,12 @@ const Ant = require('../lib/Ant');
 const Config = require('../lib/config/Config');
 const AntFunction = require('../lib/functions/AntFunction');
 const BinFunction = require('../lib/functions/BinFunction');
+const Runtime = require('../lib/functions/runtimes/Runtime');
 const LibFunction = require('../lib/functions/LibFunction');
 const Plugin = require('../lib/plugins/Plugin');
 const Template = require('../lib/templates/Template');
-const Core = require('../lib/plugins/core/lib/Core');
-const GraphQL = require('../lib/plugins/graphQL/lib/GraphQL');
-const util = require('../lib/util');
+const Provider = require('../lib/hosts/providers/Provider');
+const Host = require('../lib/hosts/Host');
 
 describe('index.js', () => {
   test('should export "Ant" class', () => {
@@ -39,6 +39,12 @@ describe('index.js', () => {
     );
   });
 
+  test('should export "Runtime" class', () => {
+    expect(index.Runtime).toEqual(
+      Runtime
+    );
+  });
+
   test('should export "LibFunction" class', () => {
     expect(index.LibFunction).toEqual(
       LibFunction
@@ -57,21 +63,15 @@ describe('index.js', () => {
     );
   });
 
-  test('should export "GraphQL" class', () => {
-    expect(index.GraphQL).toEqual(
-      GraphQL
+  test('should export "Provider" class', () => {
+    expect(index.Provider).toEqual(
+      Provider
     );
   });
 
-  test('should export "Core" class', () => {
-    expect(index.Core).toEqual(
-      Core
-    );
-  });
-
-  test('should export "util" module', () => {
-    expect(index.util).toEqual(
-      util
+  test('should export "Host" class', () => {
+    expect(index.Host).toEqual(
+      Host
     );
   });
 });

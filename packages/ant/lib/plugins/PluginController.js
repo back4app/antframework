@@ -3,15 +3,16 @@
  */
 
 const assert = require('assert');
-const { Observable } = require('rxjs');
-const AntError = require('../util/AntError');
-const Plugin = require('./Plugin');
-const Template = require('../templates/Template');
+const { Observable } = require('@back4app/ant-util-rxjs/node_modules/rxjs');
+const { AntError } = require('@back4app/ant-util');
 const AntFunction = require('../functions/AntFunction');
 const Runtime = require('../functions/runtimes/Runtime');
 const Provider = require('../hosts/providers/Provider');
+const Template = require('../templates/Template');
+const Plugin = require('./Plugin');
 
 /**
+ * @class ant/PluginController
  * Represents a controller for the Ant Framework's plugins.
  * @example
  * <caption>Loading no plugins during initilization.</caption>

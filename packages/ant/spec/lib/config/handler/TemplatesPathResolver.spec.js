@@ -3,6 +3,7 @@
  */
 
 const TemplatesPathResolver = require('../../../../lib/config/handler/TemplatesPathResolver');
+
 const resolver = new TemplatesPathResolver();
 
 describe('lib/config/handler/TemplatesPathResolver.js', () => {

@@ -5,6 +5,7 @@
 const assert = require('assert');
 
 /**
+ * @class ant/Plugin
  * Represents a generic plugin for the Ant Framework.
  */
 class Plugin {

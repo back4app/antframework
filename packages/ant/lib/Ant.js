@@ -3,17 +3,17 @@
  */
 
 const assert = require('assert');
-const AntError = require('./util/AntError');
-const PluginController = require('./plugins/PluginController');
-const TemplateController = require('./templates/TemplateController');
+const { AntError } = require('@back4app/ant-util');
+const Config = require('./config/Config');
 const FunctionController = require('./functions/FunctionController');
 const RuntimeController = require('./functions/runtimes/RuntimeController');
-const HostController = require('./hosts/HostController');
+const TemplateController = require('./templates/TemplateController');
+const PluginController = require('./plugins/PluginController');
 const ProviderController = require('./hosts/providers/ProviderController');
-const Core = require('./plugins/core/lib/Core');
-const Config = require('./config/Config');
+const HostController = require('./hosts/HostController');
 
 /**
+ * @class ant/Ant
  * Represents the main object for initializing and using the Ant Framework.
  * @example
  * <caption>Loading no config during initilization.</caption>
@@ -202,13 +202,13 @@ class Ant {
   /**
    * Loads the {@link Core} module using the {@link PluginController} and returns it.
    *
-   * @throws {AssertionError} If core module loaded is not an instance of {@link Core}
+   * @throws {AssertionError} If core module not loaded.
    * @returns {Object} The {@link Core} module
    */
   _getCoreModule() {
     const core = this.pluginController.getPlugin('Core');
     assert(
-      core instanceof Core,
+      core,
       'Core plugin not found on PluginController'
     );
     return core;

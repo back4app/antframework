@@ -6,6 +6,7 @@ const assert = require('assert');
 const Template = require('./Template');
 
 /**
+ * @class ant/TemplateController
  * Represents a controller for the Ant Framework's templates.
  *
  * The main role of this controller is to provide and store the templates from

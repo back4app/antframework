@@ -4,6 +4,7 @@
 
 const path = require('path');
 const BasepathResolver = require('../../../../lib/config/handler/BasepathResolver');
+
 const resolver = new BasepathResolver();
 
 const assertBasePath = (filePath, basePath, expectedBasePath) => {

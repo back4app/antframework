@@ -9,9 +9,10 @@ const fs = require('fs-extra');
 const readFile = util.promisify(fs.readFile);
 const writeFile = util.promisify(fs.writeFile);
 const Mustache = require('mustache');
-const logger = require('../util/logger');
+const { logger } = require('@back4app/ant-util');
 
 /**
+ * @class ant/Template
  * Represents a template for the Ant Framework.
  *
  * A template represents any content that could generate replicas based

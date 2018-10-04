@@ -6,6 +6,7 @@ const assert = require('assert');
 const Host = require('../hosts/Host');
 
 /**
+ * @class ant/AntFunction
  * Represents a function that can be executed by the Ant Framework.
  */
 class AntFunction {

@@ -4,29 +4,29 @@
  * @fileoverview Defines and exports the {@link Config} class.
  */
 
-const AntError = require('../util/AntError');
 const assert = require('assert');
-const fs = require('fs');
-const logger = require('../util/logger');
 const path = require('path');
+const fs = require('fs');
 const yaml = require('yaml').default;
 const Map = require('yaml/map').default;
 const Pair = require('yaml/pair').default;
 const Scalar = require('yaml/scalar').default;
 const Seq = require('yaml/seq').default;
+const { AntError, logger } = require('@back4app/ant-util');
+const BinFunction = require('../functions/BinFunction');
+const Runtime = require('../functions/runtimes/Runtime');
+const LibFunction = require('../functions/LibFunction');
 const Template = require('../templates/Template');
 const Host = require('../hosts/Host');
 const BasepathResolver = require('./handler/BasepathResolver');
-const PluginsPathResolver = require('./handler/PluginsPathResolver');
-const TemplatesPathResolver = require('./handler/TemplatesPathResolver');
 const VariablesResolver = require('./handler/VariablesResolver');
 const FunctionsPathResolver = require('./handler/FunctionsPathResolver');
 const RuntimesPathResolver = require('./handler/RuntimesPathResolver');
-const BinFunction = require('../functions/BinFunction');
-const LibFunction = require('../functions/LibFunction');
-const Runtime = require('../functions/runtimes/Runtime');
+const TemplatesPathResolver = require('./handler/TemplatesPathResolver');
+const PluginsPathResolver = require('./handler/PluginsPathResolver');
 
 /**
+ * @class ant/Config
  * Represents the configuration of the {@link Ant} class.
  * It was created to simplify the process of manipulating configuration files,
  * making it easier to retrieve and save new configurations.

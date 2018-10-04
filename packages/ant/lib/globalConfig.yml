@@ -1,6 +1,6 @@
 basePath: ./
 plugins:
-  - $GLOBAL/plugins/core
+  - $GLOBAL/@back4app/ant-core
 templates:
   {}
 # Below is an example of how to load custom templates using this config file.

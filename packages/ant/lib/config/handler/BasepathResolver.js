@@ -1,7 +1,16 @@
-const assert = require('assert');
-const ConfigJSONHandler = require('./ConfigJSONHandler');
-const path = require('path');
+/**
+ * @fileoverview Defines and exports the {@link BasepathResolver} class.
+ */
 
+const assert = require('assert');
+const path = require('path');
+const ConfigJSONHandler = require('./ConfigJSONHandler');
+
+/**
+ * @class ant/BasepathResolver
+ * Represents a resolver to lead with the configuration basePath.
+ * @extends ConfigJSONHandler
+ */
 class BasepathResolver extends ConfigJSONHandler {
   /**
    * Resolves the configuration basePath, returning an absolute base path.

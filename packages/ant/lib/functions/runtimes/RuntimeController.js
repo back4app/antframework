@@ -6,6 +6,7 @@ const assert = require('assert');
 const Runtime = require('./Runtime');
 
 /**
+ * @class ant/RuntimeController
  * Represents a controller for the Ant Framework's runtimes.
  */
 class RuntimeController {

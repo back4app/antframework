@@ -4,12 +4,12 @@
 
 const assert = require('assert');
 const { map } = require('rxjs/operators');
-const AntError = require('../util/AntError');
-const logger = require('../util/logger');
+const { AntError, logger } = require('@back4app/ant-util');
 const AntFunction = require('./AntFunction');
 const Runtime = require('./runtimes/Runtime');
 
 /**
+ * @class ant/LibFunction
  * Represents a function containing a handler that will be called using the
  * specified runtime by the Ant Framework during the running process.
  * @extends AntFunction

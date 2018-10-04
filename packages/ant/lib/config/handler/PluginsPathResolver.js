@@ -1,5 +1,14 @@
+/**
+ * @fileoverview Defines and exports the {@link PluginsPathResolver} class.
+ */
+
 const ConfigJSONHandler = require('./ConfigJSONHandler');
 
+/**
+ * @class ant/PluginsPathResolver
+ * Represents a resolver to lead with the plugins configuration.
+ * @extends ConfigJSONHandler
+ */
 class PluginsPathResolver extends ConfigJSONHandler {
   /**
    * Resolves any relative or node module path for the plugins configuration

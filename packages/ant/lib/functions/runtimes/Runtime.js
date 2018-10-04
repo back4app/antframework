@@ -6,6 +6,7 @@ const assert = require('assert');
 const BinFunction = require('../BinFunction');
 
 /**
+ * @class ant/Runtime
  * Represents a function that contains a binary file that will be used to
  * execute a lib function.
  * @extends BinFunction

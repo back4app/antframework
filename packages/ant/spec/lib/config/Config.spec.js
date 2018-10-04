@@ -1,23 +1,32 @@
 /* eslint-disable no-console */
+
 /**
- * @fileoverview Tests for lib/Config.js file.
+ * @fileoverview Tests for lib/config/Config.js file.
  */
-const AntError = require('../../../lib/util/AntError');
-const Config = require('../../../lib/config/Config');
-const fs = require('fs');
-const fsExtra = require('fs-extra');
-const path = require('path');
-const process = require('process');
-const yaml = require('yaml').default;
-const Ant = require('../../../lib/Ant');
-const BinFunction = require('../../../lib/functions/BinFunction');
-const LibFunction = require('../../../lib/functions/LibFunction');
-const Runtime = require('../../../lib/functions/runtimes/Runtime');
+
 const { AssertionError } = require('assert');
+const process = require('process');
+const fs = require('fs');
+const path = require('path');
+const fsExtra = require('fs-extra');
+const yaml = require('yaml').default;
 const Map = require('yaml/map').default;
 const Pair = require('yaml/pair').default;
 const Scalar = require('yaml/scalar').default;
 const Seq = require('yaml/seq').default;
+const { AntError } = require('@back4app/ant-util');
+const {
+  Config,
+  Ant,
+  BinFunction,
+  Runtime,
+  LibFunction
+} = require('../../../');
+
+const utilPath = path.resolve(
+  __dirname,
+  '../../../node_modules/@back4app/ant-util-tests'
+);
 
 describe('lib/config/Config.js', () => {
   const originalCwd = process.cwd();
@@ -199,12 +208,12 @@ describe('lib/config/Config.js', () => {
     const filePath = path.resolve(outPath, 'antJSONtest.yml');
     try{
       fs.writeFileSync(filePath, 'basePath: $GLOBAL\n\
-plugins:\n  - ../spec/support/plugins/FooPlugin\n\
+plugins:\n  - $GLOBAL/@back4app/ant-util-tests/plugins/FooPlugin\n\
 templates:\n  MyCategory:\n    MyTemplate: /my/template/path\n');
       const config = new Config(filePath);
       expect(config.config).toEqual({
-        basePath: path.resolve(__dirname, '../../../lib'),
-        plugins: [ path.resolve(__dirname, '../../support/plugins/FooPlugin.js') ],
+        basePath: path.resolve(__dirname, '../../../node_modules'),
+        plugins: [ path.resolve(utilPath, 'plugins/FooPlugin') ],
         templates: {
           MyCategory: {
             MyTemplate: '/my/template/path'
@@ -376,16 +385,36 @@ save the file.');
       }
     );
 
+    test(
+      'should fail when loading invalid config file v2',
+      () => {
+        jest.spyOn(fs, 'existsSync').mockImplementation(() => true);
+        jest.spyOn(fs, 'readFileSync').mockImplementation(() => '/;!@#$%&*()');
+        yaml.parseDocument = jest.fn().mockImplementation(() => {
+          return { toJSON: () => 'some error' };
+        });
+
+        try {
+          new Config(path.resolve(outPath, 'ant.yml'));
+        } catch (e) {
+          expect(e).toBeInstanceOf(AntError);
+          expect(e.message).toEqual(
+            expect.stringContaining('Could not load config')
+          );
+        }
+      }
+    );
+
     describe('global', () => {
       test(
         'should return a global instance',
         () => {
           const globalConfig = Config.Global;
           expect(globalConfig).toBeDefined();
-          expect(globalConfig.path).toBe(path.resolve(__dirname, '../../../lib', 'globalConfig.yml'));
+          expect(globalConfig.path).toEqual(path.resolve(__dirname, '../../../lib', 'globalConfig.yml'));
           expect(globalConfig.config).toEqual({
             basePath: path.resolve(__dirname, '../../../lib'),
-            plugins: [path.resolve(__dirname, '../../../lib/plugins/core')],
+            plugins: [path.resolve(__dirname, '../../../node_modules/@back4app/ant-core')],
             templates: {}
           });
         }
