@@ -22,8 +22,8 @@
     "package.json"
   ],
   "scripts": {
-    "clean": "lerna clean && rm -rf node_modules",
-    "install": "lerna bootstrap && lerna link",
+    "clean": "lerna clean && rm -rf node_modules && find . -name \"package-lock.json\" -exec rm -rf '{}' +",
+    "postinstall": "lerna bootstrap && lerna link",
     "lint": "lerna run lint",
     "pretest": "lerna link",
     "test": "lerna run test",
@@ -40,7 +40,7 @@
     "url": "https://github.com/back4app/antframework/issues"
   },
   "homepage": "https://github.com/back4app/antframework#readme",
-  "dependencies": {
+  "devDependencies": {
     "lerna": "^3.4.1"
   }
 }
