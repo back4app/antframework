@@ -21,7 +21,10 @@ const templates = [
   new Template(
     'Server',
     'Default',
-    path.resolve(__dirname, '../node_modules/@back4app/ant-graphql-express')
+    path.resolve(
+      __dirname,
+      '../node_modules/@back4app/ant/node_modules/@back4app/ant-graphql-express'
+    )
   )
 ];
 
@@ -207,7 +210,7 @@ class GraphQL extends Plugin {
       server.bin ||
       path.resolve(
         __dirname,
-        '../node_modules/@back4app/ant-graphql-express/bin/server.js'
+        '../node_modules/@back4app/ant/node_modules/@back4app/ant-graphql-express/bin/server.js'
       );
 
     assert(

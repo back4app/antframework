@@ -48,6 +48,7 @@
   "dependencies": {
     "@back4app/ant-core": "^0.0.1",
     "@back4app/ant-graphql": "^0.0.1",
+    "@back4app/ant-graphql-express": "^0.0.1",
     "@back4app/ant-serverless": "^0.0.1",
     "@back4app/ant-util": "^0.0.1",
     "@back4app/ant-util-rxjs": "^0.0.1",
