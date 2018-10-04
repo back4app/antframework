@@ -4,7 +4,9 @@
 
 const { createServer } = require('http');
 const express = require('express');
-const { execute, subscribe } = require('graphql');
+const { execute, subscribe } = require(
+  '@back4app/ant-graphql/node_modules/graphql'
+);
 const graphqlHTTP = require('express-graphql');
 const { SubscriptionServer } = require('subscriptions-transport-ws');
 const { logger } = require('@back4app/ant-util');

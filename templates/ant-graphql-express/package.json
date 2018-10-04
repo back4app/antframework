@@ -33,6 +33,7 @@
   ],
   "main": "index.js",
   "scripts": {
+    "postinstall": "npm link node_modules/@back4app/ant-graphql/node_modules/graphql --local",
     "lint": "eslint ./ --config ./node_modules/@back4app/ant-util-tests/.eslintrc.js --ignore-path ./node_modules/@back4app/ant-util-tests/.eslintignore",
     "pretest": "npm run lint",
     "test": "jest --config ./node_modules/@back4app/ant-util-tests/jest.config.js --rootDir ./",
@@ -57,7 +58,6 @@
     "@back4app/ant-util-rxjs": "^0.0.0",
     "express": "^4.16.3",
     "express-graphql": "^0.6.12",
-    "graphql": "^0.13.0",
     "subscriptions-transport-ws": "^0.9.15"
   },
   "devDependencies": {
