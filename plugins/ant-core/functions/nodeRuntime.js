@@ -6,7 +6,7 @@
  * @fileoverview Node.js runtime for Ant Framework.
  */
 
-const { Observable } = require('@back4app/ant-util-rxjs/node_modules/rxjs');
+const { Observable } = require('rxjs');
 
 let output = null;
 const args = JSON.parse(process.argv[3]).map(

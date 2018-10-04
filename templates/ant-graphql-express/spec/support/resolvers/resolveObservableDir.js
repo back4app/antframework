@@ -3,6 +3,6 @@
  * for testing purposes.
  */
 
-const rxjs = require('@back4app/ant-util-rxjs/node_modules/rxjs');
+const rxjs = require('rxjs');
 
 module.exports = () => rxjs.of('observable');

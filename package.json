@@ -23,7 +23,7 @@
   ],
   "scripts": {
     "clean": "lerna clean && rm -rf node_modules && find . -name \"package-lock.json\" -exec rm -rf '{}' +",
-    "postinstall": "lerna bootstrap && lerna link",
+    "postinstall": "lerna bootstrap --hoist && lerna link",
     "lint": "lerna run lint",
     "pretest": "lerna link",
     "test": "lerna run test",

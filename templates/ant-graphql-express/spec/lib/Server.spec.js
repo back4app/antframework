@@ -6,7 +6,7 @@
 
 const path = require('path');
 const http = require('http');
-const { graphql } = require('@back4app/ant-graphql/node_modules/graphql');
+const { graphql } = require('graphql');
 const { SubscriptionServer } = require('subscriptions-transport-ws');
 const { logger } = require('@back4app/ant-util');
 const { AntFunction, Config, Ant } = require('@back4app/ant');

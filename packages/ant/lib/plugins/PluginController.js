@@ -3,7 +3,7 @@
  */
 
 const assert = require('assert');
-const { Observable } = require('@back4app/ant-util-rxjs/node_modules/rxjs');
+const { Observable } = require('rxjs');
 const { AntError } = require('@back4app/ant-util');
 const AntFunction = require('../functions/AntFunction');
 const Runtime = require('../functions/runtimes/Runtime');

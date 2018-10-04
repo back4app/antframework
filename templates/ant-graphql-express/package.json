@@ -33,7 +33,6 @@
   ],
   "main": "index.js",
   "scripts": {
-    "postinstall": "trap 'npm link node_modules/@back4app/ant-graphql/node_modules/graphql --local' EXIT",
     "lint": "eslint ./ --config ./node_modules/@back4app/ant-util-tests/.eslintrc.js --ignore-path ./node_modules/@back4app/ant-util-tests/.eslintignore",
     "pretest": "npm run lint",
     "test": "jest --config ./node_modules/@back4app/ant-util-tests/jest.config.js --rootDir ./",

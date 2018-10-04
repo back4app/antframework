@@ -2,10 +2,8 @@
  * @fileoverview Defines and exports the {@link resolve} function.
  */
 
-const { Observable } = require('@back4app/ant-util-rxjs/node_modules/rxjs');
-const { toArray } = require(
-  '@back4app/ant-util-rxjs/node_modules/rxjs/operators'
-);
+const { Observable } = require('rxjs');
+const { toArray } = require('rxjs/operators');
 const { AntError, logger } = require('@back4app/ant-util');
 
 /**

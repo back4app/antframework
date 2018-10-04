@@ -3,8 +3,8 @@
  */
 
 const path = require('path');
-const { Observable } = require('@back4app/ant-util-rxjs/node_modules/rxjs');
-const { toArray } = require('@back4app/ant-util-rxjs/node_modules/rxjs/operators');
+const { Observable } = require('rxjs');
+const { toArray } = require('rxjs/operators');
 const Ant = require('../../../lib/Ant');
 const LibFunction = require('../../../lib/functions/LibFunction');
 const Runtime = require('../../../lib/functions/runtimes/Runtime');

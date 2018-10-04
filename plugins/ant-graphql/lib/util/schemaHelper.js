@@ -4,7 +4,7 @@
  * @module ant-graphql/util
  */
 
-const { Observable } = require('@back4app/ant-util-rxjs/node_modules/rxjs');
+const { Observable } = require('rxjs');
 const { parse, buildASTSchema, validateSchema } = require('graphql');
 const { logger } = require('@back4app/ant-util');
 const { AntFunction } = require('@back4app/ant');
