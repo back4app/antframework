@@ -8,7 +8,7 @@ const VariablesResolver = require('../../../../lib/config/handler/VariablesResol
 const resolver = new VariablesResolver();
 
 describe('lib/config/handler/VariablesResolver.js', () => {
-  const GLOBAL_DIR = path.resolve(__dirname, '../../../../node_modules');
+  const GLOBAL_DIR = path.resolve(__dirname, '../../../../');
   test('should replace $GLOBAL var on JSON', () => {
     const json = {
       basePath: '$GLOBAL/foo/bar',

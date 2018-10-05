@@ -17,9 +17,10 @@ const ConfigJSONHandler = require('./ConfigJSONHandler');
  * @property {String} GLOBAL The absolute path to the global directory of
  * the Ant framework
  */
-const YAML_VARS = {
-  GLOBAL: path.resolve(__dirname, '../../../node_modules/')
-};
+const YAML_VARS = [
+  ['GLOBAL/@back4app/', '@back4app/'],
+  ['GLOBAL', path.resolve(__dirname, '../../../')]
+];
 
 /**
  * @class ant/VariablesResolver
@@ -49,7 +50,7 @@ class VariablesResolver extends ConfigJSONHandler {
       const value = json[key];
       if(typeof key === 'string' && key.indexOf('$') > -1) {
         let newKey = key;
-        for(const [configVar, varValue] of Object.entries(YAML_VARS)) {
+        for(const [configVar, varValue] of YAML_VARS) {
           newKey = newKey.replace(new RegExp(`\\$${configVar}`, 'g'), varValue);
         }
         delete json[key];
@@ -70,9 +71,11 @@ class VariablesResolver extends ConfigJSONHandler {
         if (typeof value === 'string') {
           // If the value is a String, we can replace the current value
           // with our YAML variables and update the JSON
-          for(const [configVar, varValue] of Object.entries(YAML_VARS)) {
-            json[key] = value.replace(new RegExp(`\\$${configVar}`, 'g'), varValue);
+          let newValue = value;
+          for(const [configVar, varValue] of YAML_VARS) {
+            newValue = newValue.replace(new RegExp(`\\$${configVar}`, 'g'), varValue);
           }
+          json[key] = newValue;
         }
       }
     }

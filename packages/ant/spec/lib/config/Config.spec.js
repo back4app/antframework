@@ -212,8 +212,8 @@ plugins:\n  - $GLOBAL/@back4app/ant-util-tests/plugins/FooPlugin\n\
 templates:\n  MyCategory:\n    MyTemplate: /my/template/path\n');
       const config = new Config(filePath);
       expect(config.config).toEqual({
-        basePath: path.resolve(__dirname, '../../../node_modules'),
-        plugins: [ path.resolve(utilPath, 'plugins/FooPlugin') ],
+        basePath: path.resolve(__dirname, '../../../'),
+        plugins: [ fs.realpathSync(path.resolve(utilPath, 'plugins/FooPlugin.js')) ],
         templates: {
           MyCategory: {
             MyTemplate: '/my/template/path'
@@ -414,7 +414,7 @@ save the file.');
           expect(globalConfig.path).toEqual(path.resolve(__dirname, '../../../lib', 'globalConfig.yml'));
           expect(globalConfig.config).toEqual({
             basePath: path.resolve(__dirname, '../../../lib'),
-            plugins: [path.resolve(__dirname, '../../../node_modules/@back4app/ant-core')],
+            plugins: [require.resolve('@back4app/ant-core')],
             templates: {}
           });
         }
