@@ -1,6 +1,9 @@
 {
   "name": "@back4app/antframework",
-  "version": "0.0.16",
+  "version": "0.0.17",
+  "publishConfig": {
+    "access": "restricted"
+  },
   "engines": {
     "node": ">=10.10"
   },
@@ -27,7 +30,7 @@
     "test": "lerna run test",
     "apidocs": "lerna run apidocs",
     "docs": "lerna run docs",
-    "deploy": "npm publish --access restricted && lerna publish"
+    "deploy": "npm publish && lerna publish"
   },
   "repository": {
     "type": "git",
