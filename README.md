@@ -30,18 +30,7 @@ Learn more about GraphQL at [GraphQL official web-site](https://graphql.org/).
 
 The default template brings to you an example query called `hello`. By customizing the GraphQL model and creating Ant Functions, you can develop your own GraphQL queries, mutations and subscriptions. [Learn more](#your-first-ant-function)
 
-### 5. Deploy to AWS Lambda via Serverless
-
-```Shell
-aws configure
-ant deploy
-```
-
-Learn more about how to setup the AWS CLI at [AWS official guide](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html).
-
-Ant Framework will use the default template to deploy the new service to your own AWS account Lambda via Serverless framework. Other templates can be used for choosing from many different providers and deploying to a wide range of scenarios of public and private clouds. [Learn more](#deploying-your-microservice)
-
-## Your first Ant Function
+### 5. Create your first Ant Function
 Edit the `model.graphql` file and use the following code:
 
 ```GraphQL
@@ -63,12 +52,23 @@ module.exports = ({ name }) => `Hello ${name} from function!!!`;
 Run the following command:
 
 ```Shell
-ant function add queryHello ./queryHello.js Default
+ant function add queryHello ./queryHello.js Node
 ```
 
 It's done! Run and play with your brand new GraphQL API!
 
 You can create any kind of query, mutation or subscription. You can use different runtimes to write code using your preferred programming language such as Node.js, Python, Java or C#. Learn more about [customizing your GraphQL model](#customizing-your-graphql-model) and [creating Ant Functions](#creating-ant-functions).
+
+### 6. Deploy to AWS Lambda via Serverless
+
+```Shell
+aws configure
+ant deploy
+```
+
+Learn more about how to setup the AWS CLI at [AWS official guide](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html).
+
+Ant Framework will use the default template to deploy the new service to your own AWS account Lambda via Serverless framework. Other templates can be used for choosing from many different providers and deploying to a wide range of scenarios of public and private clouds. [Learn more](#deploying-your-microservice)
 
 ## Concepts
 ### Using the CLI tools
