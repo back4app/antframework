@@ -23,6 +23,7 @@
   },
   "files": [
     "lib",
+    "templates",
     "index.js",
     "LICENSE",
     "package.json"

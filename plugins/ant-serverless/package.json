@@ -1,6 +1,6 @@
 {
   "name": "@back4app/ant-serverless",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "engines": {
     "node": ">=10.10"
   },
@@ -25,6 +25,7 @@
   },
   "files": [
     "lib",
+    "templates",
     "index.js",
     "LICENSE",
     "package.json"
