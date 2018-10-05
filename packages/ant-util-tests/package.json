@@ -1,6 +1,6 @@
 {
   "name": "@back4app/ant-util-tests",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "engines": {
     "node": ">=10.10"
   },
@@ -42,9 +42,9 @@
   },
   "homepage": "https://github.com/back4app/antframework/tree/master/packages/ant-util-tests#readme",
   "devDependencies": {
-    "@back4app/ant": "^0.0.7",
-    "@back4app/ant-util-docs": "^0.0.7",
-    "@back4app/ant-util-rxjs": "^0.0.7",
+    "@back4app/ant": "^0.0.8",
+    "@back4app/ant-util-docs": "^0.0.8",
+    "@back4app/ant-util-rxjs": "^0.0.8",
     "jest": "^23.6.0",
     "jsdoc": "^3.5.5",
     "minami": "^1.2.3",
