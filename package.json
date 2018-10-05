@@ -1,6 +1,9 @@
 {
   "name": "@back4app/antframework",
   "version": "0.0.16",
+  "publishConfig": {
+    "access": "private"
+  },
   "engines": {
     "node": ">=10.10"
   },
