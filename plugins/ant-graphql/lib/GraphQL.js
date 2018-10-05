@@ -17,7 +17,9 @@ const mock = require('../functions/mock');
 const resolve = require('../functions/resolve');
 const subscribe = require('../functions/subscribe');
 
-const defaultServerPath = require.resolve('@back4app/ant-graphql-express');
+const defaultServerPath = path.dirname(
+  require.resolve('@back4app/ant-graphql-express')
+);
 
 const templates = [
   new Template(
