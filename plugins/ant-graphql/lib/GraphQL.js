@@ -17,14 +17,13 @@ const mock = require('../functions/mock');
 const resolve = require('../functions/resolve');
 const subscribe = require('../functions/subscribe');
 
+const defaultServerPath = require.resolve('@back4app/ant-graphql-express');
+
 const templates = [
   new Template(
     'Server',
     'Default',
-    path.resolve(
-      __dirname,
-      '../node_modules/@back4app/ant/node_modules/@back4app/ant-graphql-express'
-    )
+    defaultServerPath
   )
 ];
 
@@ -209,8 +208,8 @@ class GraphQL extends Plugin {
     const bin =
       server.bin ||
       path.resolve(
-        __dirname,
-        '../node_modules/@back4app/ant/node_modules/@back4app/ant-graphql-express/bin/server.js'
+        defaultServerPath,
+        './bin/server.js'
       );
 
     assert(
