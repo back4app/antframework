@@ -1,9 +1,9 @@
 {
   "name": "@back4app/antgraphqllambda",
-  "version": "0.0.15",
+  "version": "0.0.16",
   "description": "GraphQL API Lambda for Ant Framework projects",
   "dependencies": {
-    "@back4app/ant": "^0.0.15",
+    "@back4app/ant": "^0.0.16",
     "apollo-server-lambda": "^1.3.6",
     "aws-sdk": "^2.301.0",
     "graphql": "^0.13.0"

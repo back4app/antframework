@@ -71,8 +71,8 @@ class Serverless extends Plugin {
       this.ant,
       'serverlessCLI',
       path.resolve(
-        __dirname,
-        '../node_modules/.bin/serverless'
+        path.dirname(require.resolve('serverless')),
+        '../../.bin/serverless'
       )
     );
 
