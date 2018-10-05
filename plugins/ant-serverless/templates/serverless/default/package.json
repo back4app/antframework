@@ -1,6 +1,6 @@
 {
   "name": "@back4app/antgraphqllambda",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "GraphQL API Lambda for Ant Framework projects",
   "dependencies": {
     "@back4app/ant": "^0.0.11",

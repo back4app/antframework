@@ -49,7 +49,7 @@
     "@back4app/ant-core": "^0.0.11",
     "@back4app/ant-graphql": "^0.0.11",
     "@back4app/ant-graphql-express": "^0.0.11",
-    "@back4app/ant-serverless": "^0.0.8",
+    "@back4app/ant-serverless": "^0.0.11",
     "@back4app/ant-util": "^0.0.11",
     "@back4app/ant-util-rxjs": "^0.0.11",
     "fs-extra": "^7.0.0",
