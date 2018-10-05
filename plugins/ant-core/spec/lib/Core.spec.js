@@ -1802,6 +1802,8 @@ describe('lib/Core.js', () => {
       test('should print runtimes', async () => {
         console.log = jest.fn();
         const runtimes = [
+          new Runtime(ant, 'max', '/path/to/max', ['max'], '/my/max', '4.0.0', '10.5.0'),
+          new Runtime(ant, 'min', '/path/to/min', ['min'], '/my/min', '1.0.0'),
           new Runtime(ant, 'foo', '/path/to/foo', ['foo', 'js']),
           new Runtime(ant, 'bar', '/path/to/bar', ['bar']),
           new Runtime(ant, 'lorem', '/ipsum')
@@ -1810,18 +1812,22 @@ describe('lib/Core.js', () => {
         ant.runtimeController.loadRuntimes(runtimes);
         const core = new Core(ant);
         await core.listRuntimes();
-        expect(console.log.mock.calls.length).toBe(4);
+        expect(console.log.mock.calls.length).toBe(6);
         expect(console.log.mock.calls[0][0]).toBe('Listing all runtimes available \
-(<name> <bin> [extensions]):');
-        expect(console.log.mock.calls[1][0]).toBe('foo /path/to/foo foo js');
-        expect(console.log.mock.calls[2][0]).toBe('bar /path/to/bar bar');
-        expect(console.log.mock.calls[3][0]).toBe('lorem /ipsum');
+(<name> <bin> [extensions] [template] [minVersion] [maxVersion]):');
+        expect(console.log.mock.calls[1][0]).toBe('max /path/to/max [max] /my/max 4.0.0 10.5.0');
+        expect(console.log.mock.calls[2][0]).toBe('min /path/to/min [min] /my/min 1.0.0');
+        expect(console.log.mock.calls[3][0]).toBe('foo /path/to/foo [foo, js]');
+        expect(console.log.mock.calls[4][0]).toBe('bar /path/to/bar [bar]');
+        expect(console.log.mock.calls[5][0]).toBe('lorem /ipsum');
       });
 
       test('should print runtimes v2', (done) => {
         console.log = jest.fn();
         const antCli = new AntCli();
         const runtimes = [
+          new Runtime(antCli._ant, 'max', '/path/to/max', ['max'], '/my/max', '4.0.0', '10.5.0'),
+          new Runtime(antCli._ant, 'min', '/path/to/min', ['min'], '/my/min', '1.0.0'),
           new Runtime(antCli._ant, 'foo', '/path/to/foo', ['foo', 'js']),
           new Runtime(antCli._ant, 'bar', '/path/to/bar', ['bar']),
           new Runtime(antCli._ant, 'lorem', '/ipsum')
@@ -1831,12 +1837,14 @@ describe('lib/Core.js', () => {
         antCli._yargs.parse('runtime ls');
         process.exit = jest.fn(code => {
           expect(code).toEqual(1);
-          expect(console.log.mock.calls.length).toBe(4);
+          expect(console.log.mock.calls.length).toBe(6);
           expect(console.log.mock.calls[0][0]).toBe('Listing all runtimes available \
-(<name> <bin> [extensions]):');
-          expect(console.log.mock.calls[1][0]).toBe('foo /path/to/foo foo js');
-          expect(console.log.mock.calls[2][0]).toBe('bar /path/to/bar bar');
-          expect(console.log.mock.calls[3][0]).toBe('lorem /ipsum');
+(<name> <bin> [extensions] [template] [minVersion] [maxVersion]):');
+          expect(console.log.mock.calls[1][0]).toBe('max /path/to/max [max] /my/max 4.0.0 10.5.0');
+          expect(console.log.mock.calls[2][0]).toBe('min /path/to/min [min] /my/min 1.0.0');
+          expect(console.log.mock.calls[3][0]).toBe('foo /path/to/foo [foo, js]');
+          expect(console.log.mock.calls[4][0]).toBe('bar /path/to/bar [bar]');
+          expect(console.log.mock.calls[5][0]).toBe('lorem /ipsum');
           done();
         });
       });

@@ -4,6 +4,7 @@
 
 const assert = require('assert');
 const Runtime = require('./Runtime');
+const compare = require('compare-versions');
 
 /**
  * @class ant/RuntimeController
@@ -100,10 +101,12 @@ be an instance of Runtime`
         `Could not load runtime ${runtime.name}: the framework used to \
 initialize the runtime is different to this controller's`
       );
-      this._runtimes.set(
-        runtime.name,
-        runtime
-      );
+      let runtimesByName = this._runtimes.get(runtime.name);
+      if (!runtimesByName) {
+        runtimesByName = [];
+        this._runtimes.set(runtime.name, runtimesByName);
+      }
+      runtimesByName.push(runtime);
     }
   }
 
@@ -113,16 +116,37 @@ initialize the runtime is different to this controller's`
    * @readonly
    */
   get runtimes() {
-    return Array.from(this._runtimes.values());
+    return Array.from(this._runtimes.values()).reduce((acc, runtimesByName) => {
+      return acc.concat(runtimesByName);
+    }, []);
   }
 
   /**
   * Gets a specific runtime by its name.
   * @param {String} name The name of the runtime to be gotten.
+  * @param {String} version The target runtime version.
   * @return {Runtime} The runtime object.
   */
-  getRuntime(name) {
-    return this._runtimes.get(name) || null;
+  getRuntime(name, version) {
+    assert(typeof name === 'string', 'Could not get runtime. "name" should be String');
+    const runtimesByName = this._runtimes.get(name);
+    if (!runtimesByName) {
+      return null;
+    }
+    if (!version) {
+      return runtimesByName[0];
+    }
+    assert(typeof version === 'string' && version.length, 'Could not get runtime. "version" \
+should be non-empty String');
+
+    // Checks if any runtime is inside version range, and returns it.
+    // 'compare' returns 1 when the first version is greater than the second,
+    // 0 if its equal, or -1 when it is lesser
+    return runtimesByName.find(runtime =>
+      runtime.maxVersion
+        ? compare(version, runtime.minVersion) >= 0 && compare(runtime.maxVersion, version) >= 0
+        : compare(version, runtime.minVersion) >= 0
+    ) || null;
   }
 
   /**

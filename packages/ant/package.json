@@ -52,6 +52,7 @@
     "@back4app/ant-serverless": "^0.0.16",
     "@back4app/ant-util": "^0.0.16",
     "@back4app/ant-util-rxjs": "^0.0.16",
+    "compare-versions": "^3.4.0",
     "fs-extra": "^7.0.0",
     "mustache": "^3.0.0",
     "rxjs": "^6.3.2",

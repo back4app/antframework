@@ -21,10 +21,12 @@ class Runtime extends BinFunction {
    * runtime supports to execute.
    * @param {String} template The path to the file to be used as template
    * when creating new functions with this runtime
+   * @param {String} minVersion The minimum supported runtime version
+   * @param {String} maxVersion The maximum supported runtime version
    * @throws {AssertionError} If "ant", "name", "bin" or "extensions" params are
    * not valid.
    */
-  constructor(ant, name, bin, extensions, template) {
+  constructor(ant, name, bin, extensions, template, minVersion, maxVersion) {
     super(ant, name, bin);
 
     assert(
@@ -46,6 +48,20 @@ class Runtime extends BinFunction {
      * @private
      */
     this._template = template;
+
+    /**
+     * The minimum supported runtime version.
+     * @type {String}
+     * @private
+     */
+    this._minVersion = minVersion;
+
+    /**
+     * The maximum supported runtime version.
+     * @type {String}
+     * @private
+     */
+    this._maxVersion = maxVersion;
   }
 
   /**
@@ -64,6 +80,22 @@ class Runtime extends BinFunction {
    */
   get template() {
     return this._template;
+  }
+
+  /**
+   * Returns the minimum supported runtime version
+   * @type {String}
+   */
+  get minVersion() {
+    return this._minVersion;
+  }
+
+  /**
+   * Returns the maximum supported runtime version
+   * @type {String}
+   */
+  get maxVersion() {
+    return this._maxVersion;
   }
 }
 

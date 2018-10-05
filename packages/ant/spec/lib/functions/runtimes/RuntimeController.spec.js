@@ -101,9 +101,114 @@ should be Ant'
   });
 
   describe('RuntimeController.getRuntime', () => {
-    test('should return null if runtime not found', () => {
-      expect(runtimeController.getRuntime('NotExistent'))
+    test('should return null if runtime list is empty', () => {
+      const runtimeController = new RuntimeController(ant);
+      expect(runtimeController.getRuntime('any runtime'))
         .toEqual(null);
+    });
+
+    test('should return null if runtime was not found', () => {
+      const runtimes = [
+        new Runtime(
+          ant, 'myCustomRuntime', '/foo/bin', ['extension'], '/foo/template', '1.0.0'
+        ),
+        new Runtime(
+          ant, 'myCustomRuntime', '/foo/bin2', ['extension'], null, '0.0.1'
+        ),
+        new Runtime(
+          ant, 'myCustomRuntime', '/foo/bin3', ['extension'], null, '2.0.1'
+        )
+      ];
+      const runtimeController = new RuntimeController(ant, runtimes);
+      expect(runtimeController.getRuntime('foo')).toBeNull();
+    });
+
+    test('should fail due to invalid version param', () => {
+      try {
+        runtimeController.getRuntime('name', 1.2);
+      } catch (err) {
+        expect(err.message).toBe('Could not get runtime. "version" \
+should be non-empty String');
+      }
+    });
+
+    test('should return the default runtime', () => {
+      const myCustomRuntime = new Runtime(
+        ant,
+        'myCustomRuntime',
+        '/foo/bin',
+        ['extension'],
+        '/foo/template',
+        '1.0.0'
+      );
+      const runtimes = [
+        myCustomRuntime,
+        new Runtime(
+          ant, 'myCustomRuntime', '/foo/bin2', ['extension'], null, '0.0.1'
+        ),
+        new Runtime(
+          ant, 'myCustomRuntime', '/foo/bin3', ['extension'], null, '2.0.1'
+        )
+      ];
+      const runtimeController = new RuntimeController(ant, runtimes);
+      const loadedRuntime = runtimeController.getRuntime(myCustomRuntime.name);
+      expect(loadedRuntime).toEqual(myCustomRuntime);
+    });
+
+    test('should return given a version', () => {
+      const myCustomRuntime = new Runtime(
+        ant,
+        'myCustomRuntime',
+        '/foo/bin',
+        ['extension'],
+        '/foo/template',
+        '1.0'
+      );
+      const runtimes = [
+        new Runtime(
+          ant, 'myCustomRuntime', '/foo/bin2', ['extension'], null, '1.2'
+        ),
+        new Runtime(
+          ant, 'myCustomRuntime', '/foo/bin3', ['extension'], null, '2.0.1'
+        ),
+        myCustomRuntime
+      ];
+      const runtimeController = new RuntimeController(ant, runtimes);
+      const loadedRuntime = runtimeController.getRuntime(myCustomRuntime.name, '1.1');
+      expect(loadedRuntime).toEqual(myCustomRuntime);
+    });
+
+    test('should return given a version and max version constraint', () => {
+      const myCustomRuntime = new Runtime(
+        ant,
+        'myCustomRuntime',
+        '/foo/bin',
+        ['extension'],
+        '/foo/template',
+        '1.0.0',
+        '1.0.2'
+      );
+      const runtimes = [myCustomRuntime];
+      const runtimeController = new RuntimeController(ant, runtimes);
+      const loadedRuntime = runtimeController.getRuntime(myCustomRuntime.name, '1.0.1');
+      expect(loadedRuntime).toEqual(myCustomRuntime);
+    });
+
+    test('should return null due to version out of range', () => {
+      const runtimes = [
+        new Runtime(
+          ant, 'myCustomRuntime', '/foo/bin1', ['extension'], null, '1.1', '2.0'
+        ),
+        new Runtime(
+          ant, 'myCustomRuntime', '/foo/bin2', ['extension'], null, '2.1', '3.0'
+        ),
+        new Runtime(
+          ant, 'myCustomRuntime', '/foo/bin3', ['extension'], null, '2.0.2', '4.0.0'
+        )
+      ];
+      const runtimeController = new RuntimeController(ant, runtimes);
+      const loadedRuntime = runtimeController.getRuntime('myCustomRuntime', '2.0.1');
+      expect(loadedRuntime).toBeNull();
     });
   });
 });

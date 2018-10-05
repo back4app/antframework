@@ -51,7 +51,9 @@ class Core extends Plugin {
         'Node',
         path.resolve(__dirname, '../functions/nodeRuntime.js'),
         ['js'],
-        path.resolve(__dirname, '../templates/function/node.js.mustache')
+        path.resolve(__dirname, '../templates/function/node.js.mustache'),
+        '4.0.0',
+        '10.6.0'
       )
     ];
   }
@@ -877,9 +879,22 @@ Considering "${template}" as the template files path.`);
   async listRuntimes() {
     const runtimes = this.ant.runtimeController.runtimes;
     console.log('Listing all runtimes available \
-(<name> <bin> [extensions]):');
-    runtimes.forEach(({ name, bin, extensions }) => {
-      console.log(`${name} ${bin}${extensions ? ` ${extensions.join(' ')}` : ''}`);
+(<name> <bin> [extensions] [template] [minVersion] [maxVersion]):');
+    runtimes.forEach(({ name, bin, extensions, template, minVersion, maxVersion }) => {
+      let runtime = `${name} ${bin}`;
+      if (extensions) {
+        runtime += ` [${extensions.join(', ')}]`;
+      }
+      if (template) {
+        runtime += ` ${template}`;
+      }
+      if (minVersion) {
+        runtime += ` ${minVersion}`;
+      }
+      if (maxVersion) {
+        runtime += ` ${maxVersion}`;
+      }
+      console.log(runtime);
     });
   }
 
