@@ -1,11 +1,9 @@
 {
   "name": "@back4app/antframework",
-  "private": true,
   "version": "0.0.16",
   "engines": {
     "node": ">=10.10"
   },
-  "preferGlobal": true,
   "description": "Ant Framework - Serverless microservices made easy",
   "keywords": [
     "ant",
@@ -29,7 +27,7 @@
     "test": "lerna run test",
     "apidocs": "lerna run apidocs",
     "docs": "lerna run docs",
-    "deploy": "lerna publish"
+    "deploy": "npm publish --access restricted && lerna publish"
   },
   "repository": {
     "type": "git",
