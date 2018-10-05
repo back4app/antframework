@@ -1,0 +1,53 @@
+{
+  "name": "@back4app/ant-util-tests",
+  "version": "0.0.16",
+  "engines": {
+    "node": ">=10.10"
+  },
+  "description": "Library of utility configuration files for leading with test tools in the context of Ant Framework - Serverless microservices made easy",
+  "keywords": [
+    "ant",
+    "tests",
+    "eslint",
+    "jest",
+    "microservices",
+    "api",
+    "functions",
+    "graphql",
+    "reactive",
+    "serverless"
+  ],
+  "directories": {
+    "doc": "docs"
+  },
+  "files": [
+    ".eslintignore",
+    ".eslintrc.js",
+    "jest.config.js",
+    "LICENSE",
+    "package.json"
+  ],
+  "scripts": {
+    "apidocs": "jsdoc -c ./node_modules/@back4app/ant-util-docs/jsdoc.json ./*",
+    "docs": "npm run apidocs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/back4app/antframework.git"
+  },
+  "author": "Back4App Inc.",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/back4app/antframework/issues"
+  },
+  "homepage": "https://github.com/back4app/antframework/tree/master/packages/ant-util-tests#readme",
+  "devDependencies": {
+    "@back4app/ant": "^0.0.16",
+    "@back4app/ant-util-docs": "^0.0.16",
+    "@back4app/ant-util-rxjs": "^0.0.16",
+    "jest": "^23.6.0",
+    "jsdoc": "^3.5.5",
+    "minami": "^1.2.3",
+    "rxjs": "^6.3.2"
+  }
+}

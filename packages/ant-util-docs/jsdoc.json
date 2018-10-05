@@ -1,0 +1,20 @@
+{
+  "source": {
+    "excludePattern": "node_modules"
+  },
+  "plugins": ["plugins/markdown"],
+  "opts": {
+    "recurse": true,
+    "template": "../../node_modules/minami",
+    "showInheritedInNav": true,
+    "useLongnameInNav": true,
+    "destination": "docs/api"
+  },
+  "templates": {
+    "default": {
+      "outputSourceFiles": false
+    },
+    "cleverLinks": false,
+    "monospaceLinks": false
+  }
+}

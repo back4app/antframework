@@ -1,0 +1,53 @@
+{
+  "name": "@back4app/ant-util-analytics",
+  "version": "0.0.16",
+  "engines": {
+    "node": ">=10.10"
+  },
+  "preferGlobal": true,
+  "description": "Analytics utils for Ant Framework - Serverless microservices made easy",
+  "keywords": [
+    "ant",
+    "analytics",
+    "microservices",
+    "api"
+  ],
+  "directories": {
+    "lib": "lib",
+    "doc": "docs",
+    "test": "spec"
+  },
+  "files": [
+    "lib",
+    "index.js",
+    "LICENSE",
+    "package.json"
+  ],
+  "main": "index.js",
+  "scripts": {
+    "lint": "eslint ./ --config ./node_modules/@back4app/ant-util-tests/.eslintrc.js --ignore-path ./node_modules/@back4app/ant-util-tests/.eslintignore",
+    "pretest": "npm run lint",
+    "test": "jest --config ./node_modules/@back4app/ant-util-tests/jest.config.js --rootDir ./",
+    "apidocs": "jsdoc -c ./node_modules/@back4app/ant-util-docs/jsdoc.json ./*",
+    "docs": "npm run apidocs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/back4app/antframework.git"
+  },
+  "author": "Back4App Inc.",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/back4app/antframework/issues"
+  },
+  "homepage": "https://github.com/back4app/antframework/tree/master/packages/ant-util-analytics#readme",
+  "dependencies": {
+    "parse": "^2.1.0"
+  },
+  "devDependencies": {
+    "@back4app/ant-util-docs": "^0.0.16",
+    "@back4app/ant-util-tests": "^0.0.16",
+    "eslint": "^5.6.0",
+    "jest": "^23.6.0"
+  }
+}

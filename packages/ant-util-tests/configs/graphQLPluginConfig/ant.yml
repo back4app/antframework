@@ -1,0 +1,2 @@
+plugins:
+  - $GLOBAL/@back4app/ant-graphql

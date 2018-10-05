@@ -1,0 +1,45 @@
+{
+  "name": "@back4app/ant-util-docs",
+  "version": "0.0.16",
+  "engines": {
+    "node": ">=10.10"
+  },
+  "description": "Library of utility configuration files for dealing with docs in the context of Ant Framework - Serverless microservices made easy",
+  "keywords": [
+    "ant",
+    "docs",
+    "jsdoc",
+    "microservices",
+    "api",
+    "functions",
+    "graphql",
+    "reactive",
+    "serverless"
+  ],
+  "directories": {
+    "doc": "docs"
+  },
+  "files": [
+    "jsdoc.json",
+    "LICENSE",
+    "package.json"
+  ],
+  "scripts": {
+    "apidocs": "jsdoc -c ./jsdoc.json ./*",
+    "docs": "npm run apidocs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/back4app/antframework.git"
+  },
+  "author": "Back4App Inc.",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/back4app/antframework/issues"
+  },
+  "homepage": "https://github.com/back4app/antframework/tree/master/packages/ant-util-docs#readme",
+  "devDependencies": {
+    "jsdoc": "^3.5.5",
+    "minami": "^1.2.3"
+  }
+}
