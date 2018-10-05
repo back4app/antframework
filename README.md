@@ -5,7 +5,7 @@ Ant is an open-source and unopinionated framework to make microservices developm
 ### 1. Install the Ant CLI via npm
 
 ```Shell
-npm install -g https://ant.back4app.com/antframework-1.0.0.tar.gz
+npm install -g @back4app/ant-cli
 ```
 
 ### 2. Create a new microservice
