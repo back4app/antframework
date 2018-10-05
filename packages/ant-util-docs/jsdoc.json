@@ -5,7 +5,7 @@
   "plugins": ["plugins/markdown"],
   "opts": {
     "recurse": true,
-    "template": "node_modules/minami",
+    "template": "../../node_modules/minami",
     "showInheritedInNav": true,
     "useLongnameInNav": true,
     "destination": "docs/api"
