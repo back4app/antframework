@@ -58,7 +58,6 @@
     "yaml": "^1.0.0-rc.7"
   },
   "devDependencies": {
-    "@back4app/ant-cli": "^0.0.16",
     "@back4app/ant-util-docs": "^0.0.16",
     "@back4app/ant-util-tests": "^0.0.16",
     "eslint": "^5.6.0",
