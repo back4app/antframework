@@ -24,9 +24,18 @@ ant start
 ```
 
 ### 4. Play with your brand new GraphQL API
+
 ![GraphiQL](https://ant.back4app.com/ant-sequence-01.gif)
 
 Learn more about GraphQL at [GraphQL official web-site](https://graphql.org/).
+
+Execute this example query:
+
+```GraphQL
+query {
+    hello(name: "Luke Skywalker")
+}
+```
 
 The default template brings to you an example query called `hello`. By customizing the GraphQL model and creating Ant Functions, you can develop your own GraphQL queries, mutations and subscriptions. [Learn more](#your-first-ant-function)
 
