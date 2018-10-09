@@ -4,7 +4,6 @@
 
 const path = require('path');
 const { AntError, logger } = require('@back4app/ant-util');
-const { AntCli } = require('@back4app/ant-cli');
 const Ant = require('../../../lib/Ant');
 const Plugin = require('../../../lib/plugins/Plugin');
 const AntFunction = require('../../../lib/functions/AntFunction');
@@ -95,15 +94,13 @@ describe('lib/functions/FunctionController.js', () => {
     logger._errorHandlers.delete(fakeError);
   });
 
-  test('shoud search for lib functions', () => {
-    const originalCwd = process.cwd();
-    process.chdir(path.resolve(
+  test('should search for lib functions', () => {
+    const basePath = path.resolve(
       __dirname,
       '../../../node_modules/@back4app/ant-util-tests/services/FooService'
-    ));
-    const antCli = new AntCli();
-    expect(antCli._ant.functionController.functions).toHaveLength(2);
-    process.chdir(originalCwd);
+    );
+    const ant = new Ant({ basePath });
+    expect(ant.functionController.functions).toHaveLength(2);
   });
 
   describe('FunctionController.ant', () => {

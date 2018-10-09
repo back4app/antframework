@@ -2,12 +2,11 @@
  * @fileoverview Tests for lib/Ant.js file.
  */
 
-const path = require('path');
 const fs = require('fs');
 const yaml = require('yaml').default;
 const Core = require('@back4app/ant-core');
+const GraphQL = require('@back4app/ant-graphql');
 const Serverless = require('@back4app/ant-serverless');
-const { AntCli } = require('@back4app/ant-cli');
 const Ant = require('../../lib/Ant');
 const Runtime = require('../../lib/functions/runtimes/Runtime');
 const RuntimeController = require(
@@ -17,11 +16,6 @@ const FunctionController = require('../../lib/functions/FunctionController');
 const TemplateController = require('../../lib/templates/TemplateController');
 const Plugin = require('../../lib/plugins/Plugin');
 const PluginController = require('../../lib/plugins/PluginController');
-
-const utilPath = path.resolve(
-  __dirname,
-  '../../node_modules/@back4app/ant-util-tests'
-);
 
 describe('lib/Ant.js', () => {
   test('should export "Ant" class', () => {
@@ -386,20 +380,17 @@ Template category value is not an object!'
 
   describe('Ant.start', () => {
     test('should be async and call GraphQL plugin method', async () => {
-      const originalCwd = process.cwd();
-      process.chdir(path.resolve(
-        utilPath,
-        'configs/graphQLPluginConfig'
-      ));
-      const antCli = new AntCli();
-      const ant = antCli._ant;
+      const ant = new Ant({
+        plugins: [
+          GraphQL
+        ]
+      });
       const startService = jest.fn();
       ant.pluginController.getPlugin('GraphQL').startService = startService;
       const startServiceReturn = ant.startService();
       expect(startServiceReturn).toBeInstanceOf(Promise);
       await startServiceReturn;
       expect(startService).toHaveBeenCalled();
-      process.chdir(originalCwd);
     });
   });
 

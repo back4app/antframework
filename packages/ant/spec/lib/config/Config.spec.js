@@ -834,6 +834,22 @@ found on configuration file. runtime remove command should do nothing');
   });
 
   describe('static utils', () => {
+    describe('GetLocalConfigPath', () => {
+      afterAll(() => {
+        jest.restoreAllMocks();
+      });
+
+      test('should return local config path', () => {
+        const cwdPath = '/my/path';
+        const cwdMock = jest.spyOn(process, 'cwd').mockImplementation(() => {
+          return cwdPath;
+        });
+        const result = Config.GetLocalConfigPath();
+        expect(cwdMock).toHaveBeenCalledWith();
+        expect(result).toBe(`${cwdPath}/ant.yml`);
+      });
+    });
+
     describe('ParseConfigTemplates', () => {
       test('should load templates from config', () => {
         const customTemplatePath = '/path/to/my/custom';

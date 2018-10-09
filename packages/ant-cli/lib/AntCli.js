@@ -9,6 +9,7 @@ const yargs = require('yargs');
 const { logger } = require('@back4app/ant-util');
 const { yargsHelper } = require('@back4app/ant-util-yargs');
 const { Ant, Config } = require('@back4app/ant');
+const { Analytics } = require('@back4app/ant-util-analytics');
 
 const demandCommandMinMsg = 'You missed the command';
 const demandCommandMinMax = 'You can run only one command per call';
@@ -135,7 +136,9 @@ class AntCli {
         logger.attachHandler(console.log);
         logger.attachErrorHandler(console.error);
       }
-    }]);
+    },
+    Analytics.spawnTrackingProcess
+    ]);
   }
 
   /**

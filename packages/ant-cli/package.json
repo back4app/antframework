@@ -57,6 +57,7 @@
   "dependencies": {
     "@back4app/ant": "^0.0.17",
     "@back4app/ant-util": "^0.0.17",
+    "@back4app/ant-util-analytics": "^0.0.17",
     "@back4app/ant-util-yargs": "^0.0.17",
     "yargs": "^12.0.2"
   },

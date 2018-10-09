@@ -1243,21 +1243,23 @@ ant.js --help plugin add`)
 
       test(
         'should work with no args',
-        (done) => {
-          const cliProcess = childProcess.spawn(
-            `${binPath}`,
-            ['start'],
-            { cwd: graphQlPluginConfigPath, detached: true }
-          );
-          cliProcess.stdout.on('data', data => {
-            data = data.toString();
-            if (
-              data.includes('GraphQL API server listening for requests')
-            ) {
-              process.kill(-cliProcess.pid);
-              done();
-            }
+        done => {
+          const startMock = jest.fn();
+          const originalExit = process.exit;
+          process.exit = jest.fn(code => {
+            process.exit = originalExit;
+            expect(startMock).toHaveBeenCalledWith();
+            expect(code).toBe(0);
+            done();
           });
+
+          const antCli = new AntCli();
+          antCli
+            ._ant
+            .pluginController
+            .getPlugin('GraphQL')
+            .startService = startMock;
+          antCli._yargs.parse('start');
         }
       );
 

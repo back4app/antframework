@@ -285,6 +285,27 @@ describe('lib/plugins/PluginController.js', () => {
     expect(pluginController.loadingErrors).toHaveLength(0);
   });
 
+  test('should initialize with plugin object and without errors', () => {
+    const pluginController = new PluginController(ant, [
+      {
+        '@back4app/ant-core': {
+          a: 1,
+          b: 2,
+          c: 3
+        }
+      }
+    ]);
+
+    expect(pluginController.plugins).toEqual(expect.any(Array));
+    expect(pluginController.plugins).toHaveLength(1);
+    expect(pluginController.plugins[0]).toBeInstanceOf(Core);
+    expect(pluginController.plugins[0]._config.a).toEqual(1);
+    expect(pluginController.plugins[0]._config.b).toEqual(2);
+    expect(pluginController.plugins[0]._config.c).toEqual(3);
+    expect(pluginController.loadingErrors).toEqual(expect.any(Array));
+    expect(pluginController.loadingErrors).toHaveLength(0);
+  });
+
   test('should fail if the passed "plugins" param is not an array', () => {
     expect(() => new PluginController(ant, {})).toThrowError(
       'Could not load plugins: param "plugins" should be Array'
