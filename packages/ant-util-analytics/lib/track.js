@@ -4,7 +4,12 @@
  * blocking the main process with the request
  * to the analytics server.
  */
-const Analytics = require('./Analytics');
+const Analytics = new (require('./Analytics'))();
 
-const args = process.argv[2];
-Analytics.trackCommand(JSON.parse(args));
+const data = process.argv[2];
+const config = JSON.parse(process.argv[3]);
+
+// It is needed to initialize because this is supposed to
+// run on a separate process.
+Analytics.initialize(config);
+Analytics.trackCommand(JSON.parse(data));

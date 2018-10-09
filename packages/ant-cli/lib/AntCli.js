@@ -131,13 +131,14 @@ class AntCli {
    * @private
    */
   _loadYargsMiddlewares() {
-    this._yargs.middleware([argv => {
-      if (argv.verbose) {
-        logger.attachHandler(console.log);
-        logger.attachErrorHandler(console.error);
-      }
-    },
-    Analytics.spawnTrackingProcess
+    this._yargs.middleware([
+      argv => {
+        if (argv.verbose) {
+          logger.attachHandler(console.log);
+          logger.attachErrorHandler(console.error);
+        }
+      },
+      argv => Analytics.spawnTrackingProcess(argv)
     ]);
   }
 
