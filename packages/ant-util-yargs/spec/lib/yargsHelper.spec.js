@@ -5,6 +5,7 @@
  */
 
 const yargsHelper = require('../../lib/yargsHelper');
+const yargs = require('yargs');
 
 describe('lib/yargsHelper.js', () => {
   test('should export getCliFileName function', () => {
@@ -105,5 +106,52 @@ describe('lib/yargsHelper.js', () => {
       );
     });
     yargsHelper.handleErrorMessage('Some message');
+  });
+
+  describe('yargs', () => {
+    describe('fail handler', () => {
+      beforeEach(() => {
+        yargs.resetOptions();
+        yargsHelper._resetHandler();
+      });
+
+      afterAll(() => {
+        yargs.resetOptions();
+        yargsHelper._resetHandler();
+      });
+
+      test('should invoke attached fail handler', () => {
+        const msg = 'mock error';
+        const err = new Error('my error');
+        const handler = jest.fn();
+        yargsHelper.attachFailHandler(yargs, handler);
+        const usage = yargs.getUsageInstance();
+        usage.fail(msg, err);
+        expect(handler).toHaveBeenCalledWith(msg, err, usage);
+        expect(yargs._hasOutput()).toBe(false);
+      });
+
+      test('should do nothing because error was already handled', () => {
+        yargsHelper.setErrorHandled();
+
+        const handler = jest.fn();
+        yargsHelper.attachFailHandler(yargs, handler);
+        yargs.getUsageInstance().fail('mock error', new Error('my error'));
+        expect(handler).not.toHaveBeenCalled();
+      });
+
+      test('should call yargs._setHasOutput when error is handled', () => {
+        const msg = 'mock error';
+        const err = new Error('my error');
+        const handler = jest.fn().mockImplementation(() => {
+          yargsHelper.setErrorHandled();
+        });
+        yargsHelper.attachFailHandler(yargs, handler);
+        const usage = yargs.getUsageInstance();
+        usage.fail(msg, err);
+        expect(handler).toHaveBeenCalledWith(msg, err, usage);
+        expect(yargs._hasOutput()).toBe(true);
+      });
+    });
   });
 });

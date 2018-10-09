@@ -12,22 +12,34 @@ const Parse = require('parse/node');
 const path = require('path');
 const Sentry = require('@sentry/node');
 
-const PARSE_APP_ID = 'imEOoRE7JZ48gjNYpaVlLa09W2ooorO7qwiTNlhO';
-const JAVASCRIPT_KEY = 'TO39FVsMIND78n5UNxUH6zjP00EJjus2nS7awkO8';
-
-Parse.initialize(PARSE_APP_ID, JAVASCRIPT_KEY);
-Parse.serverURL = 'https://parseapi.back4app.com/';
-
-Sentry.init({
-  dsn: 'https://871fb10cedd145138c530f990bb4f0e0@sentry.io/1285966'
-});
-
 /**
  * Constant to hold the events name
  */
 const EVENT = {
   COMMAND_RUN: 'command_run'
 };
+
+/**
+ * Initializes the Parse and Sentry analytics API.
+ *
+ * @param {String} parseAppId The ID of the Parse application that
+ * is going to register the analytics data
+ * @param {String} parseJsKey The key needed in order to get access to
+ * the Parse Javascript API
+ * @param {String} sentryDsn The Sentry DSN, needed to initialize the
+ * Sentry API
+ */
+function initialize(parseAppId, parseJsKey, sentryDsn) {
+  if (parseAppId && parseJsKey) {
+    Parse.serverURL = 'https://parseapi.back4app.com/';
+    Parse.initialize(parseAppId, parseJsKey);
+  }
+  if (sentryDsn) {
+    Sentry.init({
+      dsn: sentryDsn
+    });
+  }
+}
 
 /**
  * Spawns a child process which will be responsible for sending
@@ -39,6 +51,10 @@ const EVENT = {
  * @param {Object} data The event data to be sent to Back4App analytics
  */
 function spawnTrackingProcess(data) {
+  // If Parse is not initialized, do nothing
+  if (!Parse.applicationId) {
+    return;
+  }
   // Creates the process detached from the parent process,
   // in order to send our tracking request
   const args = [ JSON.stringify(data) ];
@@ -101,6 +117,10 @@ function trackError(err) {
   // with Sentry servers.
   // @see https://docs.sentry.io/learn/draining
   const client = Sentry.getCurrentHub().getClient();
+  if (!client) {
+    // In case Sentry was not initialized
+    return Promise.resolve();
+  }
   return client.close(2000);
 }
 
@@ -128,6 +148,7 @@ function addBreadcrumb(message, data, category = 'Initialization', level = 'info
 }
 
 module.exports = {
+  initialize,
   spawnTrackingProcess,
   trackCommand,
   trackError,

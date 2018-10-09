@@ -20,6 +20,8 @@ const utilPath = path.resolve(
   '../../node_modules/@back4app/ant-util-tests'
 );
 
+const getAntCommand = args => `${binPath}${args ? ` ${args}` : ''} --no-tracking`;
+
 /**
  * Helper function to run the CLI command with args and check the expected
  * usage instructions as an output.
@@ -28,9 +30,7 @@ const utilPath = path.resolve(
  * @private
  */
 async function _expectUsageInstructions(args) {
-  const { stdout, stderr } = await exec(
-    `${binPath}${args ? ` ${args}` : ''}`
-  );
+  const { stdout, stderr } = await exec(getAntCommand(args));
   expect(stdout).not.toBeNull();
   expect(stdout.split('\n')[0]).toEqual(
     'Usage: ant.js [--help] [--version] [--config <path>] [--verbose] <command>'
@@ -73,9 +73,7 @@ async function _expectUsageInstructions(args) {
 async function _expectErrorMessage(args, ...errorMessages) {
   expect.hasAssertions();
   try {
-    await exec(
-      `${binPath}${args ? ` ${args}` : ''}`
-    );
+    await exec(getAntCommand(args));
     throw new Error('It is expected to throw some error');
   } catch (e) {
     const { code, stdout, stderr } = e;
@@ -96,7 +94,7 @@ async function _expectErrorMessage(args, ...errorMessages) {
  * @private
  */
 async function _expectSuccessMessage(args, ...successMessages) {
-  const { stdout, stderr } = await exec(`${binPath}${args ? ` ${args}` : ''}`);
+  const { stdout, stderr } = await exec(getAntCommand(args));
   for (const successMessage of successMessages) {
     expect(stdout).toContain(successMessage);
   }
@@ -157,7 +155,7 @@ describe('bin/ant.js', () => {
 
   test('should load local config', async () => {
     const { stdout, stderr } = await exec(
-      binPath,
+      getAntCommand(),
       { cwd: path.resolve(utilPath, './configs/fooPluginConfig')}
     );
     expect(stdout).not.toBeNull();
@@ -168,7 +166,7 @@ describe('bin/ant.js', () => {
 
   test('should print plugin load error', async () => {
     const { stdout, stderr } = await exec(
-      binPath,
+      getAntCommand(),
       { cwd: path.resolve(utilPath, './configs/notAPluginConfig')}
     );
     expect(stdout).not.toBeNull();
