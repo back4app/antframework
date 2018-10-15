@@ -422,6 +422,50 @@ save the file.');
     });
   });
 
+  describe('getPluginConfigurationNode', () => {
+    test('should get plugin configuration node', () => {
+      const config = new Config(path.resolve(utilPath, './configs/fooPluginConfig/ant.yml'));
+      const pluginConfigNode = config.getPluginConfigurationNode('../../plugins/FooPlugin');
+      expect(pluginConfigNode).toBeInstanceOf(Map);
+      expect(pluginConfigNode.items).toHaveLength(3);
+      expect(pluginConfigNode.items[0].key.value).toBe('a');
+      expect(pluginConfigNode.items[1].key.value).toBe('b');
+      expect(pluginConfigNode.items[2].key.value).toBe('c');
+    });
+
+    test('should return null if no configuration was found', () => {
+      const config = new Config(path.resolve(utilPath, './configs/basePathConfig/ant.yml'));
+      const pluginConfigNode = config.getPluginConfigurationNode('./plugins/FooPlugin');
+      expect(pluginConfigNode).toBeNull();
+    });
+
+    describe('with force flag true', () => {
+      test('should return a new configuration entry if no configuration is found', () => {
+        const config = new Config(path.resolve(utilPath, './configs/basePathConfig/ant.yml'));
+        const pluginConfigNode = config.getPluginConfigurationNode('./plugins/FooPlugin', true);
+        expect(pluginConfigNode).toBeInstanceOf(Map);
+        expect(pluginConfigNode.items).toHaveLength(0);
+        expect(config.getPluginConfigurationNode('./plugins/FooPlugin')).toBe(pluginConfigNode);
+      });
+
+      test('should return a new plugin entry with configuration when plugin entry was not found', () => {
+        const config = new Config(path.resolve(utilPath, './configs/basePathConfig/ant.yml'));
+        const pluginConfigNode = config.getPluginConfigurationNode('foo', true);
+        expect(pluginConfigNode).toBeInstanceOf(Map);
+        expect(pluginConfigNode.items).toHaveLength(0);
+        expect(config.getPluginConfigurationNode('foo')).toBe(pluginConfigNode);
+      });
+
+      test('should return a new plugin entry with configuration when no "plugins" entry was found', () => {
+        const config = new Config(path.resolve(utilPath, './configs/withTemplatesConfig/ant.yml'));
+        const pluginConfigNode = config.getPluginConfigurationNode('foo', true);
+        expect(pluginConfigNode).toBeInstanceOf(Map);
+        expect(pluginConfigNode.items).toHaveLength(0);
+        expect(config.getPluginConfigurationNode('foo')).toBe(pluginConfigNode);
+      });
+    });
+  });
+
   describe('removePlugin', () => {
     describe('local configuration', () => {
       test(
