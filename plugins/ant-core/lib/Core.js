@@ -260,11 +260,6 @@ file is found at the given path'
           },
           async ({ name, function: func, runtime, type, configPath, global, template }) => {
             try {
-              // If func is relative, we must resolve it with our current working
-              // directory before saving it into the configuration file
-              if (func && typeof func === 'string' && !func.startsWith('/')){
-                func = path.resolve(process.cwd(), func);
-              }
               await this.addFunction(name, func, runtime, type, configPath || global, template);
               process.exit(0);
             } catch (e) {
@@ -720,7 +715,7 @@ Considering "${template}" as the template files path.`);
    * instead.
    *
    * @param {!String} name The name of the function to be added
-   * @param {String} func The absolute path of the function
+   * @param {String} func The path to the function
    * @param {String} runtime The name of the runtime that will run the function
    * @param {String} type The type of the AntFunction that will be added
    * @param {String|Boolean} config The configuration file path whose function
@@ -758,10 +753,7 @@ Considering "${template}" as the template files path.`);
       // extension is the first defined extension in the runtime
       if (!func && runtimeInstance.extensions.length) {
         const extension = runtimeInstance.extensions[0];
-        func = path.resolve(
-          process.cwd(),
-          `${name}.${extension}`
-        );
+        func = `./${name}.${extension}`;
       }
       // If template is not defined and the runtime has a
       // template for new functions, we should use it to render
