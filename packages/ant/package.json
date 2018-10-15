@@ -1,0 +1,71 @@
+{
+  "name": "@back4app/ant",
+  "version": "0.0.17",
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=10.10"
+  },
+  "description": "Library to programmatically create serverless microservies using Ant Framework - Serverless microservices made easy",
+  "keywords": [
+    "ant",
+    "programmatically",
+    "microservices",
+    "api",
+    "functions",
+    "graphql",
+    "reactive",
+    "serverless"
+  ],
+  "directories": {
+    "lib": "lib",
+    "doc": "docs",
+    "test": "spec"
+  },
+  "files": [
+    "lib",
+    "index.js",
+    "LICENSE",
+    "package.json"
+  ],
+  "main": "index.js",
+  "scripts": {
+    "lint": "eslint ./ --config ./node_modules/@back4app/ant-util-tests/.eslintrc.js --ignore-path ./node_modules/@back4app/ant-util-tests/.eslintignore",
+    "pretest": "npm run lint",
+    "test": "jest --config ./node_modules/@back4app/ant-util-tests/jest.config.js --rootDir ./",
+    "posttest": "rm -rf ./spec/support/out",
+    "apidocs": "jsdoc -c ./node_modules/@back4app/ant-util-docs/jsdoc.json ./*",
+    "docs": "npm run apidocs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/back4app/antframework.git"
+  },
+  "author": "Back4App Inc.",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/back4app/antframework/issues"
+  },
+  "homepage": "https://github.com/back4app/antframework/tree/master/packages/ant#readme",
+  "dependencies": {
+    "@back4app/ant-core": "^0.0.17",
+    "@back4app/ant-graphql": "^0.0.17",
+    "@back4app/ant-graphql-express": "^0.0.17",
+    "@back4app/ant-serverless": "^0.0.17",
+    "@back4app/ant-util": "^0.0.17",
+    "@back4app/ant-util-rxjs": "^0.0.17",
+    "fs-extra": "^7.0.0",
+    "mustache": "^3.0.0",
+    "rxjs": "^6.3.2",
+    "yaml": "^1.0.0-rc.7"
+  },
+  "devDependencies": {
+    "@back4app/ant-util-docs": "^0.0.17",
+    "@back4app/ant-util-tests": "^0.0.17",
+    "eslint": "^5.6.0",
+    "jest": "^23.6.0",
+    "jsdoc": "^3.5.5",
+    "minami": "^1.2.3"
+  }
+}

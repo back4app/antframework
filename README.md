@@ -3,41 +3,46 @@ Ant is an open-source and unopinionated framework to make microservices developm
 
 ## Quickstart
 ### 1. Install the Ant CLI via npm
-```sh
-npm install -g https://ant.back4app.com/antframework-1.0.0.tar.gz
+
+```Shell
+npm install -g @back4app/ant-cli
 ```
 
 ### 2. Create a new microservice
-```sh
+
+```Shell
 ant create MyService
 ```
-Ant Framework will use the default template to create a brand new GraphQL service. Use --template option to select from many different templates and create other kind of services such as RESTful or SOAP. [Learn more](#using-different-templates)
+
+Ant Framework will use the default template to create a brand new GraphQL service. Use --template option to select from many different templates and create other kind of services such as RESTful or SOAP APIs. [Learn more](#using-different-templates)
 
 ### 3. Start the microservice in your localhost
-```sh
+
+```Shell
 cd MyService
 ant start
 ```
 
 ### 4. Play with your brand new GraphQL API
+
 ![GraphiQL](https://ant.back4app.com/ant-sequence-01.gif)
 
 Learn more about GraphQL at [GraphQL official web-site](https://graphql.org/).
 
-The default template brings to you an example query called "hello". By customizing the GraphQL model and creating Ant Functions, you can develop your own GraphQL queries, mutations and subscriptions. [Learn more](#your-first-ant-function)
+Execute this example query:
 
-### 5. Deploy to AWS Lambda via Serverless
-```sh
-aws configure
-ant deploy
+```GraphQL
+query {
+    hello(name: "Luke Skywalker")
+}
 ```
-Learn more about how to setup the AWS CLI at [AWS official guide](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html).
 
-Ant Framework will use the default template to deploy the new service to your own AWS account Lambda via Serverless framework. Other templates can be used for choosing from many different providers and deploying to a wide range of scenarios of public and private clouds. [Learn more](#deploying-your-microservice)
+The default template brings to you an example query called `hello`. By customizing the GraphQL model and creating Ant Functions, you can develop your own GraphQL queries, mutations and subscriptions. [Learn more](#your-first-ant-function)
 
-## Your first Ant Function
+### 5. Create your first Ant Function
 Edit the `model.graphql` file and use the following code:
-```
+
+```GraphQL
 schema {
   query: Query
 }
@@ -48,30 +53,46 @@ type Query {
 ```
 
 Create a file called `queryHello.js` and use the following code:
-```
+
+```JavaScript
 module.exports = ({ name }) => `Hello ${name} from function!!!`;
 ```
 
 Run the following command:
-```sh
-ant function add queryHello ./queryHello.js Default
+
+```Shell
+ant function add queryHello ./queryHello.js Node
 ```
 
 It's done! Run and play with your brand new GraphQL API!
 
 You can create any kind of query, mutation or subscription. You can use different runtimes to write code using your preferred programming language such as Node.js, Python, Java or C#. Learn more about [customizing your GraphQL model](#customizing-your-graphql-model) and [creating Ant Functions](#creating-ant-functions).
 
-## Overview
+### 6. Deploy to AWS Lambda via Serverless
+
+```Shell
+aws configure
+ant deploy
+```
+
+Learn more about how to setup the AWS CLI at [AWS official guide](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html).
+
+Ant Framework will use the default template to deploy the new service to your own AWS account Lambda via Serverless framework. Other templates can be used for choosing from many different providers and deploying to a wide range of scenarios of public and private clouds. [Learn more](#deploying-your-microservice)
+
+## Concepts
 ### Using the CLI tools
 After installed, you can use the framework core functionalities by running the `ant` command. To find out all core commands available, type `ant --help`.
 
 ### Creating a new microservice
 In order to create a new microservice, we can use the following command:
-```sh
+
+```Shell
 ant create <service> [(--template|-t) (<template_name>|<template_path>)]
 ```
+
 It creates a new microservice based on the template provided, otherwise it will use the template located at the `lib/plugins/core/templates/services/default` directory by default. The default service template will include a GraphQL model and a plugin that allows you to start a GraphiQL server and test your service's endpoints.
-```sh
+
+```Shell
 ant create MyService # will create a MyService directory at the current working directory
 cd MyService
 ant start # will run the GraphiQL server
@@ -127,7 +148,8 @@ WIP
 
 ##### Customizing your GraphQL server
 You can fully customize your GraphQL server by changing the graphQL plugin configuration in your microservice configuration file under the key `server`. By default, the server initialized by the Ant framework is located at `lib/plugins/graphQL/templates/default/bin/server.js`, at port `3000`. To change the default model file (`model.graphql`), you will need to change the `model` parameter.
-```sh
+
+```YAML
 - $GLOBAL/plugins/graphQL: # $GLOBAL is a variable that points to the Ant framework lib directory
   {} # The default (empty) configuration implies in using the following values below
   # The GraphQL plugin base path
@@ -143,10 +165,37 @@ You can fully customize your GraphQL server by changing the graphQL plugin confi
 ##### Using different templates
 WIP
 
+###### GraphQL APIs
+WIP
+
+###### RESTful APIs
+WIP
+
+###### SOAP APIs
+WIP
+
 ### Deploying your microservice
 WIP
 
 #### Working with Serverless framework
+WIP
+
+##### Deploying to AWS
+WIP
+
+##### Deploying to Azure
+WIP
+
+##### Deploying to Google Cloud
+WIP
+
+#### Working with Back4App
+WIP
+
+#### Working with Kubernetes
+WIP
+
+#### Creating your own deployment process
 WIP
 
 ### Plugins
@@ -174,7 +223,8 @@ WIP
 It is possible to define your own directives by configuring them on the Ant's configuration file, under the GraphQL plugin configuration entry.
 This configuration should respect the following format:
 respect the following format, under the "directives" key:
-```
+
+```YAML
 {
   <name>: {
     resolver: {
@@ -185,6 +235,7 @@ respect the following format, under the "directives" key:
   }
 }
 ```
+
 Where:
 `<name>` is the Directive name;
 `<handler>` is the path to the function to resolve the Directive;
@@ -192,7 +243,8 @@ Where:
 `<definition>` the GraphQL definition of the directive, to be injected into the GraphQL schema.
 
 If you wish to add your "foo" and "bar" directives, It could use the example below:
-```
+
+```YAML
 plugins:
   - $GLOBAL/plugins/graphQL: # Under the plugin entry goes our directives configuration
       directives:
@@ -219,6 +271,9 @@ WIP
 
 #### Customizing the CLI
 WIP
+
+## API Reference
+[API Reference](https://ant.back4app.com/docs/api/index.html)
 
 ## Contributing
 WIP

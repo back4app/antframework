@@ -1,9 +1,0 @@
-{
-  "name": "@back4app/antserverless",
-  "version": "1.0.0",
-  "description": "Plugin for Ant Framework to enable deployments using the Serverless framework",
-  "main": "index.js",
-  "dependencies": {
-    "serverless": "^1.30.1"
-  }
-}

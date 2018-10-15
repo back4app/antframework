@@ -1,0 +1,22 @@
+# The main schema
+schema {
+  query: Query
+  # Uncomment the line below to start designing mutations
+  # mutation: Mutation
+  subscription: Subscription
+}
+
+# Design your queries in the Query type below
+type Query {
+  hello(name: String = "World"): String @resolve(to: "queryHello") @mock(with: "Hello {{name}}!!!")
+  hello2(name: String = "World"): String @observableResolve
+}
+
+# Design your mutations in the Mutation type below
+# type Mutation {
+# }
+
+# Design your subscriptions in the Subscription type below
+type Subscription {
+  mySubs: String @subscribe(to: "mySubsResolver")
+}

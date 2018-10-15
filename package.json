@@ -1,37 +1,36 @@
 {
   "name": "@back4app/antframework",
-  "version": "1.0.3",
-  "engines": {
-    "node": ">=10.8"
+  "version": "0.0.17",
+  "publishConfig": {
+    "access": "restricted"
   },
-  "preferGlobal": true,
+  "engines": {
+    "node": ">=10.10"
+  },
   "description": "Ant Framework - Serverless microservices made easy",
   "keywords": [
+    "ant",
     "microservices",
-    "serverless",
     "api",
-    "graphql"
+    "functions",
+    "graphql",
+    "reactive",
+    "serverless"
   ],
+  "directories": {},
   "files": [
-    "bin",
-    "lib",
-    "index.js",
     "LICENSE",
-    "package-lock.json",
     "package.json"
   ],
-  "main": "index.js",
   "scripts": {
-    "install": "cd ./lib/plugins/graphQL/templates/server/default && npm install && cd ../../../../serverless && npm install && cd ./templates/serverless/default && npm install && cd ../../../../../../",
-    "lint": "eslint ./",
-    "pretest": "npm run lint",
-    "test": "jest",
-    "posttest": "rm -r ./spec/support/out",
-    "apidocs": "jsdoc -c ./jsdoc.json",
-    "docs": "npm run apidocs"
-  },
-  "bin": {
-    "ant": "./bin/ant.js"
+    "clean": "lerna clean && rm -rf node_modules && find . -name \"package-lock.json\" -exec rm -rf '{}' +",
+    "postinstall": "lerna bootstrap --hoist && lerna link",
+    "lint": "lerna run lint",
+    "pretest": "lerna link",
+    "test": "lerna run test",
+    "apidocs": "lerna run apidocs",
+    "docs": "lerna run docs",
+    "deploy": "npm publish && lerna publish"
   },
   "repository": {
     "type": "git",
@@ -44,21 +43,6 @@
   },
   "homepage": "https://github.com/back4app/antframework#readme",
   "devDependencies": {
-    "eslint": "^5.2.0",
-    "graphql": "^0.13.2",
-    "graphql-tools": "^3.0.5",
-    "jsdoc": "^3.5.5",
-    "minami": "^1.2.3"
-  },
-  "dependencies": {
-    "fs-extra": "^7.0.0",
-    "jest": "^23.4.2",
-    "jszip": "^3.1.5",
-    "mustache": "^2.3.0",
-    "rxjs": "^6.2.2",
-    "uuid": "^3.3.2",
-    "yaml": "^1.0.0-rc.7",
-    "yargs": "^12.0.1",
-    "graphql": "^0.13.0"
+    "lerna": "^3.4.1"
   }
 }
