@@ -1116,9 +1116,7 @@ describe('lib/Core.js', () => {
         jest.spyOn(Config.prototype, 'addFunction')
           .mockImplementation(libFunc => {
             expect(libFunc.name).toBe(name);
-            expect(libFunc.handler).toBe(
-              path.resolve(process.cwd(), `${name}.foo`)
-            );
+            expect(libFunc.handler).toBe(`./${name}.foo`);
             expect(libFunc.runtime).toBe(runtimeInstance);
           });
         const save = jest.spyOn(Config.prototype, 'save');
