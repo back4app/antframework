@@ -68,6 +68,15 @@ describe('lib/yargsHelper.js', () => {
     yargsHelper.handleErrorMessage('Some message');
   });
 
+  test('handleErrorMessage should exit the process without tracking the error', () => {
+    const originalExit = process.exit;
+    process.exit = jest.fn();
+    const returnVal = yargsHelper.handleErrorMessage('Some message', null, '', true);
+    expect(process.exit).toHaveBeenCalledWith(1);
+    expect(returnVal).not.toBeInstanceOf(Promise);
+    process.exit = originalExit;
+  });
+
   test('handleErrorMessage should only log error if verbose', (done) => {
     expect(yargsHelper.handleErrorMessage).toEqual(expect.any(Function));
     const originalError = console.error;

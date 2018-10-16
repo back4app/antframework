@@ -37,9 +37,11 @@ function isVerboseMode() {
  * @param {String} msg The error message.
  * @param {Error} err The error that generated the problem.
  * @param {String} command The command that failed.
+ * @param {Boolean} exitProcess Flag indicating it should invoke process.exit
+ * after logging error messages.
  * @returns {Promise} The error tracking request promise
  */
-function handleErrorMessage (msg, err, command) {
+function handleErrorMessage (msg, err, command, exitProcess) {
   this.setErrorHandled();
   console.error(`Fatal => ${msg}`);
   if (err) {
@@ -59,7 +61,10 @@ function handleErrorMessage (msg, err, command) {
   if (!err && msg) {
     err = new Error(msg);
   }
-  return Analytics.trackError(err).then(() => process.exit(1));
+  if (!exitProcess) {
+    return Analytics.trackError(err).then(() => process.exit(1));
+  }
+  process.exit(1);
 }
 
 /**

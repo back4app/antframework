@@ -213,7 +213,7 @@ ${epilogue}`;
         if (msg.indexOf('Unknown argument: ') === 0) {
           msg = msg.replace('argument', 'command');
         }
-        yargsHelper.handleErrorMessage(msg, err);
+        yargsHelper.handleErrorMessage(msg, err, undefined, true);
       }
     });
   }

@@ -149,7 +149,8 @@ class GraphQL extends Plugin {
       yargsHelper.handleErrorMessage(
         'Start command accepts no arguments',
         null,
-        'start'
+        'start',
+        true
       );
     }
   }
