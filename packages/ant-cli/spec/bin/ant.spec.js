@@ -775,7 +775,7 @@ ant.js --help plugin add`)
           .getPlugin('Core')
           .addFunction = jest.fn(async (name, func, runtime, version, type, isGlobal) => {
             expect(name).toBe('myfunc');
-            expect(func).toBe(path.resolve(process.cwd(), func));
+            expect(func).toBe('path/to/myfunc');
             expect(runtime).toBe('nodejs');
             expect(version).toBe('6');
             expect(type).toBe('lib');
