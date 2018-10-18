@@ -283,9 +283,11 @@ template remove command should do nothing`);
    * Adds a {@link BinFunction} or {@link LibFunction} into this configuration.
    *
    * @param {!BinFunction|LibFunction} antFunction The function to be added
+   * @param {Boolean} specifyRuntimeVersion Flag indicating the runtime version
+   * should be specified
    * @returns {Config} This configuration instance.
    */
-  addFunction(antFunction) {
+  addFunction(antFunction, specifyRuntimeVersion = false) {
     assert(antFunction, 'Param "antFunction" is required');
     assert((antFunction instanceof BinFunction || antFunction instanceof LibFunction),
       'Param "antFunction" must be an instance of BinFunction or LibFunction');
@@ -318,7 +320,9 @@ function add command will OVERRIDE the current function`);
       attributes.items.push(new Pair(new Scalar('bin'), new Scalar(bin)));
     } else {
       attributes.items.push(new Pair(new Scalar('handler'), new Scalar(handler)));
-      attributes.items.push(new Pair(new Scalar('runtime'), new Scalar(runtime.name)));
+      attributes.items.push(new Pair(new Scalar('runtime'), new Scalar(
+        specifyRuntimeVersion ? `${runtime.name} ${runtime.version}` : runtime.name
+      )));
     }
     console.log(`Function "${name}" successfully added on configuration file ${this._path}`);
     // Document has changed, resets the cached JSON
@@ -371,21 +375,21 @@ function remove command should do nothing`);
     assert(runtime, 'Param "runtime" is required');
     assert(runtime instanceof Runtime,
       'Param "runtime" must be an instance of Runtime');
-    const { name, bin, extensions } = runtime;
+    const { name, bin, extensions, version } = runtime;
 
     // Ensure the "runtimes" root element exists,
     // and it is a Pair<"runtimes", Map>
     const runtimes = this._ensureRootCollectionNode('runtimes', Map);
-
-    if (this._filterNodeFromCollectionByKey(runtimes, name)) {
-      console.log(`Runtime "${name}" already found on the configuration file. \
+    const entryName = `${name} ${version}`;
+    if (this._filterNodeFromCollectionByKey(runtimes, entryName)) {
+      console.log(`Runtime "${entryName}" already found on the configuration file. \
 runtime add command will OVERRIDE the current runtime`);
     }
-    logger.log(`Adding runtime ${name} into configuration file ${this._path}`);
+    logger.log(`Adding runtime ${entryName} into configuration file ${this._path}`);
 
     // Creates the brand new Runtime node and adds its to the runtimes Map.
     runtimes.items.push(new Pair(
-      new Scalar(name),
+      new Scalar(entryName),
       this._createAttributeMap({ bin, extensions })
     ));
 
@@ -398,13 +402,19 @@ runtime add command will OVERRIDE the current runtime`);
    * Removes an {@link Runtime} from this configuration.
    *
    * @param {!String} runtime The name of the {@link Runtime} to be removed
+   * @param {!String} version The version of the {@link Runtime} to be removed
    * @returns {Config} This configuration instance.
    */
-  removeRuntime(runtime) {
+  removeRuntime(runtime, version) {
     assert(runtime, 'Could not remove runtime: param "runtime" is required');
     assert(
       typeof runtime === 'string',
       'Could not remove runtime: param "runtime" should be String'
+    );
+    assert(version, 'Could not remove runtime: param "version" is required');
+    assert(
+      typeof version === 'string',
+      'Could not remove runtime: param "version" should be String'
     );
     const runtimes = this._findRootCollectionNode('runtimes', Map);
     if (!runtimes) {
@@ -412,14 +422,15 @@ runtime add command will OVERRIDE the current runtime`);
 remove command should do nothing');
       return this;
     }
-    if(this._filterNodeFromCollectionByKey(runtimes, runtime)) {
-      console.log(`Runtime "${runtime}" successfully removed from \
+    const entryName = `${runtime} ${version}`;
+    if(this._filterNodeFromCollectionByKey(runtimes, entryName)) {
+      console.log(`Runtime "${entryName}" successfully removed from \
 configuration file ${this._path}`);
 
       // Document has changed, resets the cached JSON
       this._cachedJson = null;
     } else {
-      console.log(`Runtime "${runtime}" was not found on configuration file. \
+      console.log(`Runtime "${entryName}" was not found on configuration file. \
 runtime remove command should do nothing`);
     }
     return this;
@@ -675,9 +686,10 @@ provider "${providerName}"`
         } else if (handler) {
           let runtimeInstance;
           if (runtime) {
-            runtimeInstance = runtimeController.getRuntime(runtime);
+            const [name, version] = runtime.split(' ');
+            runtimeInstance = runtimeController.getRuntime(name, version);
             if (!runtimeInstance) {
-              throw new AntError(`Runtime ${runtime} was not found`);
+              throw new AntError(`Runtime ${name} ${version} was not found`);
             }
           } else {
             runtimeInstance = runtimeController.defaultRuntime;
@@ -705,14 +717,14 @@ configuration file', e);
       return [];
     }
     return Object.keys(runtimes).map(
-      name => new Runtime(ant, name, runtimes[name].bin, runtimes[name].extensions)
+      key => new Runtime(ant, key.split(' ')[0], runtimes[key].bin, runtimes[key].extensions, undefined, key.split(' ')[1])
     );
   }
 
   /**
-   * Parses the {@link Runtime} from the configuration file "defaultRuntime" string.
+   * Parses the {@link Runtime} from the configuration file "runtime" string.
    *
-   * @param {Object} defaultRuntime The "defaultRuntime" object from the configuration file
+   * @param {String} defaultRuntime The "runtime" value from the configuration file
    * @param {!RuntimeController} runtimeController The {@link RuntimeController}
    * used to find the default {@link Runtime}
    * @returns {Runtime} The {@link Runtime} instance, given the default runtime name

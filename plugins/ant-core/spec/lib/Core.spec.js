@@ -1028,7 +1028,7 @@ describe('lib/Core.js', () => {
           });
         jest.spyOn(Config.prototype, 'save');
         const core = new Core(ant);
-        await core.addFunction(name, func, null, 'bin');
+        await core.addFunction(name, func, null, null, 'bin');
         expect(getLocalConfigPath).toHaveBeenCalled();
         expect(Config.prototype.save).toHaveBeenCalled();
       });
@@ -1045,7 +1045,7 @@ describe('lib/Core.js', () => {
         };
         jest.spyOn(Core, '_getConfig').mockImplementation(() => configMock);
         const core = new Core(ant);
-        await core.addFunction(name, func, null, 'bin', true);
+        await core.addFunction(name, func, null, null, 'bin', true);
         expect(Core._getConfig).toHaveBeenCalledWith(true);
         expect(configMock.addFunction).toHaveBeenCalled();
         expect(configMock.save).toHaveBeenCalled();
@@ -1055,7 +1055,7 @@ describe('lib/Core.js', () => {
         const ant = new Ant();
         const name = 'myFunc';
         const func = '/path/to/func';
-        const runtimeInstance = new Runtime(ant, 'myRuntime', '/path/to/runtime');
+        const runtimeInstance = new Runtime(ant, 'myRuntime', '/path/to/runtime', [], undefined, '1');
         const configFilePath = path.resolve(outPath, 'ant.yml');
         fs.ensureFileSync(configFilePath);
         const getLocalConfigPath = jest.spyOn(Config, 'GetLocalConfigPath')
@@ -1072,9 +1072,9 @@ describe('lib/Core.js', () => {
           });
         const save = jest.spyOn(Config.prototype, 'save');
         const core = new Core(ant);
-        await core.addFunction(name, func, runtimeInstance.name, 'lib');
+        await core.addFunction(name, func, runtimeInstance.name, runtimeInstance.version, 'lib');
         expect(getLocalConfigPath).toHaveBeenCalled();
-        expect(getRuntime).toHaveBeenCalledWith(runtimeInstance.name);
+        expect(getRuntime).toHaveBeenCalledWith(runtimeInstance.name, runtimeInstance.version);
         expect(save).toHaveBeenCalled();
       });
 
@@ -1082,7 +1082,7 @@ describe('lib/Core.js', () => {
         const ant = new Ant();
         const name = 'myFunc';
         const func = '/path/to/func';
-        const runtimeInstance = new Runtime(ant, 'myRuntime', '/path/to/runtime');
+        const runtimeInstance = new Runtime(ant, 'myRuntime', '/path/to/runtime', [], undefined, '1');
         const configFilePath = path.resolve(outPath, 'ant.yml');
         fs.ensureFileSync(configFilePath);
         const getLocalConfigPath = jest.spyOn(Config, 'GetLocalConfigPath')
@@ -1106,7 +1106,7 @@ describe('lib/Core.js', () => {
       test('should add LibFunction with default runtime and no defined path', async () => {
         const ant = new Ant();
         const name = 'myFunc';
-        const runtimeInstance = new Runtime(ant, 'myRuntime', '/path/to/runtime', ['foo']);
+        const runtimeInstance = new Runtime(ant, 'myRuntime', '/path/to/runtime', ['foo'], undefined, '1');
         const configFilePath = path.resolve(outPath, 'ant.yml');
         fs.ensureFileSync(configFilePath);
         const getLocalConfigPath = jest.spyOn(Config, 'GetLocalConfigPath')
@@ -1153,7 +1153,7 @@ describe('lib/Core.js', () => {
         const name = 'myFunc';
         const core = new Core(ant);
         fs.ensureFileSync(path.resolve(outPath, 'ant.yml'));
-        const fooRuntime = new Runtime(ant, 'Foo', '/bin/foo', ['js']);
+        const fooRuntime = new Runtime(ant, 'Foo', '/bin/foo', ['js'], undefined, '1');
         ant.runtimeController.loadRuntimes([fooRuntime]);
         const originalRender = Template.prototype.render;
         const render = Template.prototype.render = jest.fn();
@@ -1182,7 +1182,7 @@ describe('lib/Core.js', () => {
         const name = 'myFunc';
         const core = new Core(ant);
         fs.ensureFileSync(path.resolve(outPath, 'ant.yml'));
-        const fooRuntime = new Runtime(ant, 'Foo', '/bin/foo', ['js']);
+        const fooRuntime = new Runtime(ant, 'Foo', '/bin/foo', ['js'], undefined, '1');
         ant.runtimeController.loadRuntimes([fooRuntime]);
 
         const templateMocked = new Template('Function', 'myTemplate', '/myTemplate/path');
@@ -1190,7 +1190,7 @@ describe('lib/Core.js', () => {
         ant.templateController.loadTemplates([templateMocked]);
         jest.spyOn(fs, 'existsSync').mockImplementation(() => false);
         const funcPath = path.resolve(outPath, 'foo/bar/myFunc.js');
-        await core.addFunction(name, funcPath, 'Foo', undefined, undefined, 'myTemplate');
+        await core.addFunction(name, funcPath, 'Foo', undefined, undefined, undefined, 'myTemplate');
         expect(templateMocked.render).toHaveBeenCalledWith(
           funcPath,
           expect.any(Object)
@@ -1235,7 +1235,7 @@ describe('lib/Core.js', () => {
         fs.ensureFileSync(path.resolve(outPath, 'ant.yml'));
         jest.spyOn(fs, 'existsSync').mockImplementation(() => false);
         try {
-          await core.addFunction(name, null, null, undefined, undefined, '/my/invalid/path');
+          await core.addFunction(name, null, null, undefined, undefined, undefined, '/my/invalid/path');
         } catch (err) {
           expect(err.message).toBe('Param "template" is not a valid path: /my/invalid/path');
         }
@@ -1246,9 +1246,9 @@ describe('lib/Core.js', () => {
         const core = new Core(ant);
         fs.ensureFileSync(path.resolve(outPath, 'ant.yml'));
         try {
-          await core.addFunction(null, null, 'should not find me');
+          await core.addFunction(null, null, 'should not find me', '1');
         } catch (err) {
-          expect(err.message).toBe('Runtime "should not find me" was not found');
+          expect(err.message).toBe('Runtime "should not find me 1" was not found');
         }
       });
 
@@ -1258,9 +1258,8 @@ describe('lib/Core.js', () => {
         const ant = new Ant();
         const name = 'myFunc';
         const func = '/path/to/func';
-        const runtimeInstance = new Runtime(ant, 'myRuntime', '/path/to/runtime');
         const core = new Core(ant);
-        expect(core.addFunction(name, func, runtimeInstance.name, 'foo'))
+        expect(core.addFunction(name, func, null, null, 'foo'))
           .rejects.toThrowError('AntFunction type "foo" is unknown');
       });
 
@@ -1398,12 +1397,12 @@ describe('lib/Core.js', () => {
     });
 
     describe('function ls command', () => {
-      test('should print templates', async () => {
+      test('should print functions', async () => {
         console.log = jest.fn();
         const functions = [
           new AntFunction(ant, 'ant', () => {}),
           new BinFunction(ant, 'foo', '/path/to/foo'),
-          new LibFunction(ant, 'bar', '/path/to/bar', new Runtime(ant, 'barRuntime', '/path/to/runtime'))
+          new LibFunction(ant, 'bar', '/path/to/bar', new Runtime(ant, 'barRuntime', '/path/to/runtime', [], undefined, '1'))
         ];
         ant.functionController.getAllFunctions = jest.fn().mockImplementation(() => functions);
         const core = new Core(ant);
@@ -1413,7 +1412,7 @@ describe('lib/Core.js', () => {
 (<type> <name>[: (<bin>|<handler> <runtime>)]):');
         expect(console.log.mock.calls[1][0]).toBe('AntFunction ant');
         expect(console.log.mock.calls[2][0]).toBe('BinFunction foo: /path/to/foo');
-        expect(console.log.mock.calls[3][0]).toBe('LibFunction bar: /path/to/bar barRuntime');
+        expect(console.log.mock.calls[3][0]).toBe('LibFunction bar: /path/to/bar barRuntime 1');
       });
 
       test('should handle error message', done => {
@@ -1588,6 +1587,7 @@ describe('lib/Core.js', () => {
     describe('runtime add command', () => {
       test('should add runtime and save locally', async () => {
         const name = 'runtime';
+        const version = '1';
         const bin = '/my/runtime';
         const extensions = [ 'js' ];
         const configFilePath = path.resolve(outPath, 'ant.yml');
@@ -1600,12 +1600,13 @@ describe('lib/Core.js', () => {
         jest.spyOn(Config.prototype, 'addRuntime')
           .mockImplementation(runtime => {
             expect(runtime.name).toBe(name);
+            expect(runtime.version).toBe(version);
             expect(runtime.bin).toBe(bin);
             expect(runtime.extensions).toBe(extensions);
             return configMock;
           });
         const core = new Core(ant);
-        await core.addRuntime(name, bin, extensions);
+        await core.addRuntime(name, version, bin, extensions);
         expect(getLocalConfigPath).toHaveBeenCalled();
         expect(configMock.save).toHaveBeenCalled();
       });
@@ -1613,7 +1614,8 @@ describe('lib/Core.js', () => {
       test('should add runtime and save locally v2', (done) => {
         const antCli = new AntCli();
         const name = 'runtime';
-        const bin = 'my/runtime';
+        const version = '1';
+        const bin = '/my/runtime';
         const extensions = 'js';
         const configFilePath = path.resolve(outPath, 'ant.yml');
         fs.ensureFileSync(configFilePath);
@@ -1625,11 +1627,12 @@ describe('lib/Core.js', () => {
         jest.spyOn(Config.prototype, 'addRuntime')
           .mockImplementation(runtime => {
             expect(runtime.name).toBe(name);
+            expect(runtime.version).toBe(version);
             expect(runtime.bin).toEqual(expect.stringContaining(bin));
             expect(runtime.extensions).toEqual([extensions]);
             return configMock;
           });
-        antCli._yargs.parse(`runtime add ${name} ${bin} ${extensions}`);
+        antCli._yargs.parse(`runtime add ${name} ${version} ${bin} ${extensions}`);
         process.exit = jest.fn((code) => {
           expect(code).toEqual(0);
           expect(getLocalConfigPath).toHaveBeenCalled();
@@ -1666,11 +1669,13 @@ describe('lib/Core.js', () => {
 
       test('should add runtime and save globally', async () => {
         const name = 'runtime';
+        const version = '1';
         const bin = '/my/runtime';
         const extensions = [ 'js' ];
         const configMock = {
           addRuntime: jest.fn(runtime => {
             expect(runtime.name).toBe(name);
+            expect(runtime.version).toBe(version);
             expect(runtime.bin).toBe(bin);
             expect(runtime.extensions).toBe(extensions);
             return configMock;
@@ -1679,7 +1684,7 @@ describe('lib/Core.js', () => {
         };
         jest.spyOn(Core, '_getConfig').mockImplementation(() => configMock);
         const core = new Core(ant);
-        await core.addRuntime(name, bin, extensions, true);
+        await core.addRuntime(name, version, bin, extensions, true);
         expect(Core._getConfig).toHaveBeenCalledWith(true);
         expect(configMock.addRuntime).toHaveBeenCalled();
         expect(configMock.save).toHaveBeenCalled();
@@ -1690,7 +1695,20 @@ describe('lib/Core.js', () => {
         process.argv = ['runtime', 'add'];
         process.exit = jest.fn(code => {
           expect(handleErrorMessage).toHaveBeenCalledWith(
-            'Runtime add command requires name and bin arguments', null, 'runtime add'
+            'Runtime add command requires name, runtimeVersion and bin arguments', null, 'runtime add'
+          );
+          expect(code).toEqual(1);
+          done();
+        });
+        new Core(ant)._yargsFailed('Not enough non-option arguments');
+      });
+
+      test('should show friendly error when version was not passed', done => {
+        const handleErrorMessage = jest.spyOn(yargsHelper, 'handleErrorMessage');
+        process.argv = ['runtime', 'add', 'myruntime'];
+        process.exit = jest.fn((code) => {
+          expect(handleErrorMessage).toHaveBeenCalledWith(
+            'Runtime add command requires name, runtimeVersion and bin arguments', null, 'runtime add'
           );
           expect(code).toEqual(1);
           done();
@@ -1700,10 +1718,10 @@ describe('lib/Core.js', () => {
 
       test('should show friendly error when bin was not passed', done => {
         const handleErrorMessage = jest.spyOn(yargsHelper, 'handleErrorMessage');
-        process.argv = ['runtime', 'add', 'myruntime'];
+        process.argv = ['runtime', 'add', 'myruntime 123'];
         process.exit = jest.fn((code) => {
           expect(handleErrorMessage).toHaveBeenCalledWith(
-            'Runtime add command requires name and bin arguments', null, 'runtime add'
+            'Runtime add command requires name, runtimeVersion and bin arguments', null, 'runtime add'
           );
           expect(code).toEqual(1);
           done();
@@ -1722,6 +1740,7 @@ describe('lib/Core.js', () => {
     describe('runtime remove command', () => {
       test('should remove runtime and save locally', async () => {
         const name = 'myRuntime';
+        const version = '1';
         const configFilePath = path.resolve(outPath, 'ant.yml');
         fs.ensureFileSync(configFilePath);
         const getLocalConfigPath = jest.spyOn(Config, 'GetLocalConfigPath')
@@ -1729,15 +1748,16 @@ describe('lib/Core.js', () => {
         const removeRuntime = jest.spyOn(Config.prototype, 'removeRuntime');
         const save = jest.spyOn(Config.prototype, 'save');
         const core = new Core(ant);
-        await core.removeRuntime(name);
+        await core.removeRuntime(name, version);
         expect(getLocalConfigPath).toHaveBeenCalled();
-        expect(removeRuntime).toHaveBeenCalled();
+        expect(removeRuntime).toHaveBeenCalledWith(name, version);
         expect(save).toHaveBeenCalled();
       });
 
       test('should handle error message', async () => {
         const antCli = new AntCli();
         const name = 'myRuntime';
+        const version = '1';
         const configFilePath = path.resolve(outPath, 'ant.yml');
         fs.ensureFileSync(configFilePath);
         const getLocalConfigPath = jest.spyOn(Config, 'GetLocalConfigPath')
@@ -1750,7 +1770,7 @@ describe('lib/Core.js', () => {
           yargsHelper,
           'handleErrorMessage'
         );
-        antCli._yargs.parse(`runtime remove ${name}`);
+        antCli._yargs.parse(`runtime remove ${name} ${version}`);
         process.exit = jest.fn(code => {
           expect(code).toEqual(1);
           expect(getLocalConfigPath).toHaveBeenCalled();
@@ -1762,18 +1782,20 @@ describe('lib/Core.js', () => {
 
       test('should remove runtime and save globally', async () => {
         const name = 'myRuntime';
+        const version = '1';
         const configMock = {
-          removeRuntime: jest.fn().mockImplementation(runtimeName => {
+          removeRuntime: jest.fn().mockImplementation((runtimeName, runtimeVersion) => {
             expect(runtimeName).toBe(name);
+            expect(runtimeVersion).toBe(version);
             return configMock;
           }),
           save: jest.fn()
         };
         jest.spyOn(Core, '_getConfig').mockImplementation(() => configMock);
         const core = new Core(ant);
-        await core.removeRuntime(name, true);
+        await core.removeRuntime(name, version, true);
         expect(Core._getConfig).toHaveBeenCalledWith(true);
-        expect(configMock.removeRuntime).toHaveBeenCalled();
+        expect(configMock.removeRuntime).toHaveBeenCalledWith(name, version);
         expect(configMock.save).toHaveBeenCalled();
       });
 
@@ -1782,7 +1804,20 @@ describe('lib/Core.js', () => {
         process.argv = ['runtime', 'remove'];
         process.exit = jest.fn((code) => {
           expect(handleErrorMessage).toHaveBeenCalledWith(
-            'Runtime remove command requires name argument', null, 'runtime remove'
+            'Runtime remove command requires name and runtimeVersion arguments', null, 'runtime remove'
+          );
+          expect(code).toEqual(1);
+          done();
+        });
+        new Core(ant)._yargsFailed('Not enough non-option arguments');
+      });
+
+      test('should show friendly error when runtimeVersion was not passed', async done => {
+        const handleErrorMessage = jest.spyOn(yargsHelper, 'handleErrorMessage');
+        process.argv = ['runtime', 'remove', 'node'];
+        process.exit = jest.fn((code) => {
+          expect(handleErrorMessage).toHaveBeenCalledWith(
+            'Runtime remove command requires name and runtimeVersion arguments', null, 'runtime remove'
           );
           expect(code).toEqual(1);
           done();
@@ -1802,41 +1837,45 @@ describe('lib/Core.js', () => {
       test('should print runtimes', async () => {
         console.log = jest.fn();
         const runtimes = [
-          new Runtime(ant, 'foo', '/path/to/foo', ['foo', 'js']),
-          new Runtime(ant, 'bar', '/path/to/bar', ['bar']),
-          new Runtime(ant, 'lorem', '/ipsum')
+          new Runtime(ant, 'foo', '/path/to/foo', ['foo', 'js'], '/foo/template', '4.0.0'),
+          new Runtime(ant, 'bar', '/path/to/bar', ['bar'], undefined, '3.2.1'),
+          new Runtime(ant, 'lorem', '/ipsum', [], undefined, '1'),
+          new Runtime(ant, 'lorem', '/ipsum', [], undefined, '2')
         ];
         ant.runtimeController._runtimes = new Map();
         ant.runtimeController.loadRuntimes(runtimes);
         const core = new Core(ant);
         await core.listRuntimes();
-        expect(console.log.mock.calls.length).toBe(4);
+        expect(console.log.mock.calls.length).toBe(5);
         expect(console.log.mock.calls[0][0]).toBe('Listing all runtimes available \
-(<name> <bin> [extensions]):');
-        expect(console.log.mock.calls[1][0]).toBe('foo /path/to/foo foo js');
-        expect(console.log.mock.calls[2][0]).toBe('bar /path/to/bar bar');
-        expect(console.log.mock.calls[3][0]).toBe('lorem /ipsum');
+([default] <name> <version> <bin> [extensions] [template]):');
+        expect(console.log.mock.calls[1][0]).toBe('default foo 4 /path/to/foo [foo, js] /foo/template');
+        expect(console.log.mock.calls[2][0]).toBe('default bar 3 /path/to/bar [bar]');
+        expect(console.log.mock.calls[3][0]).toBe('default lorem 1 /ipsum');
+        expect(console.log.mock.calls[4][0]).toBe('lorem 2 /ipsum');
       });
 
       test('should print runtimes v2', (done) => {
         console.log = jest.fn();
         const antCli = new AntCli();
         const runtimes = [
-          new Runtime(antCli._ant, 'foo', '/path/to/foo', ['foo', 'js']),
-          new Runtime(antCli._ant, 'bar', '/path/to/bar', ['bar']),
-          new Runtime(antCli._ant, 'lorem', '/ipsum')
+          new Runtime(antCli._ant, 'foo', '/path/to/foo', ['foo', 'js'], '/foo/template', '4.0.0'),
+          new Runtime(antCli._ant, 'bar', '/path/to/bar', ['bar'], undefined, '3.2.1'),
+          new Runtime(antCli._ant, 'lorem', '/ipsum', [], undefined, '1'),
+          new Runtime(antCli._ant, 'lorem', '/ipsum', [], undefined, '2')
         ];
         antCli._ant.runtimeController._runtimes = new Map();
         antCli._ant.runtimeController.loadRuntimes(runtimes);
         antCli._yargs.parse('runtime ls');
         process.exit = jest.fn(code => {
           expect(code).toEqual(1);
-          expect(console.log.mock.calls.length).toBe(4);
+          expect(console.log.mock.calls.length).toBe(5);
           expect(console.log.mock.calls[0][0]).toBe('Listing all runtimes available \
-(<name> <bin> [extensions]):');
-          expect(console.log.mock.calls[1][0]).toBe('foo /path/to/foo foo js');
-          expect(console.log.mock.calls[2][0]).toBe('bar /path/to/bar bar');
-          expect(console.log.mock.calls[3][0]).toBe('lorem /ipsum');
+([default] <name> <version> <bin> [extensions] [template]):');
+          expect(console.log.mock.calls[1][0]).toBe('default foo 4 /path/to/foo [foo, js] /foo/template');
+          expect(console.log.mock.calls[2][0]).toBe('default bar 3 /path/to/bar [bar]');
+          expect(console.log.mock.calls[3][0]).toBe('default lorem 1 /ipsum');
+          expect(console.log.mock.calls[4][0]).toBe('lorem 2 /ipsum');
           done();
         });
       });

@@ -51,7 +51,8 @@ class Core extends Plugin {
         'Node',
         path.resolve(__dirname, '../functions/nodeRuntime.js'),
         ['js'],
-        path.resolve(__dirname, '../templates/function/node.js.mustache')
+        path.resolve(__dirname, '../templates/function/node.js.mustache'),
+        '10'
       )
     ];
   }
@@ -230,42 +231,48 @@ using template "${argv.template}"`
       'function <command>',
       'Manage functions of Ant framework', yargs => {
         yargs.command(
-          'add <name> [function] [runtime]',
+          'add <name> [function] [runtime] [runtimeVersion]',
           'Adds/overrides a function', yargs => {
             yargs.positional('name', {
               describe: 'The name of the function',
-              string: true
+              type: 'string'
             }).positional('function', {
               describe: 'The path to the function',
-              string: true
+              type: 'string'
             }).positional('runtime', {
               describe: 'The runtime to run the function',
-              string: true,
+              type: 'string',
+            }).positional('runtimeVersion', {
+              describe: 'The runtime version to run the function',
+              type: 'string',
+              require: false
             }).option('global', {
               alias: 'g',
               describe: 'Adds the function into global configuration file',
-              boolean: true,
+              type: 'boolean',
               nargs: 0,
               default: false
             }).option('type', {
               alias: 'f',
               describe: 'Specifies which type of function will be added',
               choices: ['lib', 'bin'],
-              default: 'lib'
+              default: 'lib',
+              type: 'string'
             }).option('template', {
               alias: 't',
               describe: 'The template to render the function in case no source \
-file is found at the given path'
+file is found at the given path',
+              type: 'string'
             });
           },
-          async ({ name, function: func, runtime, type, configPath, global, template }) => {
+          async ({ name, function: func, runtime, runtimeVersion, type, configPath, global, template }) => {
             try {
               // If func is relative, we must resolve it with our current working
               // directory before saving it into the configuration file
               if (func && typeof func === 'string' && !func.startsWith('/')){
                 func = path.resolve(process.cwd(), func);
               }
-              await this.addFunction(name, func, runtime, type, configPath || global, template);
+              await this.addFunction(name, func, runtime, runtimeVersion, type, configPath || global, template);
               process.exit(0);
             } catch (e) {
               yargsHelper.handleErrorMessage(e.message, e, 'function add');
@@ -346,14 +353,17 @@ file is found at the given path'
       'runtime <command>',
       'Manage runtimes of Ant framework', yargs => {
         yargs.command(
-          'add <name> <bin> [extensions..]',
+          'add <name> <runtimeVersion> <bin> [extensions..]',
           'Adds new runtime', yargs => {
             yargs.positional('name', {
               describe: 'The name of the runtime',
-              string: true
+              type: 'string'
+            }).positional('runtimeVersion', {
+              describe: 'The version of the runtime',
+              type: 'string'
             }).positional('bin', {
               describe: 'The path to the runtime',
-              string: true
+              type: 'string'
             }).positional('extensions', {
               describe: 'The extensions supported by the runtime',
               array: true
@@ -365,37 +375,40 @@ file is found at the given path'
               default: false
             });
           },
-          async ({ name, bin, extensions, configPath, global }) => {
+          async ({ name, runtimeVersion, bin, extensions, configPath, global }) => {
             try {
               // If bin is relative, we must resolve it with our current working
               // directory before saving it into the configuration file
               if (bin && typeof bin === 'string' && !bin.startsWith('/')) {
                 bin = path.resolve(process.cwd(), bin);
               }
-              await this.addRuntime(name, bin, extensions, configPath || global);
+              await this.addRuntime(name, runtimeVersion, bin, extensions, configPath || global);
               process.exit(0);
             } catch (e) {
               yargsHelper.handleErrorMessage(e.message, e, 'runtime add');
             }
           }
         ).command(
-          'remove <name> [--global]',
+          'remove <name> <runtimeVersion> [--global]',
           'Removes a runtime', yargs => {
             yargs.positional('name', {
               describe: 'The name of the runtime to be removed',
-              string: true
+              type: 'string'
+            }).positional('runtimeVersion', {
+              describe: 'The version of the runtime to be removed',
+              type: 'string'
             }).option('global', {
               alias: 'g',
               describe: 'Removes runtime from global configuration file',
-              boolean: true,
+              type: 'boolean',
               nargs: 0,
               default: false
             });
           },
           async (argv) => {
             try {
-              const { name, configPath, global } = argv;
-              await this.removeRuntime(name, configPath || global);
+              const { name, runtimeVersion, configPath, global } = argv;
+              await this.removeRuntime(name, runtimeVersion, configPath || global);
               process.exit(0);
             } catch (e) {
               yargsHelper.handleErrorMessage(e.message, e, 'runtime remove');
@@ -539,14 +552,14 @@ file is found at the given path'
         case 'add':
           command = 'runtime add';
           if (msg.includes('Not enough non-option arguments')) {
-            msg = 'Runtime add command requires name and bin arguments';
+            msg = 'Runtime add command requires name, runtimeVersion and bin arguments';
             createError = true;
           }
           break;
         case 'remove':
           command = 'runtime remove';
           if (msg.includes('Not enough non-option arguments')) {
-            msg = 'Runtime remove command requires name argument';
+            msg = 'Runtime remove command requires name and runtimeVersion arguments';
             createError = true;
           }
           break;
@@ -722,6 +735,7 @@ Considering "${template}" as the template files path.`);
    * @param {!String} name The name of the function to be added
    * @param {String} func The absolute path of the function
    * @param {String} runtime The name of the runtime that will run the function
+   * @param {String} version The runtime version
    * @param {String} type The type of the AntFunction that will be added
    * @param {String|Boolean} config The configuration file path whose function
    * will be added; or a flag indicating this change should be done on the
@@ -729,7 +743,7 @@ Considering "${template}" as the template files path.`);
    * @param {String} template The name or path to the template under the category
    * "Function" to render the function source file when it does not exists
    */
-  async addFunction(name, func, runtime, type = 'lib', config, template) {
+  async addFunction(name, func, runtime, version, type = 'lib', config, template) {
     config = Core._getConfig(config);
     assert(!template || typeof template === 'string', 'Param "template" must be a String');
     if (template) {
@@ -747,8 +761,8 @@ Considering "${template}" as the template files path.`);
       /* eslint-disable no-case-declarations */
       let runtimeInstance;
       if (runtime) {
-        runtimeInstance = this.ant.runtimeController.getRuntime(runtime);
-        assert(runtimeInstance, `Runtime "${runtime}" was not found`);
+        runtimeInstance = this.ant.runtimeController.getRuntime(runtime, version);
+        assert(runtimeInstance, `Runtime "${runtime}${version ? ` ${version}` : ''}" was not found`);
       } else {
         runtimeInstance = this.ant.runtimeController.defaultRuntime;
       }
@@ -773,7 +787,7 @@ Considering "${template}" as the template files path.`);
         const runtimeTemplate = this.ant.templateController.getTemplate('Function', runtime);
         template = runtimeTemplate || runtimeInstance.template;
       }
-      config.addFunction(new LibFunction(this.ant, name, func, runtimeInstance));
+      config.addFunction(new LibFunction(this.ant, name, func, runtimeInstance), !!version);
       break;
     case 'bin':
       config.addFunction(new BinFunction(this.ant, name, func));
@@ -817,7 +831,7 @@ Considering "${template}" as the template files path.`);
       const additionalInfo = func instanceof BinFunction
         ? `: ${func.bin}`
         : func instanceof LibFunction
-          ? `: ${func.handler} ${func.runtime.name}`
+          ? `: ${func.handler} ${func.runtime.name} ${func.runtime.version}`
           : '';
       console.log(`${func.constructor.name} ${func.name}${additionalInfo}`);
     });
@@ -844,16 +858,17 @@ Considering "${template}" as the template files path.`);
    * Adds a runtime into the configuration file and saves it.
    *
    * @param {!String} name The name of the runtime to be added
+   * @param {!String} version The version of the runtime
    * @param {!String} bin The absolute path to the runtime
    * @param {Array} extensions The extensions supported by the runtime
    * @param {String|Boolean} config The configuration file path whose runtime
    * will be added; or a flag indicating this change should be done on the
    * global configuration (if true), or local configuration (if false).
    */
-  async addRuntime(name, bin, extensions, config) {
+  async addRuntime(name, version, bin, extensions, config) {
     config = Core._getConfig(config);
     return config.addRuntime(new Runtime(
-      this.ant, name, bin, extensions
+      this.ant, name, bin, extensions, undefined, version
     )).save();
   }
 
@@ -861,13 +876,14 @@ Considering "${template}" as the template files path.`);
    * Removes a runtime from the configuration file and saves it.
    *
    * @param {!String} name The name of the runtime to be removed
+   * @param {!String} version The version of the runtime to be removed
    * @param {String|Boolean} config The configuration file path whose runtime will be removed;
    * or a flag indicating this change should be done on the global configuration (if true),
    * or local configuration (if false).
    */
-  async removeRuntime(name, config) {
+  async removeRuntime(name, version, config) {
     config = Core._getConfig(config);
-    return config.removeRuntime(name).save();
+    return config.removeRuntime(name, version).save();
   }
 
   /**
@@ -877,9 +893,30 @@ Considering "${template}" as the template files path.`);
   async listRuntimes() {
     const runtimes = this.ant.runtimeController.runtimes;
     console.log('Listing all runtimes available \
-(<name> <bin> [extensions]):');
-    runtimes.forEach(({ name, bin, extensions }) => {
-      console.log(`${name} ${bin}${extensions ? ` ${extensions.join(' ')}` : ''}`);
+([default] <name> <version> <bin> [extensions] [template]):');
+    const defaultRuntimes = new Set(); // Needed to avoid printing the default runtime twice
+    Array.from(runtimes.values()).forEach(runtimeByVersion => {
+      for(const [key, runtimeInstance] of runtimeByVersion.entries()) {
+        if (defaultRuntimes.has(runtimeInstance)) {
+          continue;
+        }
+        const isDefault = key === 'default';
+        if (isDefault) {
+          defaultRuntimes.add(runtimeInstance);
+        }
+
+        // Building the console.log content
+        const { name, bin, extensions, version, template } = runtimeInstance;
+        let runtime = isDefault ? `default ${name}` : name;
+        runtime += ` ${version} ${bin}`;
+        if (extensions && extensions.length) {
+          runtime += ` [${extensions.join(', ')}]`;
+        }
+        if (template) {
+          runtime += ` ${template}`;
+        }
+        console.log(runtime);
+      }
     });
   }
 

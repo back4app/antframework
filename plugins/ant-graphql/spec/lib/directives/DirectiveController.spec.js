@@ -13,7 +13,7 @@ const DirectiveController = require(
 const ant = new Ant();
 const fooFunction = new AntFunction(ant, 'fooFunction');
 const barFunction = new LibFunction(ant, 'barFunction', '/my/handler',
-  new Runtime(ant, 'libRuntime', '/lib/runtime', ['js'])
+  new Runtime(ant, 'libRuntime', '/lib/runtime', ['js'], undefined, '1')
 );
 const handler = '/foo/handler';
 const runtime = 'Node';
