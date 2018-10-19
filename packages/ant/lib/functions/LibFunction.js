@@ -25,7 +25,7 @@ class LibFunction extends AntFunction {
    * @throws {AssertionError} If "ant", "name", "handler" or "runtime" params
    * are not valid.
    */
-  constructor(ant, name, handler, runtime) {
+  constructor(ant, name, handler, runtime, args) {
     super(ant, name);
 
     assert(
@@ -51,6 +51,8 @@ class LibFunction extends AntFunction {
      * @private
      */
     this._runtime = runtime;
+
+    this._args = args || [];
   }
 
   /**
@@ -80,16 +82,28 @@ class LibFunction extends AntFunction {
   run() {
     logger.log(`Running lib function ${this.name}...`);
 
+    const args = JSON.stringify(
+      this._args.concat(
+        // Filters null or undefined arguments and strigifies the rest
+        Array.from(arguments).filter(arg => arg).map(arg => {
+          try {
+            return typeof arg === 'string' ? arg : JSON.stringify(arg);
+          } catch (err) {
+            return arg.toString();
+          }
+        })
+      )
+    );
     try {
       return this._runtime.run([
         this._handler,
-        JSON.stringify(Array.from(arguments))
+        args
       ]).pipe(map(data => {
         // JSON fails to parse 'undefined', but not '"undefined"'
         try {
           return JSON.parse(data);
         } catch (e) {
-          return undefined;
+          return data ? data : undefined;
         }
       }));
     } catch (e) {

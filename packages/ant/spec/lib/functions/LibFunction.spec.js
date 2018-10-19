@@ -74,7 +74,7 @@ describe('lib/functions/LibFunction.js', () => {
       const runReturn = undefinedlibFunction.run();
       expect(runReturn).toEqual(expect.any(Observable));
       expect(await runReturn.toPromise())
-        .toEqual(undefined);
+        .toEqual(expect.stringContaining('undefined'));
     });
 
     test('should fail if runtime fails', () => {

@@ -17,6 +17,7 @@ const mock = require('../functions/mock');
 const resolve = require('../functions/resolve');
 const subscribe = require('../functions/subscribe');
 
+const { stdout, stderr } = process;
 const defaultServerPath = path.dirname(
   require.resolve('@back4app/ant-graphql-express')
 );
@@ -249,7 +250,7 @@ directory "${cwd}"`
     this._serverProcess.stdout.on('data', (data) => {
       data = data.toString();
 
-      console.log(`Server => ${data}`);
+      stdout.write(`Server => ${data}`);
 
       const successMessage = 'GraphQL API server listening for requests on ';
 
@@ -269,7 +270,7 @@ directory "${cwd}"`
     });
 
     this._serverProcess.stderr.on('data', (data) => {
-      console.error(`Server => ${data}`);
+      stderr.write(`Server => ${data}`);
     });
 
     const promise = new Promise((resolve, reject) => {
@@ -281,14 +282,18 @@ directory "${cwd}"`
       });
 
       this._serverProcess.on('close', (code) => {
-        const message = `Server process closed with code "${code}"`;
-        logger.log(message);
-        logger.log('Stopping service...');
-        if (code === 0) {
-          resolve();
-        } else {
-          reject(new AntError(message));
-        }
+        stdout.end(() => {
+          stderr.end(() => {
+            const message = `Server process closed with code "${code}"`;
+            logger.log(message);
+            logger.log('Stopping service...');
+            if (code === 0) {
+              resolve();
+            } else {
+              reject(new AntError(message));
+            }
+          });
+        });
       });
     });
 
