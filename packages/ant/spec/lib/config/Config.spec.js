@@ -982,7 +982,8 @@ Template category value is not an object!'
           },
           Foo: {
             handler: '/foo/bar',
-            runtime: 'python'
+            runtime: 'python',
+            args: ['--foo', '--bar']
           }
         };
         const runtimeController = {
@@ -1004,6 +1005,7 @@ Template category value is not an object!'
         expect(func).toBeInstanceOf(LibFunction);
         expect(func.name).toBe('Foo');
         expect(func.handler).toBe(functions.Foo.handler);
+        expect(func.args).toBe(functions.Foo.args);
 
         expect(runtimeController.getRuntime.mock.calls.length).toBe(2);
         expect(runtimeController.getRuntime.mock.calls[0][0]).toBe(functions.MyLib.runtime);

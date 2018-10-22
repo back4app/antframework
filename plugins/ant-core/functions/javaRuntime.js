@@ -41,7 +41,21 @@ if (ext === '.jar') {
   javaFile = fileName;
 }
 args.push(javaFile);
-args = args.concat(JSON.parse(argv[3]));
+
+// Filters null or undefined arguments and non serializable items
+args = args.concat(JSON.parse(argv[3]))
+  .filter(arg => {
+    if (arg === undefined || arg === null) {
+      return false;
+    }
+    try {
+      JSON.stringify(arg);
+      return true;
+    } catch (err) {
+      return false;
+    }
+  })
+  .map(arg => typeof arg === 'string' ? arg : JSON.stringify(arg));
 
 const javaProgram = spawn('java', args, options);
 javaProgram.stdout.on('data', data => stdout.write(data.toString()));

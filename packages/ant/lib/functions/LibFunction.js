@@ -52,6 +52,11 @@ class LibFunction extends AntFunction {
      */
     this._runtime = runtime;
 
+    /**
+     * Contains the fixed arguments that will be used when running the function.
+     * @type {Array<String>}
+     * @private
+     */
     this._args = args || [];
   }
 
@@ -74,6 +79,15 @@ class LibFunction extends AntFunction {
   }
 
   /**
+   * Contains the function fixed execution argumnets.
+   * @type {Array<String>}
+   * @readonly
+   */
+  get args() {
+    return this._args;
+  }
+
+  /**
    * Runs the function. It can receive different arguments depending on the
    * function instance.
    * @return {Observable} An [Observable]{@link https://rxjs-dev.firebaseapp.com/api/index/class/Observable}
@@ -83,16 +97,7 @@ class LibFunction extends AntFunction {
     logger.log(`Running lib function ${this.name}...`);
 
     const args = JSON.stringify(
-      this._args.concat(
-        // Filters null or undefined arguments and strigifies the rest
-        Array.from(arguments).filter(arg => arg).map(arg => {
-          try {
-            return typeof arg === 'string' ? arg : JSON.stringify(arg);
-          } catch (err) {
-            return arg.toString();
-          }
-        })
-      )
+      this._args.concat(Array.from(arguments))
     );
     try {
       return this._runtime.run([
@@ -103,7 +108,10 @@ class LibFunction extends AntFunction {
         try {
           return JSON.parse(data);
         } catch (e) {
-          return data ? data : undefined;
+          if (typeof data === 'string' && data.trim() === 'undefined') {
+            return undefined;
+          }
+          return data;
         }
       }));
     } catch (e) {

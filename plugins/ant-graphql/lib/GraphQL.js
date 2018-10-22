@@ -282,18 +282,14 @@ directory "${cwd}"`
       });
 
       this._serverProcess.on('close', (code) => {
-        stdout.end(() => {
-          stderr.end(() => {
-            const message = `Server process closed with code "${code}"`;
-            logger.log(message);
-            logger.log('Stopping service...');
-            if (code === 0) {
-              resolve();
-            } else {
-              reject(new AntError(message));
-            }
-          });
-        });
+        const message = `Server process closed with code "${code}"`;
+        logger.log(message);
+        logger.log('Stopping service...');
+        if (code === 0) {
+          resolve();
+        } else {
+          reject(new AntError(message));
+        }
       });
     });
 

@@ -23,12 +23,9 @@ async function resolve (ant, resolveArgs, fieldArgs, currentValue, model) {
       return null;
     }
     try {
-      const args = currentValue ||
-        (fieldArgs && (!typeof fieldArgs === 'object' || (typeof fieldArgs === 'object' && Object.keys(fieldArgs).length > 0))
-          ? fieldArgs
-          : undefined);
-      currentValue = antFunction.run(args);
-      let functionResult;
+      currentValue = antFunction.run(
+        currentValue !== undefined ? currentValue : fieldArgs
+      );
       if (currentValue instanceof Observable) {
         if (
           field &&
@@ -36,23 +33,13 @@ async function resolve (ant, resolveArgs, fieldArgs, currentValue, model) {
           field.astNode.type &&
           field.astNode.type.kind === 'ListType'
         ) {
-          functionResult = await currentValue.pipe(toArray()).toPromise();
+          return await currentValue.pipe(toArray()).toPromise();
         } else {
-          functionResult = await currentValue.toPromise();
+          return await currentValue.toPromise();
         }
       } else {
-        functionResult = currentValue;
+        return currentValue;
       }
-      // Handles Objects in order to avoid GraphQL responding
-      // "[object Object]", which is useless
-      if (Array.isArray(functionResult)) {
-        functionResult = functionResult.map(
-          result => typeof result === 'object' ? JSON.stringify(result) : result
-        );
-      } else if (typeof functionResult === 'object') {
-        functionResult = JSON.stringify(functionResult);
-      }
-      return functionResult;
     } catch (e) {
       logger.error(new AntError(
         `Could not run "${resolveArgs.to}" function`,
