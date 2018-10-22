@@ -1864,9 +1864,9 @@ describe('lib/Core.js', () => {
         ];
         antCli._ant.runtimeController._runtimes = new Map();
         antCli._ant.runtimeController.loadRuntimes(runtimes);
-        antCli._yargs.parse('runtime ls');
+
         process.exit = jest.fn(code => {
-          expect(code).toEqual(1);
+          expect(code).toBe(0);
           expect(console.log.mock.calls.length).toBe(5);
           expect(console.log.mock.calls[0][0]).toBe('Listing all runtimes available \
 ([default] <name> <version> <bin> [extensions] [template]):');
@@ -1876,6 +1876,21 @@ describe('lib/Core.js', () => {
           expect(console.log.mock.calls[4][0]).toBe('lorem 2 /ipsum');
           done();
         });
+        antCli._yargs.parse('runtime ls');
+      });
+
+      test('should not show "runtime ls" friendly error when error is unknown', () => {
+        const handleErrorMessage = jest.spyOn(yargsHelper, 'handleErrorMessage');
+        const error = new Error('Mocked error');
+        const antCli = new AntCli();
+        antCli._ant.pluginController.getPlugin('Core').listRuntimes = jest.fn(async () => {
+          throw error;
+        });
+        process.exit = jest.fn(code => {
+          expect(code).toBe(1);
+          expect(handleErrorMessage).toHaveBeenCalledWith(error.message, error, 'runtime ls');
+        });
+        antCli._yargs.parse('runtime ls');
       });
     });
   });
