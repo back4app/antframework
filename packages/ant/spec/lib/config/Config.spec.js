@@ -595,13 +595,7 @@ not found on configuration file. plugin remove command should do nothing');
       });
 
       config.removeTemplate('myCategory', 'myTemplate');
-      expect(config.config.templates).toEqual({
-        myCategory: {}
-      });
-      expect(config.toString()).toContain(`templates:
-  myCategory:
-    {}
-`);
+      expect(config.config.templates).not.toBeDefined();
     });
 
     test('should remove template on an existing file', () => {
@@ -616,13 +610,7 @@ not found on configuration file. plugin remove command should do nothing');
       });
 
       config.removeTemplate('myCategory', 'myTemplate');
-      expect(config.config.templates).toEqual({
-        myCategory: {}
-      });
-      expect(config.toString()).toContain(`templates:
-  myCategory:
-    {}
-`);
+      expect(config.config.templates).not.toBeDefined();
     });
 
     test('should do nothing because templates entry was not found', () => {
@@ -749,6 +737,14 @@ found on the configuration file. function add command will OVERRIDE the current 
       });
     });
 
+    test('should remove a function and remove functions node', () => {
+      const ant = new Ant();
+      const config = new Config({});
+      config.addFunction(new BinFunction(ant, 'BinFunc', '/my/bin'));
+      config.removeFunction('BinFunc');
+      expect(config.config.functions).not.toBeDefined();
+    });
+
     test('should do nothing if there is no functions installed', () => {
       const config = new Config({});
       config.removeFunction('LibFunc');
@@ -810,7 +806,7 @@ found on the configuration file. runtime add command will OVERRIDE the current r
       const runtime = new Runtime(ant, 'runtime', '/my/bin', [ 'js' ]);
       config.addRuntime(runtime);
       config.removeRuntime('runtime');
-      expect(config.config.runtimes).toEqual({});
+      expect(config.config.runtimes).not.toBeDefined();
     });
 
     test('should do nothing because "runtimes" does not exists', () => {
@@ -830,6 +826,120 @@ on configuration file. runtime remove command should do nothing');
       config.removeRuntime('foo');
       expect(console.log).toHaveBeenCalledWith('Runtime "foo" was not \
 found on configuration file. runtime remove command should do nothing');
+    });
+  });
+
+  describe('Config file cleaning', () => {
+    const configPath = path.resolve(outPath, 'ant.yml');
+
+    beforeEach(() => {
+      fsExtra.ensureFileSync(configPath);
+    });
+
+    test('should not clean a pair with scalar value', () => {
+      fs.writeFileSync(configPath, 'basePath: 123');
+      const config = new Config(configPath);
+      const node = config._config.contents.items.find(entry => entry.key.value === 'basePath');
+      config._cleanRootNode(node);
+      expect(config.toString()).toBe('basePath: 123\n');
+    });
+
+    test('should not clean a list with scalar value', () => {
+      fs.writeFileSync(configPath, `plugins:
+  - myPlugin`);
+      const config = new Config(configPath);
+      const node = config._config.contents.items.find(entry => entry.key.value === 'plugins');
+      config._cleanRootNode(node);
+      expect(config.toString()).toBe(`plugins:
+  - myPlugin
+`);
+    });
+
+    test('should clean an array with no value', () => {
+      fs.writeFileSync(configPath, `plugins:
+  []`);
+      const config = new Config(configPath);
+      const node = config._config.contents.items.find(entry => entry.key.value === 'plugins');
+      config._cleanRootNode(node);
+      expect(config.toString()).toBe('{}\n');
+    });
+
+    test('should clean templates', () => {
+      fs.writeFileSync(configPath, `templates:
+  {}`);
+      const config = new Config(configPath);
+      const node = config._config.contents.items.find(entry => entry.key.value === 'templates');
+      config._cleanRootNode(node);
+      expect(config.toString()).toBe('{}\n');
+    });
+
+    test('should clean templates with empty category', () => {
+      fs.writeFileSync(configPath, `templates:
+  myCategory:
+    {}
+  myOtherCategory:
+    {}`);
+      const config = new Config(configPath);
+      const node = config._config.contents.items.find(entry => entry.key.value === 'templates');
+      config._cleanRootNode(node);
+      expect(config.toString()).toBe('{}\n');
+    });
+
+    test('should clean templates with empty category and non empty category', () => {
+      fs.writeFileSync(configPath, `templates:
+  myCategory:
+    {}
+  myOtherCategory:
+    myTemplate: /foo/bar`);
+      const config = new Config(configPath);
+      const node = config._config.contents.items.find(entry => entry.key.value === 'templates');
+      config._cleanRootNode(node);
+      expect(config.toString()).toBe(`templates:
+  myOtherCategory:
+    myTemplate: /foo/bar
+`);
+    });
+
+    test('should convert plugin entry into scalar', () => {
+      fs.writeFileSync(configPath, `plugins:
+  - myPlugin:
+      {}`);
+      const config = new Config(configPath);
+      const node = config._config.contents.items.find(entry => entry.key.value === 'plugins');
+      config._cleanPluginsNode(node);
+      expect(config.toString()).toBe(`plugins:
+  - myPlugin
+`);
+    });
+
+    test('should clean a plugin directives', () => {
+      fs.writeFileSync(configPath, `plugins:
+  - myPlugin:
+      basePath: ./
+      directives:
+        {}`);
+      const config = new Config(configPath);
+      const node = config._config.contents.items.find(entry => entry.key.value === 'plugins');
+      config._cleanPluginsNode(node);
+      expect(config.toString()).toBe(`plugins:
+  - myPlugin:
+      basePath: ./
+`);
+    });
+
+    test('should clean a plugin directives and other empty property', () => {
+      fs.writeFileSync(configPath, `plugins:
+  - myPlugin:
+      otherEmpty:
+        {}
+      directives:
+        {}`);
+      const config = new Config(configPath);
+      const node = config._config.contents.items.find(entry => entry.key.value === 'plugins');
+      config._cleanPluginsNode(node);
+      expect(config.toString()).toBe(`plugins:
+  - myPlugin
+`);
     });
   });
 
