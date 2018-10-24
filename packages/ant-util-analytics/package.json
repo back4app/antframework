@@ -45,6 +45,7 @@
   },
   "homepage": "https://github.com/back4app/antframework/tree/master/packages/ant-util-analytics#readme",
   "dependencies": {
+    "@sentry/node": "^4.2.1",
     "parse": "^2.1.0"
   },
   "devDependencies": {
