@@ -1,6 +1,6 @@
 {
   "name": "@back4app/ant-util",
-  "version": "0.0.18",
+  "version": "0.0.19",
   "publishConfig": {
     "access": "public"
   },
@@ -49,8 +49,8 @@
   },
   "homepage": "https://github.com/back4app/antframework/tree/master/packages/ant-util#readme",
   "devDependencies": {
-    "@back4app/ant-util-docs": "^0.0.18",
-    "@back4app/ant-util-tests": "^0.0.18",
+    "@back4app/ant-util-docs": "^0.0.19",
+    "@back4app/ant-util-tests": "^0.0.19",
     "eslint": "^5.6.0",
     "jest": "^23.6.0",
     "jsdoc": "^3.5.5",

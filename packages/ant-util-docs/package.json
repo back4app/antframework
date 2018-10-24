@@ -1,6 +1,6 @@
 {
   "name": "@back4app/ant-util-docs",
-  "version": "0.0.18",
+  "version": "0.0.19",
   "publishConfig": {
     "access": "public"
   },
