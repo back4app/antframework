@@ -78,4 +78,15 @@ describe('functions/resolve.js', () => {
     const model = { field: { astNode: { type: { kind: 'ListType' }}}};
     expect(await resolve(ant, { to: 'fooLibFunction' }, 3, 2, model)).toEqual([1, 2]);
   });
+
+  test('should resolve arrays as return value', async () => {
+    const ant = new Ant({
+      basePath: path.resolve(
+        utilPath,
+        'functions'
+      )
+    });
+    const model = { field: { astNode: { type: { kind: 'ListType' }}}};
+    expect(await resolve(ant, { to: 'barLibFunction' }, 3, undefined, model)).toEqual([1, 1, 1]);
+  });
 });
