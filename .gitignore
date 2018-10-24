@@ -16,3 +16,6 @@ spec/support/templates/fooTemplate/bar/cfg/cfg.txt
 
 # logs
 *.log
+
+# python
+*.pyc

@@ -1,0 +1,69 @@
+import java.lang.StringBuffer;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+/**
+ * An example class which invokes a RESTful API and returns its content
+ * to the Ant Framework GraphQL API.
+ */
+public class {{name}} {
+  /**
+   * The args[0] represents the field parameters from the GraphQL query.
+   */
+  public static void main(String[] args) throws IOException {
+    /**
+     * The parameters are stored in a stringified JSON object.
+     * So, in order to make use of them, we need to parse it.
+     */
+    String cityName = parseJson(args[0]);
+    try {
+      // Opening connection to the RESTful API
+      String url = "http://api.openweathermap.org/data/2.5/weather?q="
+        + URLEncoder.encode(cityName, "UTF-8")
+        + "&appid=464ddf23d2c714ee8ecbc5b39f1f7eae";
+      HttpURLConnection con = (HttpURLConnection) new URL(url).openConnection();
+      con.setRequestMethod("GET");
+
+      // Retrieving the response content
+      BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+      String inputLine;
+      StringBuffer response = new StringBuffer();
+
+      while ((inputLine = in.readLine()) != null) {
+        response.append(inputLine);
+      }
+      in.close();
+
+      // Prints the response to the stdout, which Ant is watching.
+      System.out.print(response.toString());
+    } catch (Exception e) {
+      // If any exception occurs, we should also let Ant be aware of it.
+      System.out.print(e.toString());
+    }
+  }
+
+  /**
+   * Since this file is only for testing purposes and we aren't importing any
+   * external libs, we parse the JSON using a regex.
+   *
+   * In this example, we are expecting the "city" parameter. So
+   * all we need to do here is retrieve it from the JSON and return
+   * its value, which is a String.
+   */
+  public static String parseJson(jsonAsString) {
+    String cityJsonRegex = "(?:\\\"city\\\":\\\")(.*?)(?:\\\")";
+    Pattern pattern = Pattern.compile(cityJsonRegex);
+    Matcher matcher = pattern.matcher(jsonAsString);
+    if (matcher.find()) {
+      String cityName = matcher.group().split(":")[1].replaceAll("\\\"", "");
+      return cityName;
+    }
+    return null;
+  }
+}

@@ -4,6 +4,7 @@
 
 const assert = require('assert');
 const Runtime = require('./Runtime');
+const semver = require('semver');
 
 /**
  * @class ant/RuntimeController
@@ -87,7 +88,6 @@ class RuntimeController {
       runtimes instanceof Array,
       'Could not load runtimes: param "runtimes" should be Array'
     );
-
     for (const runtime of runtimes) {
       assert(
         runtime instanceof Runtime,
@@ -100,29 +100,50 @@ be an instance of Runtime`
         `Could not load runtime ${runtime.name}: the framework used to \
 initialize the runtime is different to this controller's`
       );
-      this._runtimes.set(
-        runtime.name,
-        runtime
-      );
+      let runtimeByVersion = this._runtimes.get(runtime.name);
+      if (!runtimeByVersion) {
+        runtimeByVersion = new Map();
+        // If this is the first runtime by its name,
+        // set it as the default
+        runtimeByVersion.set('default', runtime);
+        this._runtimes.set(runtime.name, runtimeByVersion);
+      } else if (runtime.isDefault){
+        // If isDefault is true, overrides the actual default runtime
+        runtimeByVersion.set('default', runtime);
+      }
+      runtimeByVersion.set(runtime.version, runtime);
     }
   }
 
   /**
    * Contains the loaded runtimes.
-   * @type {Runtime[]}
+   * @type {Map<String, Map<String, Runtime>>}
    * @readonly
    */
   get runtimes() {
-    return Array.from(this._runtimes.values());
+    return this._runtimes;
   }
 
   /**
   * Gets a specific runtime by its name.
   * @param {String} name The name of the runtime to be gotten.
+  * @param {String} version The target runtime version.
   * @return {Runtime} The runtime object.
   */
-  getRuntime(name) {
-    return this._runtimes.get(name) || null;
+  getRuntime(name, version) {
+    assert(typeof name === 'string', 'Could not get runtime. "name" should be String');
+    const runtimeByVersion = this._runtimes.get(name);
+    if (!runtimeByVersion || runtimeByVersion.length === 0) {
+      return null;
+    }
+    // If version was not provided, returns the default
+    // runtime by its name
+    if (!version) {
+      return runtimeByVersion.get('default');
+    }
+    assert(typeof version === 'string' && version.length, 'Could not get runtime. "version" \
+should be non-empty String');
+    return runtimeByVersion.get(semver.major(semver.coerce(version)).toString()) || null;
   }
 
   /**

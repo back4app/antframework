@@ -684,7 +684,7 @@ configuration. template remove command should do nothing');
 
       config.addFunction(
         new LibFunction(ant, 'LibFunc', '/myhandler',
-          new Runtime(ant, 'MyRuntime', '/my/runtime')
+          new Runtime(ant, 'MyRuntime', '/my/runtime', [], undefined, '1')
         )
       );
       functions = config.config.functions;
@@ -695,6 +695,26 @@ configuration. template remove command should do nothing');
         LibFunc: {
           handler: '/myhandler',
           runtime: 'MyRuntime'
+        }
+      });
+
+      config.addFunction(
+        new LibFunction(ant, 'LibFuncVersionDefined', '/myhandler',
+          new Runtime(ant, 'MyRuntime', '/my/runtime', [], undefined, '1')
+        ), true
+      );
+      functions = config.config.functions;
+      expect(functions).toEqual({
+        BinFunc: {
+          bin: '/my/bin'
+        },
+        LibFunc: {
+          handler: '/myhandler',
+          runtime: 'MyRuntime'
+        },
+        LibFuncVersionDefined: {
+          handler: '/myhandler',
+          runtime: 'MyRuntime 1'
         }
       });
     });
@@ -737,7 +757,7 @@ found on the configuration file. function add command will OVERRIDE the current 
       const config = new Config({});
       config.addFunction(new BinFunction(ant, 'BinFunc', '/my/bin'));
       config.addFunction(new LibFunction(ant, 'LibFunc', '/myhandler',
-        new Runtime(ant, 'MyRuntime', 'my/runtime')
+        new Runtime(ant, 'MyRuntime', 'my/runtime', [], undefined, '1')
       ));
       config.removeFunction('BinFunc');
       const { functions } = config.config;
@@ -774,10 +794,10 @@ found on the configuration file. function add command will OVERRIDE the current 
     test('should add a runtime', () => {
       const ant = new Ant();
       const config = new Config({});
-      const runtime = new Runtime(ant, 'runtime', '/my/bin', [ 'js' ]);
+      const runtime = new Runtime(ant, 'runtime', '/my/bin', [ 'js' ], undefined, '1');
       expect(config.addRuntime(runtime)).toBe(config);
       expect(config.config.runtimes).toEqual({
-        runtime: {
+        'runtime 1': {
           bin: '/my/bin',
           extensions: ['js']
         }
@@ -789,13 +809,13 @@ found on the configuration file. function add command will OVERRIDE the current 
       console.log = jest.fn();
       const ant = new Ant();
       const config = new Config({});
-      const runtime = new Runtime(ant, 'runtime', '/my/bin', [ 'js' ]);
+      const runtime = new Runtime(ant, 'runtime', '/my/bin', [ 'js' ], undefined, '1');
       config.addRuntime(runtime);
-      config.addRuntime(new Runtime(ant, 'runtime', '/alternative/bin', [ 'py' ]));
-      expect(console.log).toHaveBeenCalledWith('Runtime "runtime" already \
+      config.addRuntime(new Runtime(ant, 'runtime', '/alternative/bin', [ 'py' ], undefined, '1'));
+      expect(console.log).toHaveBeenCalledWith('Runtime "runtime 1" already \
 found on the configuration file. runtime add command will OVERRIDE the current runtime');
       expect(config.config.runtimes).toEqual({
-        runtime: {
+        'runtime 1': {
           bin: '/alternative/bin',
           extensions: [ 'py' ]
         }
@@ -807,16 +827,16 @@ found on the configuration file. runtime add command will OVERRIDE the current r
     test('should remove a runtime', () => {
       const ant = new Ant();
       const config = new Config({});
-      const runtime = new Runtime(ant, 'runtime', '/my/bin', [ 'js' ]);
+      const runtime = new Runtime(ant, 'runtime', '/my/bin', [ 'js' ], undefined, '1');
       config.addRuntime(runtime);
-      config.removeRuntime('runtime');
+      config.removeRuntime('runtime', '1');
       expect(config.config.runtimes).toEqual({});
     });
 
     test('should do nothing because "runtimes" does not exists', () => {
       console.log = jest.fn();
       const config = new Config({});
-      config.removeRuntime('runtime');
+      config.removeRuntime('runtime', '1');
       expect(console.log).toHaveBeenCalledWith('No "runtimes" was found \
 on configuration file. runtime remove command should do nothing');
     });
@@ -825,10 +845,10 @@ on configuration file. runtime remove command should do nothing');
       console.log = jest.fn();
       const ant = new Ant();
       const config = new Config({});
-      const runtime = new Runtime(ant, 'runtime', '/my/bin', [ 'js' ]);
+      const runtime = new Runtime(ant, 'runtime', '/my/bin', [ 'js' ], undefined, '1');
       config.addRuntime(runtime);
-      config.removeRuntime('foo');
-      expect(console.log).toHaveBeenCalledWith('Runtime "foo" was not \
+      config.removeRuntime('foo', '1');
+      expect(console.log).toHaveBeenCalledWith('Runtime "foo 1" was not \
 found on configuration file. runtime remove command should do nothing');
     });
   });
@@ -962,12 +982,13 @@ Template category value is not an object!'
           },
           Foo: {
             handler: '/foo/bar',
-            runtime: 'python'
+            runtime: 'python',
+            args: ['--foo', '--bar']
           }
         };
         const runtimeController = {
           getRuntime: jest.fn().mockImplementation(
-            runtime => new Runtime(ant, runtime, 'foo')
+            runtime => new Runtime(ant, runtime, 'foo', [], undefined, '1')
           ),
           ant: new Ant()
         };
@@ -984,6 +1005,7 @@ Template category value is not an object!'
         expect(func).toBeInstanceOf(LibFunction);
         expect(func.name).toBe('Foo');
         expect(func.handler).toBe(functions.Foo.handler);
+        expect(func.args).toBe(functions.Foo.args);
 
         expect(runtimeController.getRuntime.mock.calls.length).toBe(2);
         expect(runtimeController.getRuntime.mock.calls[0][0]).toBe(functions.MyLib.runtime);
@@ -1028,11 +1050,11 @@ Template category value is not an object!'
     describe('ParseConfigRuntimes', () => {
       test('should parse runtimes from config', () => {
         const runtimes = {
-          Runtime: {
+          'Runtime 1': {
             bin: '/my/runtime',
             extensions: ['py']
           },
-          Node: {
+          'Node 2': {
             bin: '/node',
             extensions: ['js']
           },
@@ -1043,20 +1065,24 @@ Template category value is not an object!'
 
         expect(results[0]).toBeInstanceOf(Runtime);
         expect(results[0].name).toBe('Runtime');
-        expect(results[0].bin).toBe(runtimes.Runtime.bin);
-        expect(results[0].extensions).toBe(runtimes.Runtime.extensions);
+        expect(results[0].version).toBe('1');
+        expect(results[0].bin).toBe(runtimes['Runtime 1'].bin);
+        expect(results[0].extensions).toBe(runtimes['Runtime 1'].extensions);
 
         expect(results[1]).toBeInstanceOf(Runtime);
         expect(results[1].name).toBe('Node');
-        expect(results[1].bin).toBe(runtimes.Node.bin);
-        expect(results[1].extensions).toBe(runtimes.Node.extensions);
+        expect(results[1].version).toBe('2');
+        expect(results[1].bin).toBe(runtimes['Node 2'].bin);
+        expect(results[1].extensions).toBe(runtimes['Node 2'].extensions);
       });
     });
 
     describe('ParseConfigDefaultRuntime', () => {
       test('should parse default runtime from config', () => {
         const myDefaultRuntime = 'myDefaultRuntime';
-        const runtimeStub = new Runtime(new Ant(), 'runtimeStub', '/my/runtime/stub', ['foo', 'bar']);
+        const runtimeStub = new Runtime(
+          new Ant(), 'runtimeStub', '/my/runtime/stub', ['foo', 'bar'], undefined, '1'
+        );
         const getRuntimeMock = jest.fn(name => {
           expect(name).toBe(myDefaultRuntime);
           return runtimeStub;

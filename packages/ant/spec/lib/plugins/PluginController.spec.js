@@ -159,8 +159,8 @@ class PluginWithNotValidFunction extends Plugin {
   }
 }
 
-const runtime1 = new Runtime(ant, 'runtime1', '/foo/path');
-const runtime2 = new Runtime(ant, 'runtime2', '/foo/path');
+const runtime1 = new Runtime(ant, 'runtime1', '/foo/path', [], undefined, '1');
+const runtime2 = new Runtime(ant, 'runtime2', '/foo/path', [], undefined, '2');
 
 /**
  * Represents a {@link Plugin} with runtimes for testing purposes.

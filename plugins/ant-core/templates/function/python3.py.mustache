@@ -1,0 +1,33 @@
+import urllib.request
+import urllib.parse
+import sys
+
+# This is a sample Python 3 function that sends a GET
+# request to the Wikipedia server, and finds articles
+# by a "term" provided through args.
+
+# Args is an array, where its first element is a JSON
+# representing the field parameters from the GraphQL query
+# executed by Ant.
+def main(args):
+  graphQLArgs = args[0]
+  # Builds the URL with the querystring
+  data = {
+  	'srsearch': graphQLArgs['term'],
+  	'action': 'query',
+  	'list': 'search',
+  	'format': 'json',
+  	'utf8': ''
+  }
+  querystring = urllib.parse.urlencode(data)
+  url = 'http://en.wikipedia.org/w/api.php?' + querystring
+
+  # Sends the GET request and catches the response
+  request = urllib.request.Request(url)
+  response = urllib.request.urlopen(request)
+
+  # Extracts the response and writes it back to stdout, which
+  # Ant is watching.
+  response = response.read().decode('utf-8')
+  sys.stdout.write(response)
+  sys.stdout.flush()
