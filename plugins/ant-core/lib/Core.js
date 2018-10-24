@@ -61,6 +61,22 @@ class Core extends Plugin {
         ['jar', 'java'],
         path.resolve(__dirname, '../templates/function/java.java.mustache'),
         '8'
+      ),
+      new Runtime(
+        this._ant,
+        'Python',
+        path.resolve(__dirname, '../functions/pythonRuntime.py'),
+        ['py'],
+        path.resolve(__dirname, '../templates/function/python.py.mustache'),
+        '2'
+      ),
+      new Runtime(
+        this._ant,
+        'Python',
+        path.resolve(__dirname, '../functions/python3Runtime.py'),
+        ['py'],
+        path.resolve(__dirname, '../templates/function/python3.py.mustache'),
+        '3'
       )
     ];
   }

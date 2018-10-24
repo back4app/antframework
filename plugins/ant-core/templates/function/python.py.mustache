@@ -1,0 +1,33 @@
+import urllib
+import urllib2
+import sys
+
+# This is a sample Python 2 function that sends a GET
+# request to the Wikipedia server, and finds articles
+# by a "term" provided through args.
+
+# Args is an array, where its first element is a JSON
+# representing the field parameters from the GraphQL query
+# executed by Ant.
+def main(args):
+  graphQLArgs = args[0]
+  # Builds the URL with the querystring
+  data = {
+  	'srsearch': graphQLArgs['term'],
+  	'action': 'query',
+  	'list': 'search',
+  	'format': 'json',
+  	'utf8': ''
+  }
+  querystring = urllib.urlencode(data)
+  url = 'http://en.wikipedia.org/w/api.php?' + querystring
+
+  # Sends the GET request and catches the response
+  request = urllib2.Request(url)
+  response = urllib2.urlopen(request)
+
+  # Extracts the response and writes it back to stdout, which
+  # Ant is watching.
+  response = response.read()
+  sys.stdout.write(response)
+  sys.stdout.flush()
