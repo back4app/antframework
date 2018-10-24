@@ -5,6 +5,7 @@
  */
 
 const yargsHelper = require('../../lib/yargsHelper');
+const yargs = require('yargs');
 
 describe('lib/yargsHelper.js', () => {
   test('should export getCliFileName function', () => {
@@ -67,6 +68,15 @@ describe('lib/yargsHelper.js', () => {
     yargsHelper.handleErrorMessage('Some message');
   });
 
+  test('handleErrorMessage should exit the process without tracking the error', () => {
+    const originalExit = process.exit;
+    process.exit = jest.fn();
+    const returnVal = yargsHelper.handleErrorMessage('Some message', null, '', true);
+    expect(process.exit).toHaveBeenCalledWith(1);
+    expect(returnVal).not.toBeInstanceOf(Promise);
+    process.exit = originalExit;
+  });
+
   test('handleErrorMessage should only log error if verbose', (done) => {
     expect(yargsHelper.handleErrorMessage).toEqual(expect.any(Function));
     const originalError = console.error;
@@ -105,5 +115,52 @@ describe('lib/yargsHelper.js', () => {
       );
     });
     yargsHelper.handleErrorMessage('Some message');
+  });
+
+  describe('yargs', () => {
+    describe('fail handler', () => {
+      beforeEach(() => {
+        yargs.resetOptions();
+        yargsHelper._resetHandler();
+      });
+
+      afterAll(() => {
+        yargs.resetOptions();
+        yargsHelper._resetHandler();
+      });
+
+      test('should invoke attached fail handler', () => {
+        const msg = 'mock error';
+        const err = new Error('my error');
+        const handler = jest.fn();
+        yargsHelper.attachFailHandler(yargs, handler);
+        const usage = yargs.getUsageInstance();
+        usage.fail(msg, err);
+        expect(handler).toHaveBeenCalledWith(msg, err, usage);
+        expect(yargs._hasOutput()).toBe(false);
+      });
+
+      test('should do nothing because error was already handled', () => {
+        yargsHelper.setErrorHandled();
+
+        const handler = jest.fn();
+        yargsHelper.attachFailHandler(yargs, handler);
+        yargs.getUsageInstance().fail('mock error', new Error('my error'));
+        expect(handler).not.toHaveBeenCalled();
+      });
+
+      test('should call yargs._setHasOutput when error is handled', () => {
+        const msg = 'mock error';
+        const err = new Error('my error');
+        const handler = jest.fn().mockImplementation(() => {
+          yargsHelper.setErrorHandled();
+        });
+        yargsHelper.attachFailHandler(yargs, handler);
+        const usage = yargs.getUsageInstance();
+        usage.fail(msg, err);
+        expect(handler).toHaveBeenCalledWith(msg, err, usage);
+        expect(yargs._hasOutput()).toBe(true);
+      });
+    });
   });
 });
