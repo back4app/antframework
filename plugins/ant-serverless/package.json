@@ -1,6 +1,6 @@
 {
   "name": "@back4app/ant-serverless",
-  "version": "0.0.17",
+  "version": "0.0.18",
   "publishConfig": {
     "access": "public"
   },
@@ -53,16 +53,16 @@
   },
   "homepage": "https://github.com/back4app/antframework/tree/master/plugins/ant-serverless#readme",
   "devDependencies": {
-    "@back4app/ant-util-docs": "^0.0.17",
-    "@back4app/ant-util-tests": "^0.0.17",
+    "@back4app/ant-util-docs": "^0.0.18",
+    "@back4app/ant-util-tests": "^0.0.18",
     "eslint": "^5.6.0",
     "jest": "^23.6.0",
     "jsdoc": "^3.5.5",
     "minami": "^1.2.3"
   },
   "dependencies": {
-    "@back4app/ant": "^0.0.17",
-    "@back4app/ant-util": "^0.0.17",
+    "@back4app/ant": "^0.0.18",
+    "@back4app/ant-util": "^0.0.18",
     "fs-extra": "^7.0.0",
     "jszip": "^3.1.5",
     "serverless": "^1.32.0",
