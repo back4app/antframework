@@ -16,7 +16,7 @@ module.exports = (count) => {
             clearInterval(interval);
           }
         },
-        1000
+        100
       );
       return () => {};
     }

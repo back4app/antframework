@@ -1,6 +1,6 @@
 {
   "name": "@back4app/ant-util-analytics",
-  "version": "0.0.17",
+  "version": "0.0.19",
   "publishConfig": {
     "access": "public"
   },
@@ -30,6 +30,7 @@
     "lint": "eslint ./ --config ./node_modules/@back4app/ant-util-tests/.eslintrc.js --ignore-path ./node_modules/@back4app/ant-util-tests/.eslintignore",
     "pretest": "npm run lint",
     "test": "jest --config ./node_modules/@back4app/ant-util-tests/jest.config.js --rootDir ./",
+    "posttest": "rm -rf ./spec/support/out",
     "apidocs": "jsdoc -c ./node_modules/@back4app/ant-util-docs/jsdoc.json ./*",
     "docs": "npm run apidocs"
   },
@@ -44,11 +45,13 @@
   },
   "homepage": "https://github.com/back4app/antframework/tree/master/packages/ant-util-analytics#readme",
   "dependencies": {
+    "@sentry/node": "^4.2.1",
     "parse": "^2.1.0"
   },
   "devDependencies": {
-    "@back4app/ant-util-docs": "^0.0.17",
-    "@back4app/ant-util-tests": "^0.0.17",
+    "@back4app/ant-util-docs": "^0.0.19",
+    "@back4app/ant-util-tests": "^0.0.19",
+    "@sentry/node": "^4.0.3",
     "eslint": "^5.6.0",
     "jest": "^23.6.0",
     "jsdoc": "^3.5.5",
