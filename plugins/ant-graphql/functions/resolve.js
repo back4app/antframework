@@ -3,7 +3,7 @@
  */
 
 const { Observable } = require('rxjs');
-const { toArray } = require('rxjs/operators');
+const { flatMap, toArray } = require('rxjs/operators');
 const { AntError, logger } = require('@back4app/ant-util');
 
 /**
@@ -33,7 +33,10 @@ async function resolve (ant, resolveArgs, fieldArgs, currentValue, model) {
           field.astNode.type &&
           field.astNode.type.kind === 'ListType'
         ) {
-          return await currentValue.pipe(toArray()).toPromise();
+          return await currentValue.pipe(
+            flatMap(data => data instanceof Array ? data : [ data ]),
+            toArray()
+          ).toPromise();
         } else {
           return await currentValue.toPromise();
         }

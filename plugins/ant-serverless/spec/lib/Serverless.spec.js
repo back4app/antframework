@@ -251,7 +251,6 @@ describe('lib/Serverless.js', () => {
         };
         logger.attachErrorHandler(errorFn);
         logger.attachHandler(logFn);
-        expect.hasAssertions();
         const basePath = path.resolve(
           __dirname,
           '../support/out/lib/Serverless.js'

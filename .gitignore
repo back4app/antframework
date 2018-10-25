@@ -16,3 +16,6 @@ spec/support/templates/fooTemplate/bar/cfg/cfg.txt
 
 # logs
 *.log
+
+# runtime files
+packages/ant/lib/ant-storage.json

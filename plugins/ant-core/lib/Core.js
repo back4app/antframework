@@ -431,7 +431,8 @@ file is found at the given path',
           }
         );
       }
-    ).fail(msg => this._yargsFailed(msg));
+    );
+    yargsHelper.attachFailHandler(yargs, this._yargsFailed);
   }
 
   /**
@@ -441,54 +442,45 @@ file is found at the given path',
    * @private
    */
   _yargsFailed(msg) {
-    let createError = false;
     let command = null;
+    let error = null;
     const { argv } = process;
     if (msg) {
       if (argv.includes('create')) {
         command = 'create';
         if (msg.includes('Not enough non-option arguments')) {
-          msg = 'Create command requires service argument';
-          createError = true;
+          error = 'Create command requires service argument';
         } else if (msg.includes('Unknown argument: templatetemplate')) {
-          msg = 'Create command only accepts 1 argument';
-          createError = true;
+          error = 'Create command only accepts 1 argument';
         } else if (msg.includes('Not enough arguments following: template')) {
-          msg = 'Template option requires name argument';
-          createError = true;
+          error = 'Template option requires name argument';
         }
       } else if (
         process.argv.includes('deploy') &&
         msg &&
         msg.includes('Unknown argument: configpath')
       ) {
-        yargsHelper.handleErrorMessage(
-          'Deploy command accepts no arguments',
-          null,
-          'deploy'
-        );
+        command = 'deploy';
+        error = 'Deploy command accepts no arguments';
       } else if (argv.includes('plugin')) {
         const pluginCommand = argv[argv.indexOf('plugin') + 1];
         switch(pluginCommand) {
         case 'add':
           command = 'plugin add';
           if (msg.includes('Not enough non-option arguments')) {
-            msg = 'Plugin add command requires plugin argument';
-            createError = true;
+            error = 'Plugin add command requires plugin argument';
           }
           break;
         case 'remove':
           command = 'plugin remove';
           if (msg.includes('Not enough non-option arguments')) {
-            msg = 'Plugin remove command requires plugin argument';
-            createError = true;
+            error = 'Plugin remove command requires plugin argument';
           }
           break;
         default:
           command = 'plugin';
           if (msg.includes('Not enough non-option arguments')) {
-            msg = 'Plugin requires a command';
-            createError = true;
+            error = 'Plugin requires a command';
           }
           break;
         }
@@ -498,22 +490,19 @@ file is found at the given path',
         case 'add':
           command = 'template add';
           if (msg.includes('Not enough non-option arguments')) {
-            msg = 'Template add command requires category, template and path arguments';
-            createError = true;
+            error = 'Template add command requires category, template and path arguments';
           }
           break;
         case 'remove':
           command = 'template remove';
           if (msg.includes('Not enough non-option arguments')) {
-            msg = 'Template remove command requires category and template arguments';
-            createError = true;
+            error = 'Template remove command requires category and template arguments';
           }
           break;
         default:
           command = 'template';
           if (msg.includes('Not enough non-option arguments')) {
-            msg = 'Template requires a command';
-            createError = true;
+            error = 'Template requires a command';
           }
           break;
         }
@@ -523,29 +512,25 @@ file is found at the given path',
         case 'add':
           command = 'function add';
           if (msg.includes('Not enough non-option arguments')) {
-            msg = 'Function add command requires name and function arguments';
-            createError = true;
+            error = 'Function add command requires name and function arguments';
           }
           break;
         case 'remove':
           command = 'function remove';
           if (msg.includes('Not enough non-option arguments')) {
-            msg = 'Function remove command requires name argument';
-            createError = true;
+            error = 'Function remove command requires name argument';
           }
           break;
         case 'exec':
           command = 'function exec';
           if (msg.includes('Not enough non-option arguments')) {
-            msg = 'Function exec command requires name argument';
-            createError = true;
+            error = 'Function exec command requires name argument';
           }
           break;
         default:
           command = 'function';
           if (msg.includes('Not enough non-option arguments')) {
-            msg = 'Function requires a command';
-            createError = true;
+            error = 'Function requires a command';
           }
           break;
         }
@@ -555,28 +540,25 @@ file is found at the given path',
         case 'add':
           command = 'runtime add';
           if (msg.includes('Not enough non-option arguments')) {
-            msg = 'Runtime add command requires name, runtimeVersion and bin arguments';
-            createError = true;
+            error = 'Runtime add command requires name, runtimeVersion and bin arguments';
           }
           break;
         case 'remove':
           command = 'runtime remove';
           if (msg.includes('Not enough non-option arguments')) {
-            msg = 'Runtime remove command requires name and runtimeVersion arguments';
-            createError = true;
+            error = 'Runtime remove command requires name and runtimeVersion arguments';
           }
           break;
         default:
           command = 'runtime';
           if (msg.includes('Not enough non-option arguments')) {
-            msg = 'Runtime requires a command';
-            createError = true;
+            error = 'Runtime requires a command';
           }
           break;
         }
       }
-      if (createError) {
-        yargsHelper.handleErrorMessage(msg, null, command);
+      if (error) {
+        yargsHelper.handleErrorMessage(error, null, command, true);
       }
     }
   }

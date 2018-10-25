@@ -11,6 +11,7 @@ const TemplateController = require('./templates/TemplateController');
 const PluginController = require('./plugins/PluginController');
 const ProviderController = require('./hosts/providers/ProviderController');
 const HostController = require('./hosts/HostController');
+const { Analytics } = require('@back4app/ant-util-analytics');
 
 /**
  * @class ant/Ant
@@ -61,6 +62,7 @@ class Ant {
      * @private
      */
     this._globalConfig = this._getGlobalConfig();
+    Analytics.addBreadcrumb('Global configuration loaded', { globalConfig: this._globalConfig });
 
     /**
      * Contains the ant framework local configuration settings.
@@ -68,6 +70,8 @@ class Ant {
      * @private
      */
     this._config = config;
+    Analytics.addBreadcrumb('Local configuration loaded', { config: this._config });
+
 
     /**
      * Contains the {@link PluginController} instance created during the
@@ -87,6 +91,11 @@ class Ant {
         this._config.basePath
       );
     }
+    Analytics.addBreadcrumb('PluginController loaded', {
+      plugins: this._pluginController.plugins.map(
+        plugin => this._pluginController.getPluginName(plugin)
+      )
+    });
 
     /**
      * Contains the {@link TemplateController} instance created during the
@@ -107,6 +116,13 @@ class Ant {
           this._config.basePath
         ));
     }
+    Analytics.addBreadcrumb('TemplateController loaded', {
+      templates: this._templateController.getAllTemplates().reduce((acc, template) => {
+        acc[template.category] = acc[template.category] || [];
+        acc[template.category].push(template.name);
+        return acc;
+      }, {})
+    });
 
     /**
      * Contains the {@link RuntimeController} instance created during the
@@ -138,6 +154,15 @@ class Ant {
     } else {
       this._runtimeController.defaultRuntime = this._runtimeController.getRuntime('Node');
     }
+    const runtimes = Array.from(this._runtimeController.runtimes.values()).map(
+      runtimeByVersion => Array.from(runtimeByVersion.values()).map(
+        runtime => `${runtime.name} ${runtime.version}`
+      ).join(', ')
+    );
+    Analytics.addBreadcrumb('RuntimeController loaded', {
+      runtimes,
+      defaultRuntime: this._runtimeController.defaultRuntime && this._runtimeController.defaultRuntime.name
+    });
 
     /**
      * Contains the {@link FunctionController} instance created during the
@@ -155,6 +180,11 @@ class Ant {
         Config.ParseConfigFunctions(this._config.functions, this._runtimeController)
       );
     }
+    Analytics.addBreadcrumb('FunctionController loaded', {
+      functions: this._functionController.functions.map(
+        func => func.runtime ? `${func.runtime.name}: ${func.name}` : func.name
+      )
+    });
 
     /**
      * Contains the {@link ProviderController} instance created during the
@@ -163,6 +193,9 @@ class Ant {
      * @private
      */
     this._providerController = new ProviderController(this);
+    Analytics.addBreadcrumb('ProviderController loaded', {
+      providers: this._providerController.providers.map(provider => provider.name)
+    });
 
     /**
      * Contains the {@link HostController} instance created during the
@@ -180,6 +213,9 @@ class Ant {
         Config.ParseConfigHosts(this._config.hosts, this.providerController)
       );
     }
+    Analytics.addBreadcrumb('HostController loaded', {
+      hosts: this._hostController.hosts.map(host => host.name)
+    });
   }
 
   /**

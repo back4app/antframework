@@ -479,7 +479,7 @@ describe('lib/Core.js', () => {
           process.argv = ['plugin', 'remove'];
           process.exit = jest.fn((code) => {
             expect(handleErrorMessage).toHaveBeenCalledWith(
-              'Plugin remove command requires plugin argument', null, 'plugin remove'
+              'Plugin remove command requires plugin argument', null, 'plugin remove', true
             );
             expect(code).toEqual(1);
             done();
@@ -595,7 +595,7 @@ describe('lib/Core.js', () => {
           process.argv = ['template', 'add'];
           process.exit = jest.fn((code) => {
             expect(handleErrorMessage).toHaveBeenCalledWith(
-              'Template add command requires category, template and path arguments', null, 'template add'
+              'Template add command requires category, template and path arguments', null, 'template add', true
             );
             expect(code).toEqual(1);
             done();
@@ -608,7 +608,7 @@ describe('lib/Core.js', () => {
           process.argv = ['template', 'add', 'MyCategory'];
           process.exit = jest.fn((code) => {
             expect(handleErrorMessage).toHaveBeenCalledWith(
-              'Template add command requires category, template and path arguments', null, 'template add'
+              'Template add command requires category, template and path arguments', null, 'template add', true
             );
             expect(code).toEqual(1);
             done();
@@ -621,7 +621,7 @@ describe('lib/Core.js', () => {
           process.argv = ['template', 'add', 'MyCategory', 'MyTemplate'];
           process.exit = jest.fn((code) => {
             expect(handleErrorMessage).toHaveBeenCalledWith(
-              'Template add command requires category, template and path arguments', null, 'template add'
+              'Template add command requires category, template and path arguments', null, 'template add', true
             );
             expect(code).toEqual(1);
             done();
@@ -702,7 +702,7 @@ describe('lib/Core.js', () => {
           process.argv = ['template', 'remove'];
           process.exit = jest.fn((code) => {
             expect(handleErrorMessage).toHaveBeenCalledWith(
-              'Template remove command requires category and template arguments', null, 'template remove'
+              'Template remove command requires category and template arguments', null, 'template remove', true
             );
             expect(code).toEqual(1);
             done();
@@ -986,24 +986,19 @@ describe('lib/Core.js', () => {
       jest.restoreAllMocks();
     });
 
-    test('should show friendly error when no command is given', (done) => {
+    test('should show friendly error when no command is given', () => {
       const originalArgv = process.argv;
       process.argv = ['function'];
-      const originalError = console.error;
-      console.error = jest.fn();
-      const originalExit = process.exit;
-      process.exit = jest.fn((code) => {
-        expect(console.error).toHaveBeenCalledWith(
-          expect.stringContaining('Function requires a command')
-        );
-        expect(code).toEqual(1);
+      const originalHandleErrorMessage = yargsHelper.handleErrorMessage;
+      yargsHelper.handleErrorMessage = jest.fn();
+      const handleErrorMessage = jest.spyOn(yargsHelper, 'handleErrorMessage');
+      try {
+        new Core(ant)._yargsFailed('Not enough non-option arguments');
+        expect(handleErrorMessage).toHaveBeenCalledWith('Function requires a command', null, 'function', true);
+      } finally {
         process.argv = originalArgv;
-        console.error = originalError;
-        process.exit = originalExit;
-        done();
-      });
-      const core = new Core(ant);
-      core._yargsFailed('Not enough non-option arguments');
+        yargsHelper.handleErrorMessage = originalHandleErrorMessage;
+      }
     });
 
     test('should not show friendly error when error is unknown', () => {
@@ -1261,38 +1256,29 @@ describe('lib/Core.js', () => {
           .rejects.toThrowError('AntFunction type "foo" is unknown');
       });
 
-      test('should show friendly error when name was not passed', (done) => {
-        const handleErrorMessage = jest.spyOn(yargsHelper, 'handleErrorMessage');
+      test('should show friendly error when name was not passed', () => {
+        const handleErrorMessage = jest.spyOn(yargsHelper, 'handleErrorMessage').mockImplementationOnce(() => {});
         const originalArgv = process.argv;
         process.argv = ['function', 'add'];
-        const originalExit = process.exit;
-        process.exit = jest.fn((code) => {
-          expect(handleErrorMessage).toHaveBeenCalledWith(
-            'Function add command requires name and function arguments', null, 'function add'
-          );
-          expect(code).toEqual(1);
-          process.argv = originalArgv;
-          process.exit = originalExit;
-          done();
-        });
         new Core(ant)._yargsFailed('Not enough non-option arguments');
+        expect(handleErrorMessage).toHaveBeenCalledWith(
+          'Function add command requires name and function arguments',
+          null,
+          'function add',
+          true
+        );
+        process.argv = originalArgv;
       });
 
-      test('should show friendly error when function was not passed', (done) => {
-        const handleErrorMessage = jest.spyOn(yargsHelper, 'handleErrorMessage');
+      test('should show friendly error when function was not passed', () => {
+        const handleErrorMessage = jest.spyOn(yargsHelper, 'handleErrorMessage').mockImplementationOnce(() => {});
         const originalArgv = process.argv;
         process.argv = ['function', 'add', 'myfunc'];
-        const originalExit = process.exit;
-        process.exit = jest.fn((code) => {
-          expect(handleErrorMessage).toHaveBeenCalledWith(
-            'Function add command requires name and function arguments', null, 'function add'
-          );
-          expect(code).toEqual(1);
-          process.argv = originalArgv;
-          process.exit = originalExit;
-          done();
-        });
         new Core(ant)._yargsFailed('Not enough non-option arguments');
+        expect(handleErrorMessage).toHaveBeenCalledWith(
+          'Function add command requires name and function arguments', null, 'function add', true
+        );
+        process.argv = originalArgv;
       });
 
       test('should not show friendly error when error is unknown', () => {
@@ -1369,21 +1355,15 @@ describe('lib/Core.js', () => {
         antCli._yargs.parse('function remove fooFunction');
       });
 
-      test('should show friendly error when name was not passed', done => {
-        const handleErrorMessage = jest.spyOn(yargsHelper, 'handleErrorMessage');
+      test('should show friendly error when name was not passed', () => {
+        const handleErrorMessage = jest.spyOn(yargsHelper, 'handleErrorMessage').mockImplementationOnce(() => {});
         const originalArgv = process.argv;
         process.argv = ['function', 'remove'];
-        const originalExit = process.exit;
-        process.exit = jest.fn((code) => {
-          expect(handleErrorMessage).toHaveBeenCalledWith(
-            'Function remove command requires name argument', null, 'function remove'
-          );
-          expect(code).toEqual(1);
-          process.argv = originalArgv;
-          process.exit = originalExit;
-          done();
-        });
         new Core(ant)._yargsFailed('Not enough non-option arguments');
+        process.argv = originalArgv;
+        expect(handleErrorMessage).toHaveBeenCalledWith(
+          'Function remove command requires name argument', null, 'function remove', true
+        );
       });
 
       test('should not show friendly error when error is unknown', () => {
@@ -1456,19 +1436,26 @@ describe('lib/Core.js', () => {
         }
       });
 
-      test ('should handle error message', (done) => {
-        const handleErrorMessage = jest.spyOn(
-          yargsHelper,
-          'handleErrorMessage'
-        );
-        const name = 'should_not_be_found';
+      test('should do nothing if function was not found', () => {
+        const handleErrorMessage = jest.spyOn(yargsHelper, 'handleErrorMessage').mockImplementationOnce(() => {});
+        const err = new Error('Mocked error');
         const antCli = new AntCli();
-        antCli._yargs.parse(`function exec ${name}`);
-        process.exit = jest.fn((code) => {
-          expect(code).toEqual(1);
-          expect(handleErrorMessage).toHaveBeenCalled();
-          done();
+        antCli._ant.pluginController.getPlugin('Core').execFunction = jest.fn().mockImplementation(() => {
+          throw err;
         });
+        antCli._yargs.parse('function exec myFunc');
+        expect(handleErrorMessage).toHaveBeenCalledWith(err.message, err, 'function exec');
+      });
+
+      test ('should handle error message', () => {
+        const handleErrorMessage = jest.spyOn(yargsHelper, 'handleErrorMessage').mockImplementationOnce(() => {});
+        const err = new Error('Mocked error');
+        const antCli = new AntCli();
+        antCli._ant.pluginController.getPlugin('Core').execFunction = jest.fn().mockImplementation(() => {
+          throw err;
+        });
+        antCli._yargs.parse('function exec myFunc');
+        expect(handleErrorMessage).toHaveBeenCalledWith(err.message, err, 'function exec');
       });
 
       test ('should execute function with args', async () => {
@@ -1540,7 +1527,7 @@ describe('lib/Core.js', () => {
         process.argv = ['function', 'exec'];
         process.exit = jest.fn((code) => {
           expect(handleErrorMessage).toHaveBeenCalledWith(
-            'Function exec command requires name argument', null, 'function exec'
+            'Function exec command requires name argument', null, 'function exec', true
           );
           expect(code).toEqual(1);
           done();
@@ -1567,7 +1554,7 @@ describe('lib/Core.js', () => {
       process.argv = ['runtime'];
       process.exit = jest.fn(code => {
         expect(handleErrorMessage).toHaveBeenCalledWith(
-          'Runtime requires a command', null, 'runtime'
+          'Runtime requires a command', null, 'runtime', true
         );
         expect(code).toEqual(1);
         done();
@@ -1639,30 +1626,15 @@ describe('lib/Core.js', () => {
         });
       });
 
-      test('should handle error message', (done) => {
+      test('should handle error message', () => {
+        const handleErrorMessage = jest.spyOn(yargsHelper, 'handleErrorMessage').mockImplementationOnce(() => {});
+        const err = new Error('Mocked error');
         const antCli = new AntCli();
-        const name = 'runtime';
-        const bin = '/my/runtime';
-        const extensions = 'js';
-        const configFilePath = path.resolve(outPath, 'ant.yml');
-        fs.ensureFileSync(configFilePath);
-        const getLocalConfigPath = jest.spyOn(Config, 'GetLocalConfigPath')
-          .mockImplementation(() => configFilePath);
-        jest.spyOn(Config.prototype, 'addRuntime')
-          .mockImplementation(runtime => {
-            expect(runtime.name).toBe(name);
-            expect(runtime.bin).toBe(bin);
-            expect(runtime.extensions).toEqual([extensions]);
-            throw new Error('Some add error');
-          });
-        const handleErrorMessage = jest.spyOn(yargsHelper, 'handleErrorMessage');
-        antCli._yargs.parse(`runtime add ${name} ${bin} ${extensions}`);
-        process.exit = jest.fn((code) => {
-          expect(code).toEqual(1);
-          expect(getLocalConfigPath).toHaveBeenCalled();
-          expect(handleErrorMessage).toHaveBeenCalled();
-          done();
+        antCli._ant.pluginController.getPlugin('Core').addRuntime = jest.fn().mockImplementation(() => {
+          throw err;
         });
+        antCli._yargs.parse('runtime add bla /bla bla');
+        expect(handleErrorMessage).toHaveBeenCalledWith(err.message, err, 'runtime add');
       });
 
       test('should add runtime and save globally', async () => {
@@ -1693,7 +1665,7 @@ describe('lib/Core.js', () => {
         process.argv = ['runtime', 'add'];
         process.exit = jest.fn(code => {
           expect(handleErrorMessage).toHaveBeenCalledWith(
-            'Runtime add command requires name, runtimeVersion and bin arguments', null, 'runtime add'
+            'Runtime add command requires name, runtimeVersion and bin arguments', null, 'runtime add', true
           );
           expect(code).toEqual(1);
           done();
@@ -1706,7 +1678,7 @@ describe('lib/Core.js', () => {
         process.argv = ['runtime', 'add', 'myruntime'];
         process.exit = jest.fn((code) => {
           expect(handleErrorMessage).toHaveBeenCalledWith(
-            'Runtime add command requires name, runtimeVersion and bin arguments', null, 'runtime add'
+            'Runtime add command requires name, runtimeVersion and bin arguments', null, 'runtime add', true
           );
           expect(code).toEqual(1);
           done();
@@ -1719,7 +1691,7 @@ describe('lib/Core.js', () => {
         process.argv = ['runtime', 'add', 'myruntime 123'];
         process.exit = jest.fn((code) => {
           expect(handleErrorMessage).toHaveBeenCalledWith(
-            'Runtime add command requires name, runtimeVersion and bin arguments', null, 'runtime add'
+            'Runtime add command requires name, runtimeVersion and bin arguments', null, 'runtime add', true
           );
           expect(code).toEqual(1);
           done();
@@ -1774,7 +1746,7 @@ describe('lib/Core.js', () => {
           expect(getLocalConfigPath).toHaveBeenCalled();
           expect(removeRuntime).toHaveBeenCalled();
           expect(save).toHaveBeenCalled();
-          expect(handleErrorMessage).toHaveBeenCalled();
+          expect(handleErrorMessage).toHaveBeenCalledWith();
         });
       });
 
@@ -1802,7 +1774,7 @@ describe('lib/Core.js', () => {
         process.argv = ['runtime', 'remove'];
         process.exit = jest.fn((code) => {
           expect(handleErrorMessage).toHaveBeenCalledWith(
-            'Runtime remove command requires name and runtimeVersion arguments', null, 'runtime remove'
+            'Runtime remove command requires name and runtimeVersion arguments', null, 'runtime remove', true
           );
           expect(code).toEqual(1);
           done();
@@ -1815,7 +1787,7 @@ describe('lib/Core.js', () => {
         process.argv = ['runtime', 'remove', 'node'];
         process.exit = jest.fn((code) => {
           expect(handleErrorMessage).toHaveBeenCalledWith(
-            'Runtime remove command requires name and runtimeVersion arguments', null, 'runtime remove'
+            'Runtime remove command requires name and runtimeVersion arguments', null, 'runtime remove', true
           );
           expect(code).toEqual(1);
           done();

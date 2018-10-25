@@ -6,6 +6,7 @@ const assert = require('assert');
 const { AntError } = require('@back4app/ant-util');
 const { LibFunction, Ant } = require('@back4app/ant');
 const Directive = require('./Directive');
+const path = require('path');
 
 /**
  * @class ant-graphql/DirectiveController
@@ -16,9 +17,11 @@ class DirectiveController {
   * @param {!Ant} ant The {@link Ant} framework instance that is initializing
   * the controller.
   * @param {Object} directives The "directives" object from the configuration file
+  * @param {String} basePath The base path considered when resolving directive
+  * resolvers path
   * @throws {AssertionError} If "ant" or "directives" params are not valid.
   */
-  constructor(ant, directives) {
+  constructor(ant, directives, basePath) {
     assert(
       ant instanceof Ant,
       'Could not initialize the directive controller: param "ant" should be Ant'
@@ -38,6 +41,14 @@ class DirectiveController {
     * @private
     */
     this._directives = new Map();
+
+    /**
+     * Contains the controller's base path.
+     * Required in order to resolve the directive resolvers path.
+     * @type {String}
+     * @private
+     */
+    this._basePath = basePath;
 
     /**
     * Contains the erros generated during directives loading.
@@ -253,7 +264,8 @@ definition`,
       assert(resolverConfig instanceof Object, `Could not load \
 directive "${name}". "resolver" should be an object`);
       const { handler, runtime } = resolverConfig;
-      const resolver = new LibFunction(this.ant, name, handler,
+      const resolver = new LibFunction(this.ant, name,
+        path.resolve(this._basePath, handler),
         this.ant.runtimeController.getRuntime(runtime)
       );
       directives.push(

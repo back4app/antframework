@@ -6,6 +6,14 @@
  * @module ant-util-yargs/yargsHelper
  */
 
+const { Analytics } = require('@back4app/ant-util-analytics');
+
+/**
+ * Flag indicating the Yargs error was previously handled
+ * by any error handler attached by this utils.
+ */
+let errorHandled = false;
+
 /**
  * Helper function that can be used to get the CLI file name.
  * @return {String} The name of CLI file that is being executed.
@@ -29,8 +37,12 @@ function isVerboseMode() {
  * @param {String} msg The error message.
  * @param {Error} err The error that generated the problem.
  * @param {String} command The command that failed.
+ * @param {Boolean} exitProcess Flag indicating it should invoke process.exit
+ * after logging error messages.
+ * @returns {Promise} The error tracking request promise
  */
-function handleErrorMessage (msg, err, command) {
+function handleErrorMessage (msg, err, command, exitProcess) {
+  setErrorHandled();
   console.error(`Fatal => ${msg}`);
   if (err) {
     console.error();
@@ -46,7 +58,81 @@ function handleErrorMessage (msg, err, command) {
   console.error(
     `${getCliFileName()} --help ${command ? command : '[command]'}`
   );
+  if (!err && msg) {
+    err = new Error(msg);
+  }
+  if (!exitProcess) {
+    return Analytics.trackError(err).then(() => process.exit(1));
+  }
   process.exit(1);
 }
 
-module.exports = { getCliFileName, isVerboseMode, handleErrorMessage };
+/**
+ * Attaches an error handler into the Yargs instance.
+ *
+ * Guarantees the single error handling with the `errorHandled` flag,
+ * which can be set with the `setErrorHandled` function.
+ *
+ * @param {!Yargs} yargs The [Yargs]{@link https://github.com/yargs/yargs/blob/master/yargs.js}
+ * instance.
+ * @param {!Function} handler The error handler
+ */
+function attachFailHandler (yargs, handler) {
+  yargs.fail((msg, err, usage) => {
+    // If failure was handled previously, does nothing.
+    if (errorHandled) {
+      return;
+    }
+    handler(msg, err, usage);
+    if (errorHandled) {
+      // Workaround to avoid yargs from running the command.
+      // Since yargs has no mechanisms to any error handler
+      // alert the command execution needs to be stopped, and we can't
+      // exit the process right away due to possible asynchronous
+      // error handlers, we need a way to prevent the command to be
+      // ran, since we are handling the error asynchronously.
+      // Setting this inner flag will prevent yargs to run the command.
+      yargs._setHasOutput();
+    }
+  });
+}
+
+/**
+ * Sets the `errorHandled` flag with `true`, indicating
+ * the error has been handled.
+ * This flag prevents next error handlers attached by
+ * the `attachFailHandler` function to be executed.
+ */
+function setErrorHandled () {
+  errorHandled = true;
+}
+
+/**
+ * Resets the `errorHandled` flag, allowing
+ * next error handlers attached by the `attachFailHandler`
+ * function to be executed.
+ */
+function _resetHandler () {
+  errorHandled = false;
+}
+
+/**
+ * Helper function encapsulates an asynchronous function to be executed
+ * and handled on any errors thrown, providing a friendly error message
+ * based on the command that this function represents.
+ * In case of success, the process is exit with code 0.
+ * In case of failure, the process is exit with code 1.
+ *
+ * @param {!String} command The command about to be executed
+ * @param {!Function} asyncFn The asynchronous function to be executed
+ */
+async function executeCommand(command, asyncFn) {
+  try {
+    await asyncFn();
+    process.exit(0);
+  } catch (e) {
+    handleErrorMessage(e.message, e, command);
+  }
+}
+
+module.exports = { getCliFileName, isVerboseMode, handleErrorMessage, attachFailHandler, setErrorHandled, _resetHandler, executeCommand };

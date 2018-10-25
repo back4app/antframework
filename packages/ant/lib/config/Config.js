@@ -138,6 +138,66 @@ plugin add command should do nothing`);
   }
 
   /**
+   * Reads this Config's YAML document tree, traverses to the plugin
+   * configuration node and returns it. If the configuration node does
+   * not exists, returns null.
+   * If the `force` flag is true, creates the configuration node if
+   * does not exists.
+   *
+   * @param {String} plugin The plugin whose settings will be retrieved
+   * @param {Boolean} force A flag indicating the settings should be
+   * created if none has been found
+   * @returns {Object} The plugin configuration object
+   */
+  getPluginConfigurationNode(plugin, force) {
+    assert(plugin, 'Could not add plugin: param "plugin" is required');
+    assert(
+      typeof plugin === 'string',
+      'Could not add plugin: param "plugin" should be String'
+    );
+    let plugins = this._config.contents.items.find(
+      item => item.key.value === 'plugins'
+    );
+    if (plugins && plugins.value && plugins.value.items) {
+      plugins = plugins.value;
+      const pluginSeqItems = plugins.items;
+      for (let pluginNode of pluginSeqItems) {
+        if (pluginNode instanceof Map && pluginNode.items[0].key.value === plugin) {
+          return pluginNode.items[0].value;
+        } else if (force && ((pluginNode instanceof Scalar && pluginNode.value === plugin))) {
+          // If "force" flag is true and the plugin entry found is
+          // not a Map (thus, does not contains a configuration entry),
+          // we must replace it with a Map
+          pluginSeqItems.splice(pluginSeqItems.indexOf(pluginNode), 1);
+          const configurationEntry = new Map();
+          pluginNode = new Map();
+          pluginNode.items.push(new Pair(new Scalar(plugin), configurationEntry));
+          pluginSeqItems.push(pluginNode);
+          return configurationEntry;
+        }
+      }
+    }
+    // If "force" flag is true, we need to ensure the plugin
+    // configuration entry
+    if (force) {
+      // If "plugins" entry was not found, we must create it
+      if (!plugins) {
+        plugins = this._ensureRootCollectionNode('plugins', Seq);
+      }
+      // Creates the plugin configuration entry and returns
+      // the configuration map
+      const configurationEntry = new Map();
+      const pluginEntry = new Map();
+      pluginEntry.items.push(new Pair(
+        new Scalar(plugin), configurationEntry
+      ));
+      plugins.items.push(pluginEntry);
+      return configurationEntry;
+    }
+    return null;
+  }
+
+  /**
    * Removes the plugin from this configuration.
    *
    * @param {!String} plugin The path to the plugin files
@@ -161,6 +221,7 @@ plugin remove command should do nothing`);
       return this;
     }
     plugins.value.items = plugins.value.items.filter(item => item.value !== plugin);
+    this._cleanPluginsNode(plugins);
     console.log(`Plugin "${plugin}" successfully removed from configuration file ${this._path}`);
 
     // Document has changed, resets the cached JSON
@@ -272,6 +333,7 @@ template remove command should do nothing`);
       return this;
     }
     configCategory.value.items = configCategory.value.items.filter(item => item.key.value !== template);
+    this._cleanRootNode(templates);
     console.log(`Template "${template}" successfully removed from configuration file ${this._path}`);
 
     // Document has changed, resets the cached JSON
@@ -358,6 +420,7 @@ function remove command should do nothing`);
     functions.value.items = functions.value.items.filter(
       func => func.key.value !== antFunction
     );
+    this._cleanRootNode(functions);
     console.log(`Function "${antFunction}" successfully removed from configuration file ${this._path}`);
 
     // Document has changed, resets the cached JSON
@@ -424,6 +487,7 @@ remove command should do nothing');
     }
     const entryName = `${runtime} ${version}`;
     if(this._filterNodeFromCollectionByKey(runtimes, entryName)) {
+      this._cleanRootNode(runtimes);
       console.log(`Runtime "${entryName}" successfully removed from \
 configuration file ${this._path}`);
 
@@ -563,6 +627,76 @@ save the file.');
     logger.log(`Configutarion file successfully written in ${this._path}`);
     logger.log(`Content written:\n${configFileContent}`);
     return this._path;
+  }
+
+  /**
+   * Given a root node, searches and removes recursively any
+   * empty node from the configuration YAML document tree.
+   *
+   * @param {Node} node The root node to be cleansed
+   */
+  _cleanRootNode(node) {
+    if (node && this._cleanNode(node)) {
+      const rootNode = this._config.contents;
+      rootNode.items.splice(rootNode.items.indexOf(node), 1);
+    }
+  }
+
+  /**
+   * Given the `plugins` node, searches and replaces any empty plugin
+   * configuration node with a scalar node.
+   * It is different from the {@link Config#_cleanRootNode} because
+   * the empty plugin nodes can not be removed.
+   *
+   * @param {Node} plugins The `plugins` node from the configuration file
+   */
+  _cleanPluginsNode(plugins) {
+    plugins.value.items = plugins.value.items.map(pluginNode => {
+      // If the pluginNode is a map, then its key is the plugin name,
+      // and its value is the configuration node
+      if (pluginNode instanceof Map) {
+        const pluginPair = pluginNode.items[0];
+        const pluginConfig = pluginPair.value;
+        // Checks if the configuration node is actually a map and if it is empty.
+        // If true, then replaces it with a scalar node
+        if (pluginConfig instanceof Map && this._cleanNode(pluginConfig)) {
+          const pluginName = pluginPair.key.value;
+          return new Scalar(pluginName);
+        }
+      }
+      return pluginNode;
+    });
+  }
+
+  /**
+   * Given a {@link Node}, searches and removes recursively any empty {@link Map}
+   * or {@link Seq} which has no child elements.
+   * After removing the empty nodes, returns `true` if node is empty, or `false`
+   * otherwise.
+   * If {@link Node} is an instance of {@link Pair}, checks if its value is empty.
+   * If {@link Node} is an instance of {@link Scalar} it is considered as not empty.
+   *
+   * @param {Node} node The node whose empty nodes shall be cleansed
+   * @returns {Boolean} true if node is empty, false if not
+   */
+  _cleanNode(node) {
+    if (node instanceof Seq || node instanceof Map) {
+      let isCollEmpty = true;
+      // Filters all empty nodes from this collection and also updates the
+      // flag indicating this collection is either empty or not
+      node.items = node.items.filter(child => {
+        const isEmpty = this._cleanNode(child);
+        if (isEmpty) {
+          return false;
+        }
+        isCollEmpty = false;
+        return true;
+      });
+      return isCollEmpty;
+    } else if (node instanceof Pair) {
+      return this._cleanNode(node.value);
+    }
+    return false;
   }
 
   /**

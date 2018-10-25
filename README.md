@@ -208,9 +208,13 @@ There are two types of configuration file, the **Local** and the **Global**. The
 - `ant template ls`: Lists all templates available to use, considering the configuration files being used (can list templates from both local and global configurations).
 - `ant template add <category> <name> <path> [-g|--global]`: Adds a template into a configuration file. The template is composed by a `category` (a name used as a helper to classify our templates), a `name` (which is basically an identification for the template inside a `category`), and a `template path` which is the path to the template files. Can use the option -g to install into the global configuration file.
 - `ant template remove <category> <name> [-g|--global]`: Removes a template from a configuration file. Can use the option -g to remove from the global configuration file.
-
+- `ant directive add <name> <definition> <handler> [runtime] [-c|--config]`: Adds a directive into a configuration file. Only available with the GraphQL plugin. It is needed to provide the directive name, its GraphQL definition, the path to the resolver function and its runtime, if different from default. Can use the -c option to manipulate a configuration file from a path different from the current working directory.
+- `ant directive remove <name> [-c|--config]`: Removes a directive from a configuration file by its name. Only available with the GraphQL plugin. Can use the -c option to manipulate a configuration file from a path different from the current working directory.
+- `ant directive ls [-c|--config]`: Lists all directives available to use. Can use the -c option to target a configuration file from a path different from the current working directory.
 Ant framework uses the YAML format on its configuration files. For more, check the links below:
+
 [Official YAML page](http://yaml.org/)
+
 [YAML Live Demo](http://nodeca.github.io/js-yaml/)
 
 ## Extending the Ant Framework
@@ -237,9 +241,13 @@ respect the following format, under the "directives" key:
 ```
 
 Where:
+
 `<name>` is the Directive name;
+
 `<handler>` is the path to the function to resolve the Directive;
+
 `<runtime>` the runtime name to run the handler;
+
 `<definition>` the GraphQL definition of the directive, to be injected into the GraphQL schema.
 
 If you wish to add your "foo" and "bar" directives, It could use the example below:
@@ -259,6 +267,16 @@ plugins:
             runtime: Python
           definition: "directive @bar on FIELD_DEFINITION" # In this case, we chose not to provide any parameters to the directive, and It is totally fine.
 ```
+
+It is also possible to handle the GraphQL directives from the configuration file by using the `directive add` and `directive remove` commands.
+The example above could also be done by using the following commands:
+```
+ant directive add foo "directive @foo(myParam: String, myOtherParam: Int) on FIELD_DEFINITION" /my/foo.js
+ant directive add bar "directive @bar on FIELD_DEFINITION" /path/to/bar.py Python
+```
+Note that Node runtime was not needed to be provided in the first command because It is the default runtime.
+
+If you wish to list all available directives, you can use the `directive ls` command.
 
 ### Creating new runtimes
 WIP
