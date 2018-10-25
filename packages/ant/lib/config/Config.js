@@ -138,6 +138,66 @@ plugin add command should do nothing`);
   }
 
   /**
+   * Reads this Config's YAML document tree, traverses to the plugin
+   * configuration node and returns it. If the configuration node does
+   * not exists, returns null.
+   * If the `force` flag is true, creates the configuration node if
+   * does not exists.
+   *
+   * @param {String} plugin The plugin whose settings will be retrieved
+   * @param {Boolean} force A flag indicating the settings should be
+   * created if none has been found
+   * @returns {Object} The plugin configuration object
+   */
+  getPluginConfigurationNode(plugin, force) {
+    assert(plugin, 'Could not add plugin: param "plugin" is required');
+    assert(
+      typeof plugin === 'string',
+      'Could not add plugin: param "plugin" should be String'
+    );
+    let plugins = this._config.contents.items.find(
+      item => item.key.value === 'plugins'
+    );
+    if (plugins && plugins.value && plugins.value.items) {
+      plugins = plugins.value;
+      const pluginSeqItems = plugins.items;
+      for (let pluginNode of pluginSeqItems) {
+        if (pluginNode instanceof Map && pluginNode.items[0].key.value === plugin) {
+          return pluginNode.items[0].value;
+        } else if (force && ((pluginNode instanceof Scalar && pluginNode.value === plugin))) {
+          // If "force" flag is true and the plugin entry found is
+          // not a Map (thus, does not contains a configuration entry),
+          // we must replace it with a Map
+          pluginSeqItems.splice(pluginSeqItems.indexOf(pluginNode), 1);
+          const configurationEntry = new Map();
+          pluginNode = new Map();
+          pluginNode.items.push(new Pair(new Scalar(plugin), configurationEntry));
+          pluginSeqItems.push(pluginNode);
+          return configurationEntry;
+        }
+      }
+    }
+    // If "force" flag is true, we need to ensure the plugin
+    // configuration entry
+    if (force) {
+      // If "plugins" entry was not found, we must create it
+      if (!plugins) {
+        plugins = this._ensureRootCollectionNode('plugins', Seq);
+      }
+      // Creates the plugin configuration entry and returns
+      // the configuration map
+      const configurationEntry = new Map();
+      const pluginEntry = new Map();
+      pluginEntry.items.push(new Pair(
+        new Scalar(plugin), configurationEntry
+      ));
+      plugins.items.push(pluginEntry);
+      return configurationEntry;
+    }
+    return null;
+  }
+
+  /**
    * Removes the plugin from this configuration.
    *
    * @param {!String} plugin The path to the plugin files

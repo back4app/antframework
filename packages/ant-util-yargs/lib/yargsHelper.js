@@ -42,7 +42,7 @@ function isVerboseMode() {
  * @returns {Promise} The error tracking request promise
  */
 function handleErrorMessage (msg, err, command, exitProcess) {
-  this.setErrorHandled();
+  setErrorHandled();
   console.error(`Fatal => ${msg}`);
   if (err) {
     console.error();
@@ -116,4 +116,23 @@ function _resetHandler () {
   errorHandled = false;
 }
 
-module.exports = { getCliFileName, isVerboseMode, handleErrorMessage, attachFailHandler, setErrorHandled, _resetHandler };
+/**
+ * Helper function encapsulates an asynchronous function to be executed
+ * and handled on any errors thrown, providing a friendly error message
+ * based on the command that this function represents.
+ * In case of success, the process is exit with code 0.
+ * In case of failure, the process is exit with code 1.
+ *
+ * @param {!String} command The command about to be executed
+ * @param {!Function} asyncFn The asynchronous function to be executed
+ */
+async function executeCommand(command, asyncFn) {
+  try {
+    await asyncFn();
+    process.exit(0);
+  } catch (e) {
+    handleErrorMessage(e.message, e, command);
+  }
+}
+
+module.exports = { getCliFileName, isVerboseMode, handleErrorMessage, attachFailHandler, setErrorHandled, _resetHandler, executeCommand };

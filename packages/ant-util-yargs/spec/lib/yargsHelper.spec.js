@@ -163,4 +163,35 @@ describe('lib/yargsHelper.js', () => {
       });
     });
   });
+
+  describe('yargsHelper.executeCommand', () => {
+    const originalExit = process.exit;
+
+    beforeEach(() => {
+      process.exit = jest.fn();
+    });
+
+    afterEach(() => {
+      process.exit = originalExit;
+    });
+
+    test('should invoke callback and exit process with code 0', () => {
+      const mockFn = jest.fn();
+      yargsHelper.executeCommand('foo', async () => {
+        mockFn();
+      }).then(() => {
+        expect(mockFn).toHaveBeenCalled();
+        expect(process.exit).toHaveBeenCalledWith(0);
+      });
+    });
+
+    test('should invoke callback and handle error thrown', () => {
+      const error = new Error('Mocked error');
+      yargsHelper.executeCommand('foo', async () => {
+        throw error;
+      }).then(() => {
+        expect(process.exit).toHaveBeenCalledWith(1);
+      });
+    });
+  });
 });

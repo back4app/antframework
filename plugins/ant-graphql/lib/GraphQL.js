@@ -10,12 +10,15 @@ const fs = require('fs');
 const childProcess = require('child_process');
 const { AntError, logger } = require('@back4app/ant-util');
 const { yargsHelper } = require('@back4app/ant-util-yargs');
-const { AntFunction, Template, Plugin } = require('@back4app/ant');
+const { AntFunction, Config, Template, Plugin } = require('@back4app/ant');
 const Directive = require('./directives/Directive');
 const DirectiveController = require('./directives/DirectiveController');
 const mock = require('../functions/mock');
 const resolve = require('../functions/resolve');
 const subscribe = require('../functions/subscribe');
+const Map = require('yaml/map').default;
+const Pair = require('yaml/pair').default;
+const Scalar = require('yaml/scalar').default;
 
 const defaultServerPath = path.dirname(
   require.resolve('@back4app/ant-graphql-express')
@@ -28,6 +31,7 @@ const templates = [
     defaultServerPath
   )
 ];
+const PLUGIN_DEFAULT_LOCATION = '$GLOBAL/plugins/graphQL';
 
 /**
  * @class ant-graphql/GraphQL
@@ -104,7 +108,8 @@ class GraphQL extends Plugin {
      */
     this._directiveController = new DirectiveController(
       this.ant,
-      this._config && this._config.directives
+      this._config && this._config.directives,
+      (this._config && this._config.basePath) || (this.ant.config && this.ant.config.basePath)
     );
   }
 
@@ -121,13 +126,69 @@ class GraphQL extends Plugin {
       'start [--config <path>]',
       'Start a service in localhost',
       {},
-      async () => {
-        try {
-          await this.startService();
-          process.exit(0);
-        } catch (e) {
-          yargsHelper.handleErrorMessage(e.message, e, 'start');
-        }
+      async () =>
+        yargsHelper.executeCommand(
+          'start',
+          async () => {
+            await this.startService();
+          }
+        )
+    ).command(
+      'directive <command>',
+      'Manage directives of GraphQL plugin', yargs => {
+        yargs.command(
+          'add <name> <definition> <handler> [runtime]',
+          'Adds a directive into a configuration file',
+          yargs => {
+            yargs.positional('name', {
+              describe: 'The directive name',
+              string: true
+            }).positional('definition', {
+              describe: 'The directive definition',
+              string: true
+            }).positional('handler', {
+              describe: 'The path to the directive resolver',
+              string: true,
+            }).positional('runtime', {
+              describe: 'The name of the resolver runtime',
+              string: true
+            });
+          },
+          async ({ name, definition, handler, runtime, config }) =>
+            yargsHelper.executeCommand(
+              'directive add',
+              async () => {
+                await this.addDirective(name, definition, handler, runtime, config);
+              }
+            )
+        ).command(
+          'remove <name>',
+          'Removes a directive from a configuration file',
+          yargs => {
+            yargs.positional('name', {
+              describe: 'The directive name',
+              string: true
+            });
+          },
+          async ({ name, config }) =>
+            yargsHelper.executeCommand(
+              'directive remove',
+              async () => {
+                await this.removeDirective(name, config);
+              }
+            )
+        ).command(
+          'ls',
+          'Lists all directives available',
+          () => {},
+          async () =>
+            yargsHelper.executeCommand(
+              'directive ls',
+              async () => {
+                await this.listDirectives();
+              }
+            )
+        );
       }
     );
     yargsHelper.attachFailHandler(yargs, this._yargsFailed);
@@ -140,18 +201,46 @@ class GraphQL extends Plugin {
    * @private
    */
   _yargsFailed(msg) {
-    if (
-      process.argv.includes('start') &&
-      msg &&
-      msg.includes('Unknown argument: configpath')
-    ) {
-      msg = 'Start command accepts no arguments';
-      yargsHelper.handleErrorMessage(
-        'Start command accepts no arguments',
-        null,
-        'start',
-        true
-      );
+    if (msg) {
+      const { argv } = process;
+      let command = null;
+      let handledErrorMessage = null;
+      if (
+        argv.includes('start') &&
+        msg.includes('Unknown argument: configpath')
+      ) {
+        command = 'start';
+        handledErrorMessage = 'Start command accepts no arguments';
+      } else if (argv.includes('directive')) {
+        const directiveCommand = argv[argv.indexOf('directive') + 1];
+        switch(directiveCommand) {
+        case 'add':
+          command = 'directive add';
+          if (msg.includes('Not enough non-option arguments')) {
+            handledErrorMessage = 'Directive add command requires name, definition and handler arguments';
+          }
+          break;
+        case 'remove':
+          command = 'directive remove';
+          if (msg.includes('Not enough non-option arguments')) {
+            handledErrorMessage = 'Directive remove command requires name argument';
+          }
+          break;
+        default:
+          command = 'directive';
+          if (msg.includes('Not enough non-option arguments')) {
+            handledErrorMessage = 'Directive requires a command';
+          }
+          break;
+        }
+      }
+      if (handledErrorMessage) {
+        yargsHelper.handleErrorMessage(
+          handledErrorMessage,
+          null,
+          command
+        );
+      }
     }
   }
 
@@ -295,6 +384,121 @@ directory "${cwd}"`
     });
 
     await promise;
+  }
+
+  /**
+   * Adds a Directive entry into the configuration file and saves it.
+   * Overrides any Directive entry with the same name.
+   *
+   * @param {!String} name The directive name
+   * @param {!String} definition Directive's GraphQL definition
+   * @param {!String} handler The path to the resolver handler
+   * @param {String} runtime The runtime to execute the resolver
+   * @param {String} config The path to the configuration file
+   */
+  addDirective(name, definition, handler, runtime, config) {
+    config = GraphQL._getConfig(config);
+
+    // Retrieves the plugin configuration node from the Config's YAML document tree.
+    // If no configuration node is found, forces its creation and returns it.
+    const graphQLNode = config.getPluginConfigurationNode(PLUGIN_DEFAULT_LOCATION, true);
+    // Finds the "directives" entry from the configuration node
+    let directives = graphQLNode.items.find(
+      item => item.key.value === 'directives'
+    );
+    if (!directives) {
+      // If no "directives" entry is found, we must create it in order
+      // to add our new directive
+      directives = new Map();
+      graphQLNode.items.push(new Pair(new Scalar('directives'), directives));
+    } else {
+      // Since "directives" is a Pair node, we need to access its value
+      // to reach the Map of directives
+      directives = directives.value;
+    }
+
+    // Given the directives map, we need to find the entry whose key is the name
+    // of the target directive; either to update it with the new configurations or
+    // to know if a brand new entry needs to be created.
+    const directive = directives.items.find(
+      item => item.key.value === name
+    );
+    const resolverAttributes = new Map();
+    resolverAttributes.items.push(new Pair(new Scalar('handler'), new Scalar(handler)));
+    resolverAttributes.items.push(new Pair(new Scalar('runtime'), new Scalar(runtime || this.ant.runtimeController.defaultRuntime.name)));
+
+    const directiveAttributes = new Map();
+    directiveAttributes.items.push(new Pair(new Scalar('resolver'), resolverAttributes));
+    directiveAttributes.items.push(new Pair(new Scalar('definition'), new Scalar(definition)));
+    if (!directive) {
+      directives.items.push(new Pair(new Scalar(name), directiveAttributes));
+    } else {
+      directive.value = directiveAttributes;
+    }
+    return config.save();
+  }
+
+  /**
+   * Removes a directive entry from the configuration file
+   * and saves it.
+   *
+   * @param {!String} name The directive name
+   * @param {String} config The path to the configuration file
+   */
+  removeDirective(name, config) {
+    config = GraphQL._getConfig(config);
+
+    // Retrieves the plugin configuration node from the Config's YAML document tree
+    const graphQLNode = config.getPluginConfigurationNode(PLUGIN_DEFAULT_LOCATION);
+    if (!graphQLNode) {
+      return;
+    }
+    // Finds the "directives" entry from the configuration node
+    const directives = graphQLNode.items.find(
+      item => item.key.value === 'directives'
+    );
+
+    // Filters the target directive by its name.
+    // Only saves the configuration is any filtering is done.
+    let shouldSave = false;
+    directives.value.items = directives.value.items.filter(
+      item => {
+        if (item.key.value === name) {
+          shouldSave = true;
+        }
+        return item.key.value !== name;
+      }
+    );
+    if (shouldSave) {
+      config.save();
+    }
+  }
+
+  /**
+   * Lists all directives registered on the {@link DirectiveController} of
+   * this {@link GraphQL} instance.
+   */
+  listDirectives() {
+    console.log('Listing all directives available (<name> <definition> [resolver]):');
+    this.directiveController.directives.forEach(directive => {
+      console.log(
+        `${directive.name} ${directive.definition}${directive.resolver.handler
+          ? ` ${directive.resolver.handler}`
+          : '' }`
+      );
+    });
+  }
+
+  /**
+   * Returns an instance of the provided path configuration or local configuration.
+   *
+   * @param {String} config The configuration file path
+   * @static
+   * @private
+   * @returns {Config} The configuration instance
+   */
+  static _getConfig(config) {
+    return typeof config === 'string' ? new Config(config) : new Config(Config.GetLocalConfigPath());
   }
 }
 
