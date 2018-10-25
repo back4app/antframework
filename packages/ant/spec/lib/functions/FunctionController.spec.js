@@ -124,7 +124,7 @@ describe('lib/functions/FunctionController.js', () => {
       const function1 = new AntFunction(antWithFunctions, 'ant');
       const function2 = new BinFunction(antWithFunctions, 'bin', '/path/to/bin');
       const function3 = new LibFunction(antWithFunctions, 'lib', '/path/to/lib',
-        new Runtime(antWithFunctions, 'runtime', '/path/to/runtime')
+        new Runtime(antWithFunctions, 'runtime', '/path/to/runtime', [], undefined, '7')
       );
 
       antWithFunctions.functionController.loadFunctions([function1, function2, function3]);

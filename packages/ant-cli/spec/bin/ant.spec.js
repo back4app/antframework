@@ -771,14 +771,15 @@ ant.js --help plugin add`)
           ._ant
           .pluginController
           .getPlugin('Core')
-          .addFunction = jest.fn(async (name, func, runtime, type, isGlobal) => {
+          .addFunction = jest.fn(async (name, func, runtime, version, type, isGlobal) => {
             expect(name).toBe('myfunc');
             expect(func).toBe('path/to/myfunc');
             expect(runtime).toBe('nodejs');
+            expect(version).toBe('6');
             expect(type).toBe('lib');
             expect(isGlobal).toBe(false);
           });
-        antCli._yargs.parse('function add myfunc path/to/myfunc nodejs');
+        antCli._yargs.parse('function add myfunc path/to/myfunc nodejs 6');
       });
 
       test('should work with global flag', done => {
@@ -795,14 +796,15 @@ ant.js --help plugin add`)
           ._ant
           .pluginController
           .getPlugin('Core')
-          .addFunction = jest.fn(async (name, path, runtime, type, isGlobal) => {
+          .addFunction = jest.fn(async (name, path, runtime, version, type, isGlobal) => {
             expect(name).toBe('myfunc');
             expect(path).toBe('/path/to/myfunc');
             expect(runtime).toBe('nodejs');
+            expect(version).toBe('6');
             expect(type).toBe('lib');
             expect(isGlobal).toBe(true);
           });
-        antCli._yargs.parse('function add myfunc /path/to/myfunc nodejs --global');
+        antCli._yargs.parse('function add myfunc /path/to/myfunc nodejs 6 --global');
       });
 
       test('should work with template', done => {
@@ -819,7 +821,7 @@ ant.js --help plugin add`)
           ._ant
           .pluginController
           .getPlugin('Core')
-          .addFunction = jest.fn(async (name, path, runtime, type, isGlobal, template) => {
+          .addFunction = jest.fn(async (name, path, runtime, version, type, isGlobal, template) => {
             expect(name).toBe('myfunc');
             expect(template).toBe('/path/to/my/template');
           });
@@ -1060,13 +1062,14 @@ ant.js --help plugin add`)
           ._ant
           .pluginController
           .getPlugin('Core')
-          .addRuntime = jest.fn(async (name, bin, extensions, isGlobal) => {
+          .addRuntime = jest.fn(async (name, version, bin, extensions, isGlobal) => {
             expect(name).toBe('myruntime');
+            expect(version).toBe('10');
             expect(bin).toBe(path.resolve(process.cwd(), bin));
-            expect(extensions).toEqual(['nodejs', 'python']);
+            expect(extensions).toEqual(['foo', 'bar']);
             expect(isGlobal).toBe(false);
           });
-        antCli._yargs.parse('runtime add myruntime path/to/myruntime nodejs python');
+        antCli._yargs.parse('runtime add myruntime 10 path/to/myruntime foo bar');
       });
 
       test('should work with global flag', done => {
@@ -1083,14 +1086,15 @@ ant.js --help plugin add`)
           ._ant
           .pluginController
           .getPlugin('Core')
-          .addRuntime = jest.fn(async (name, bin, extensions, isGlobal) => {
+          .addRuntime = jest.fn(async (name, version, bin, extensions, isGlobal) => {
             expect(name).toBe('myruntime');
+            expect(version).toBe('10');
             expect(bin).toBe('/path/to/myruntime');
             console.log(extensions);
             expect(extensions).toEqual(['nodejs', 'python']);
             expect(isGlobal).toBe(true);
           });
-        antCli._yargs.parse('runtime add myruntime /path/to/myruntime nodejs python --global');
+        antCli._yargs.parse('runtime add myruntime 10 /path/to/myruntime nodejs python --global');
       });
 
       test('should handle any errors', done => {
@@ -1111,7 +1115,7 @@ ant.js --help plugin add`)
           .addRuntime = jest.fn(async () => {
             throw new Error('Mocked error');
           });
-        antCli._yargs.parse('runtime add myruntime /path/to/myruntime nodejs python');
+        antCli._yargs.parse('runtime add myruntime 10 /path/to/myruntime nodejs python');
       });
     });
 
@@ -1130,11 +1134,12 @@ ant.js --help plugin add`)
           ._ant
           .pluginController
           .getPlugin('Core')
-          .removeRuntime = jest.fn(async (name, isGlobal) => {
+          .removeRuntime = jest.fn(async (name, version, isGlobal) => {
             expect(name).toBe('myruntime');
+            expect(version).toBe('5');
             expect(isGlobal).toBe(false);
           });
-        antCli._yargs.parse('runtime remove myruntime');
+        antCli._yargs.parse('runtime remove myruntime 5');
       });
 
       test('should work with global flag', done => {
@@ -1151,11 +1156,12 @@ ant.js --help plugin add`)
           ._ant
           .pluginController
           .getPlugin('Core')
-          .removeRuntime = jest.fn(async (name, isGlobal) => {
+          .removeRuntime = jest.fn(async (name, version, isGlobal) => {
             expect(name).toBe('myruntime');
+            expect(version).toBe('5');
             expect(isGlobal).toBe(true);
           });
-        antCli._yargs.parse('runtime remove myruntime --global');
+        antCli._yargs.parse('runtime remove myruntime 5 --global');
       });
 
       test('should handle any errors', done => {
@@ -1176,7 +1182,7 @@ ant.js --help plugin add`)
           .removeRuntime = jest.fn(async () => {
             throw new Error('Mocked error');
           });
-        antCli._yargs.parse('runtime remove myruntime');
+        antCli._yargs.parse('runtime remove myruntime 5');
       });
     });
 

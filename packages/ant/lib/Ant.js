@@ -154,8 +154,13 @@ class Ant {
     } else {
       this._runtimeController.defaultRuntime = this._runtimeController.getRuntime('Node');
     }
+    const runtimes = Array.from(this._runtimeController.runtimes.values()).map(
+      runtimeByVersion => Array.from(runtimeByVersion.values()).map(
+        runtime => `${runtime.name} ${runtime.version}`
+      ).join(', ')
+    );
     Analytics.addBreadcrumb('RuntimeController loaded', {
-      runtimes: this._runtimeController.runtimes.map(runtime => runtime.name),
+      runtimes,
       defaultRuntime: this._runtimeController.defaultRuntime && this._runtimeController.defaultRuntime.name
     });
 

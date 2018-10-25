@@ -19,7 +19,10 @@ const ant = new Ant();
 const fooRuntime = new Runtime(
   ant,
   'fooRuntime',
-  path.resolve(utilPath, 'functions/fooRuntime.js')
+  path.resolve(utilPath, 'functions/fooRuntime.js'),
+  [],
+  undefined,
+  '1'
 );
 
 const libFunction = new LibFunction(
@@ -78,7 +81,10 @@ describe('lib/functions/LibFunction.js', () => {
       const runtime = new Runtime(
         ant,
         'fooBinFunction',
-        'it/will/fail'
+        'it/will/fail',
+        [],
+        undefined,
+        '1'
       );
       runtime.run = () => { throw new Error('Some error'); };
       expect(() => {

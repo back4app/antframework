@@ -4,6 +4,7 @@
 
 const assert = require('assert');
 const BinFunction = require('../BinFunction');
+const semver = require('semver');
 
 /**
  * @class ant/Runtime
@@ -21,15 +22,21 @@ class Runtime extends BinFunction {
    * runtime supports to execute.
    * @param {String} template The path to the file to be used as template
    * when creating new functions with this runtime
+   * @param {!String} version The runtime version supported
+   * @param {Boolean} isDefault Flag indicating it should be set as default
    * @throws {AssertionError} If "ant", "name", "bin" or "extensions" params are
    * not valid.
    */
-  constructor(ant, name, bin, extensions, template) {
+  constructor(ant, name, bin, extensions, template, version, isDefault) {
     super(ant, name, bin);
 
     assert(
       !extensions || extensions instanceof Array,
       'Could not initialize Runtime: param "extensions" should be Array'
+    );
+    assert(
+      typeof version === 'string' && version.trim() !== '',
+      'Could not initialize Runtime: param "version" should be non empty String'
     );
 
     /**
@@ -46,6 +53,20 @@ class Runtime extends BinFunction {
      * @private
      */
     this._template = template;
+
+    /**
+     * The runtime version supported.
+     * @type {String}
+     * @private
+     */
+    this._version = semver.major(semver.coerce(version)).toString();
+
+    /**
+     * Flag indicating it should be set as default
+     * @type {Boolean}
+     * @private
+     */
+    this._isDefault = isDefault;
   }
 
   /**
@@ -64,6 +85,22 @@ class Runtime extends BinFunction {
    */
   get template() {
     return this._template;
+  }
+
+  /**
+   * Returns the runtime version supported.
+   * @type {String}
+   */
+  get version() {
+    return this._version;
+  }
+
+  /**
+   * Returns the flag indicating it should be set as default.
+   * @type {Boolean}
+   */
+  get isDefault() {
+    return this._isDefault;
   }
 }
 

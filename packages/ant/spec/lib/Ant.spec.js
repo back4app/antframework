@@ -191,60 +191,63 @@ Template category value is not an object!'
 
     test('should load runtimes from config', () => {
       const runtimes = {
-        Bin: {
-          bin: '/path/to/bin',
+        'Foo 0': {
+          bin: '/path/to/foo',
           extensions: ['js', 'py']
         },
-        Lib: {
-          bin: '/path/to/lib',
+        'Bar 1': {
+          bin: '/path/to/bar',
           extensions: ['cpp', 'c', 'h']
         }
       };
       const ant = new Ant({ runtimes });
-      const binRuntime = ant.runtimeController.getRuntime('Bin');
+      const binRuntime = ant.runtimeController.getRuntime('Foo');
       expect(binRuntime).toBeInstanceOf(Runtime);
-      expect(binRuntime.name).toBe('Bin');
-      expect(binRuntime.bin).toBe(runtimes.Bin.bin);
-      expect(binRuntime.extensions).toBe(runtimes.Bin.extensions);
+      expect(binRuntime.name).toBe('Foo');
+      expect(binRuntime.bin).toBe(runtimes['Foo 0'].bin);
+      expect(binRuntime.extensions).toBe(runtimes['Foo 0'].extensions);
+      expect(binRuntime.version).toBe('0');
 
-      const libRuntime = ant.runtimeController.getRuntime('Lib');
-      expect(libRuntime.name).toBe('Lib');
-      expect(libRuntime.bin).toBe(runtimes.Lib.bin);
-      expect(libRuntime.extensions).toBe(runtimes.Lib.extensions);
+      const libRuntime = ant.runtimeController.getRuntime('Bar', '1');
+      expect(libRuntime.name).toBe('Bar');
+      expect(libRuntime.bin).toBe(runtimes['Bar 1'].bin);
+      expect(libRuntime.extensions).toBe(runtimes['Bar 1'].extensions);
+      expect(libRuntime.version).toBe('1');
     });
 
     test('should load default runtime from config', () => {
       const runtimes = {
-        Bin: {
-          bin: '/path/to/bin',
+        'Foo 0': {
+          bin: '/path/to/foo',
           extensions: ['js', 'py']
         },
-        Lib: {
-          bin: '/path/to/lib',
+        'Bar 1': {
+          bin: '/path/to/bar',
           extensions: ['cpp', 'c', 'h']
         }
       };
-      const runtime = 'Bin';
+      const runtime = 'Foo';
       const ant = new Ant({ runtimes, runtime });
       const fooRuntime = ant.runtimeController.defaultRuntime;
       expect(fooRuntime).toBeInstanceOf(Runtime);
-      expect(fooRuntime.name).toBe('Bin');
-      expect(fooRuntime.bin).toBe(runtimes.Bin.bin);
-      expect(fooRuntime.extensions).toBe(runtimes.Bin.extensions);
+      expect(fooRuntime.name).toBe('Foo');
+      expect(fooRuntime.bin).toBe(runtimes['Foo 0'].bin);
+      expect(fooRuntime.extensions).toBe(runtimes['Foo 0'].extensions);
+      expect(fooRuntime.version).toBe('0');
     });
 
     test('should load default runtime from global config', () => {
       const runtimes = {
-        Bin: {
-          bin: '/path/to/bin',
+        'Foo 0': {
+          bin: '/path/to/foo',
           extensions: ['js', 'py']
         },
-        Lib: {
-          bin: '/path/to/lib',
+        'Bar 1': {
+          bin: '/path/to/bar',
           extensions: ['cpp', 'c', 'h']
         }
       };
-      const defaultRuntimeName = 'Bin';
+      const defaultRuntimeName = 'Foo';
       jest.spyOn(Ant.prototype, '_getGlobalConfig').mockImplementation(() => {
         return {
           runtimes,
@@ -254,9 +257,10 @@ Template category value is not an object!'
       try {
         const ant = new Ant();
         const defaultRuntime = ant.runtimeController.defaultRuntime;
-        expect(defaultRuntime.name).toBe('Bin');
-        expect(defaultRuntime.bin).toBe('/path/to/bin');
-        expect(defaultRuntime.extensions).toEqual([ 'js', 'py' ]);
+        expect(defaultRuntime.name).toBe(defaultRuntimeName);
+        expect(defaultRuntime.bin).toBe(runtimes['Foo 0'].bin);
+        expect(defaultRuntime.extensions).toEqual(runtimes['Foo 0'].extensions);
+        expect(defaultRuntime.version).toBe('0');
       } finally {
         jest.restoreAllMocks();
       }
