@@ -73,9 +73,7 @@ describe('lib/GraphQL.js', () => {
   });
 
   test('should fail if server crashes', async () => {
-    const originalError = console.error;
-    console.error = jest.fn();
-    expect.hasAssertions();
+    const write = jest.spyOn(process.stderr, 'write').mockImplementation(() => {});
     const bin = path.resolve(
       utilPath,
       'templates/crashServerTemplate/server.js'
@@ -92,10 +90,11 @@ describe('lib/GraphQL.js', () => {
       expect(e.message).toEqual(
         expect.stringContaining('Server process closed with code "1"')
       );
-      expect(console.error).toHaveBeenCalledWith(expect.stringContaining(
+      expect(write).toHaveBeenCalledWith(expect.stringContaining(
         'Crashed'
       ));
-      console.error = originalError;
+    } finally {
+      jest.restoreAllMocks();
     }
   });
 
@@ -177,10 +176,10 @@ describe('lib/GraphQL.js', () => {
     expect.hasAssertions();
     const originalExec = childProcess.exec;
     childProcess.exec = jest.fn();
-    const originalError = console.error;
-    const originalLog = console.log;
-    console.error = jest.fn();
-    console.log = jest.fn();
+    const originalErrWrite = process.stderr.write;
+    process.stderr.write = jest.fn();
+    const originalOutWrite = process.stdout.write;
+    process.stdout.write = jest.fn();
     const model = path.resolve(
       utilPath,
       'configs/graphQLPluginConfig/model.graphql'
@@ -192,18 +191,18 @@ describe('lib/GraphQL.js', () => {
     const server = { bin };
     const graphQL = new GraphQL(ant, { model, server });
     await graphQL.startService();
-    expect(console.error).toHaveBeenCalledWith(
+    expect(process.stderr.write).toHaveBeenCalledWith(
       expect.stringContaining('Some server error')
     );
-    expect(console.log).toHaveBeenCalledWith(
+    expect(process.stdout.write).toHaveBeenCalledWith(
       expect.stringContaining('Some other log')
     );
-    console.error = originalError;
-    console.log = originalLog;
+    process.stderr.write = originalErrWrite;
+    process.stdout.write = originalOutWrite;
     childProcess.exec = originalExec;
   });
 
-  test('should show success message', async (done) => {
+  test('should show success message', async () => {
     expect.hasAssertions();
     const originalCwd = process.cwd();
     process.chdir(path.resolve(
@@ -234,7 +233,6 @@ for requests on http://localhost:3000')
       expect(e.message).toEqual(
         expect.stringContaining('Server process closed')
       );
-      done();
     }
   });
 
@@ -912,7 +910,7 @@ plugins:
         const graphQL = new GraphQL(ant);
         graphQL.directiveController.loadDirectives([
           new Directive(ant, 'myDir1', 'myDef1', new AntFunction(ant, 'myFunc1', () => {})),
-          new Directive(ant, 'myDir2', 'myDef2', new LibFunction(ant, 'myFunc2', 'myHandler2', new Runtime(ant, 'myRuntime2', 'myBin2', ['foo'])))
+          new Directive(ant, 'myDir2', 'myDef2', new LibFunction(ant, 'myFunc2', 'myHandler2', new Runtime(ant, 'myRuntime2', 'myBin2', ['foo'], undefined, '1')))
         ]);
         graphQL.listDirectives();
         expect(console.log).toHaveBeenCalledTimes(3);

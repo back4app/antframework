@@ -3,7 +3,7 @@
  */
 
 const path = require('path');
-const { Observable } = require('rxjs');
+const { Observable, of } = require('rxjs');
 const { toArray } = require('rxjs/operators');
 const Ant = require('../../../lib/Ant');
 const LibFunction = require('../../../lib/functions/LibFunction');
@@ -95,6 +95,27 @@ describe('lib/functions/LibFunction.js', () => {
           runtime
         )).run();
       }).toThrowError('Could not run lib function fooLibFunction');
+    });
+
+    test('should run and handle multiple types result', async () => {
+      // Mocks the runtime.run function
+      const mockRuntime = new Runtime(ant, 'mockRuntime', 'bin', [], undefined, '1');
+      const values = [
+        1,
+        'a',
+        true,
+        { foo: {
+          bar: false
+        }},
+        ['lorem', 'ipsum'],
+        undefined,
+        null
+      ];
+      mockRuntime.run = jest.fn(() => of(...values));
+      const typeslibAntFunction = new LibFunction(ant, 'foo', 'bar', mockRuntime);
+      const runReturn = typeslibAntFunction.run();
+      expect(await runReturn.pipe(toArray()).toPromise())
+        .toEqual(values);
     });
   });
 });

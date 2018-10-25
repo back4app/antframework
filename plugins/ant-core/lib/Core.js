@@ -53,6 +53,14 @@ class Core extends Plugin {
         ['js'],
         path.resolve(__dirname, '../templates/function/node.js.mustache'),
         '10'
+      ),
+      new Runtime(
+        this._ant,
+        'Java',
+        path.resolve(__dirname, '../functions/javaRuntime.js'),
+        ['jar', 'java'],
+        path.resolve(__dirname, '../templates/function/java.java.mustache'),
+        '8'
       )
     ];
   }

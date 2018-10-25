@@ -813,7 +813,7 @@ provider "${providerName}"`
     }
     return Object.keys(functions).map(name => {
       const func = functions[name];
-      const { bin, handler, runtime } = func;
+      const { bin, handler, runtime, args } = func;
       try {
         if (bin) {
           return new BinFunction(runtimeController.ant, name, bin);
@@ -828,7 +828,7 @@ provider "${providerName}"`
           } else {
             runtimeInstance = runtimeController.defaultRuntime;
           }
-          return new LibFunction(runtimeController.ant, name, handler, runtimeInstance);
+          return new LibFunction(runtimeController.ant, name, handler, runtimeInstance, args);
         }
         throw new AntError(`Function type unknown: ${JSON.stringify(func)}`);
       } catch (e) {

@@ -25,7 +25,7 @@ class LibFunction extends AntFunction {
    * @throws {AssertionError} If "ant", "name", "handler" or "runtime" params
    * are not valid.
    */
-  constructor(ant, name, handler, runtime) {
+  constructor(ant, name, handler, runtime, args) {
     super(ant, name);
 
     assert(
@@ -51,6 +51,13 @@ class LibFunction extends AntFunction {
      * @private
      */
     this._runtime = runtime;
+
+    /**
+     * Contains the fixed arguments that will be used when running the function.
+     * @type {Array<String>}
+     * @private
+     */
+    this._args = args || [];
   }
 
   /**
@@ -72,6 +79,15 @@ class LibFunction extends AntFunction {
   }
 
   /**
+   * Contains the function fixed execution argumnets.
+   * @type {Array<String>}
+   * @readonly
+   */
+  get args() {
+    return this._args;
+  }
+
+  /**
    * Runs the function. It can receive different arguments depending on the
    * function instance.
    * @return {Observable} An [Observable]{@link https://rxjs-dev.firebaseapp.com/api/index/class/Observable}
@@ -80,16 +96,22 @@ class LibFunction extends AntFunction {
   run() {
     logger.log(`Running lib function ${this.name}...`);
 
+    const args = JSON.stringify(
+      this._args.concat(Array.from(arguments))
+    );
     try {
       return this._runtime.run([
         this._handler,
-        JSON.stringify(Array.from(arguments))
+        args
       ]).pipe(map(data => {
         // JSON fails to parse 'undefined', but not '"undefined"'
         try {
           return JSON.parse(data);
         } catch (e) {
-          return undefined;
+          if (typeof data === 'string' && data.trim() === 'undefined') {
+            return undefined;
+          }
+          return data;
         }
       }));
     } catch (e) {
