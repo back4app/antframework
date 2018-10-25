@@ -437,24 +437,23 @@ listening for requests on http://localhost:3000\n')
       antCli._yargs.parse('start');
     });
 
-    test('_yargsFailed should be called in the case of failure', (done) => {
+    test('_yargsFailed should be called in the case of failure', () => {
       const originalCwd = process.cwd();
       process.chdir(path.resolve(
         utilPath,
         'configs/graphQLPluginConfig'
       ));
-      const antCli = (new AntCli());
-      const _yargsFailed = jest.fn();
-      antCli._ant.pluginController.getPlugin('GraphQL')
-        ._yargsFailed = _yargsFailed;
+      const attachFailHandlerMock = jest.spyOn(yargsHelper, 'attachFailHandler');
       try {
-        antCli._yargs.parse('--config');
-      } catch (e) {
-        expect(_yargsFailed).toHaveBeenCalled();
+        const antCli = (new AntCli());
+        expect(attachFailHandlerMock).toHaveBeenCalledWith(
+          antCli._yargs,
+          antCli._ant.pluginController.getPlugin('GraphQL')
+            ._yargsFailed
+        );
+      } finally {
         process.chdir(originalCwd);
-        done();
       }
-
     });
 
     test('should show friendly error when more passed arguments', (done) => {

@@ -190,7 +190,8 @@ class GraphQL extends Plugin {
             )
         );
       }
-    ).fail(msg => this._yargsFailed(msg));
+    );
+    yargsHelper.attachFailHandler(yargs, this._yargsFailed);
   }
 
   /**
